@@ -1,0 +1,17 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "CarRentalMarketplace",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {},
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}
