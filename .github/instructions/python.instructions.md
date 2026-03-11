@@ -17,6 +17,7 @@ applyTo: "backend/**/*.py"
     - `pendulum` over direct `datetime`-heavy logic for timezone-aware datetime operations
     - `polars` over `pandas`
     - `pydantic` for data validation and schema modeling
+    - `fastapi` for new API endpoints an integrations
 - Keep types explicit on public APIs (function params, returns, class attributes).
 - Favor async I/O patterns in backend integrations when appropriate (for example `httpx.AsyncClient`).
 
