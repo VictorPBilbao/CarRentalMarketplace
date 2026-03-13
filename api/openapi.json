@@ -6,7 +6,152 @@
     "version": "1.0.0"
   },
   "tags": [],
-  "paths": {},
+  "paths": {
+    "/quote": {
+      "get": {
+        "summary": "Quote",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rental_details": {
+                    "type": "object",
+                    "properties": {
+                      "supplier_id": {
+                        "type": "string",
+                        "example": "localiza"
+                      },
+                      "pickup_store_id": {
+                        "type": "string",
+                        "example": "MIA"
+                      },
+                      "dropoff_store_id": {
+                        "type": "string",
+                        "example": "MIA"
+                      },
+                      "pickup_datetime": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "dropoff_datetime": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "group_code": {
+                        "type": "string",
+                        "example": "A"
+                      }
+                    },
+                    "required": [
+                      "supplier_id",
+                      "pickup_store_id",
+                      "dropoff_store_id",
+                      "pickup_datetime",
+                      "dropoff_datetime",
+                      "group_code"
+                    ]
+                  },
+                  "driver_profile": {
+                    "type": "object",
+                    "properties": {
+                      "date_of_birth": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "residence_country": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "date_of_birth",
+                      "residence_country"
+                    ]
+                  },
+                  "selections": {
+                    "type": "object",
+                    "properties": {
+                      "protections": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "example": "CDW"
+                        }
+                      },
+                      "optionals": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "example": "GPS"
+                            },
+                            "quantity": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "quantity"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "protections",
+                      "optionals"
+                    ]
+                  },
+                  "preferences": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string"
+                      },
+                      "promo_code": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "currency"
+                    ]
+                  }
+                },
+                "required": [
+                  "rental_details",
+                  "driver_profile",
+                  "preferences",
+                  "selections"
+                ]
+              },
+              "examples": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
   "components": {
     "schemas": {},
     "responses": {},
