@@ -61,11 +61,11 @@
                     "type": "object",
                     "properties": {
                       "date_of_birth": {
-                        "type": "string",
-                        "format": "date"
+                        "type": "string"
                       },
                       "residence_country": {
-                        "type": "string"
+                        "type": "string",
+                        "example": "BR"
                       }
                     },
                     "required": [
@@ -81,32 +81,18 @@
                         "items": {
                           "type": "string",
                           "example": "CDW"
-                        }
+                        },
+                        "uniqueItems": true
                       },
                       "optionals": {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "example": "GPS"
-                            },
-                            "quantity": {
-                              "type": "integer"
-                            }
-                          },
-                          "required": [
-                            "code",
-                            "quantity"
-                          ]
-                        }
+                          "type": "string",
+                          "example": "INFANT_SEAT"
+                        },
+                        "uniqueItems": true
                       }
-                    },
-                    "required": [
-                      "protections",
-                      "optionals"
-                    ]
+                    }
                   },
                   "preferences": {
                     "type": "object",
@@ -126,8 +112,7 @@
                 "required": [
                   "rental_details",
                   "driver_profile",
-                  "preferences",
-                  "selections"
+                  "preferences"
                 ]
               },
               "examples": {}
