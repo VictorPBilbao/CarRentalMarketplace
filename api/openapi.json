@@ -8,10 +8,10 @@
   "tags": [],
   "paths": {
     "/quote": {
-      "get": {
+      "post": {
         "summary": "Quote",
         "deprecated": false,
-        "description": "",
+        "description": "## Gerar Cotação (Quote)\n`POST /quote`\n\nEste endpoint recebe os detalhes da pesquisa e as seleções do usuário (adicionais e proteções) para calcular o preço final exato. Ele retorna um detalhamento dos valores e um `quote_id` temporário (hash) que \"trava\" o preço por um curto período (ex: 15 minutos) para ser usado na etapa de reserva (booking).\n\n### Corpo da Requisição (Request Body)\nO payload aceita dados da locação, perfil simplificado do motorista e preferências.\n\n**Exemplo de Requisição:**\n```json\n{\n  \"rental_details\": {\n    \"supplier_id\": \"localiza\",\n    \"pickup_store_id\": \"GRU\",\n    \"dropoff_store_id\": \"CEN\",\n    \"pickup_datetime\": \"2026-01-13T21:30:00Z\",\n    \"dropoff_datetime\": \"2026-02-11T22:00:00Z\",\n    \"group_code\": \"ECON\"\n  },\n  \"driver_profile\": {\n    \"driver_age\": 25, \n    \"residence_country\": \"BR\"\n  },\n  \"selections\": {\n    \"protections\": [\"TPL\"],\n    \"optionals\": [\n      { \"code\": \"GPS\", \"quantity\": 1 },\n      { \"code\": \"TOLL\", \"quantity\": 1 }\n    ]\n  },\n  \"preferences\": {\n    \"currency\": \"BRL\",\n    \"promo_code\": \"TCC_2026\"\n  }\n}\n```",
         "tags": [],
         "parameters": [],
         "requestBody": {
@@ -60,8 +60,10 @@
                   "driver_profile": {
                     "type": "object",
                     "properties": {
-                      "date_of_birth": {
-                        "type": "string"
+                      "driver_age": {
+                        "type": "integer",
+                        "minimum": 16,
+                        "maximum": 90
                       },
                       "residence_country": {
                         "type": "string",
@@ -69,7 +71,6 @@
                       }
                     },
                     "required": [
-                      "date_of_birth",
                       "residence_country"
                     ]
                   },
@@ -87,8 +88,20 @@
                       "optionals": {
                         "type": "array",
                         "items": {
-                          "type": "string",
-                          "example": "INFANT_SEAT"
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "example": "CHILD_SEAT"
+                            },
+                            "quantity": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "quantity"
+                          ]
                         },
                         "uniqueItems": true
                       }
@@ -115,7 +128,64 @@
                   "preferences"
                 ]
               },
-              "examples": {}
+              "examples": {
+                "1": {
+                  "value": {
+                    "rental_details": {
+                      "supplier_id": "localiza",
+                      "pickup_store_id": "GRU",
+                      "dropoff_store_id": "CEN",
+                      "pickup_datetime": "2026-01-13T21:30",
+                      "dropoff_datetime": "2026-02-11T22:00",
+                      "group_code": "ECON"
+                    },
+                    "driver_profile": {
+                      "driver_age": "25",
+                      "residence_country": "BR"
+                    },
+                    "selections": {
+                      "protections": [
+                        "TPL"
+                      ],
+                      "optionals": [
+                        {
+                          "code": "GPS",
+                          "quantity": 1
+                        },
+                        {
+                          "code": "TOLL",
+                          "quantity": 1
+                        }
+                      ]
+                    },
+                    "preferences": {
+                      "currency": "BRL"
+                    }
+                  },
+                  "summary": "Complete - No Promo"
+                },
+                "2": {
+                  "value": {
+                    "rental_details": {
+                      "supplier_id": "foco",
+                      "pickup_store_id": "CEN",
+                      "dropoff_store_id": "CEN",
+                      "pickup_datetime": "2026-07-29T18:48:19.669Z",
+                      "dropoff_datetime": "2026-12-05T05:54:18.313Z",
+                      "group_code": "MVMA"
+                    },
+                    "driver_profile": {
+                      "driver_age": "18",
+                      "residence_country": "US"
+                    },
+                    "preferences": {
+                      "currency": "USD",
+                      "promo_code": "95"
+                    }
+                  },
+                  "summary": "No Extras - With Promo"
+                }
+              }
             }
           }
         },
@@ -126,7 +196,96 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {}
+                  "properties": {
+                    "quote_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "breakdown": {
+                      "type": "object",
+                      "properties": {
+                        "base_rate": {
+                          "type": "number",
+                          "format": "float"
+                        },
+                        "optionals": {
+                          "type": "number",
+                          "format": "float"
+                        },
+                        "protections": {
+                          "type": "number",
+                          "format": "float"
+                        },
+                        "dropoff": {
+                          "type": "number",
+                          "format": "float"
+                        },
+                        "taxes": {
+                          "type": "number",
+                          "format": "float"
+                        },
+                        "grand_total": {
+                          "type": "number",
+                          "format": "float"
+                        }
+                      },
+                      "required": [
+                        "base_rate",
+                        "optionals",
+                        "protections",
+                        "dropoff",
+                        "taxes",
+                        "grand_total"
+                      ]
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "quote_id",
+                    "expires_at",
+                    "breakdown",
+                    "currency",
+                    "warnings"
+                  ]
+                },
+                "example": {
+                  "quote_id": "3c071a1d-db86-46a7-9dc8-72ba3fbca992",
+                  "expires_at": "2026-03-18T19:47:59.990Z",
+                  "breakdown": {
+                    "base_rate": 100,
+                    "optionals": 20.5,
+                    "protections": 35.5,
+                    "dropoff": 130,
+                    "taxes": 37,
+                    "grand_total": 358
+                  },
+                  "currency": "BRL",
+                  "warnings": [
+                    {
+                      "code": "YOUNG_DRIVER_FEE_MAY_APPLY",
+                      "message": "A surcharge applies for drivers under 25."
+                    }
+                  ]
                 }
               }
             },
