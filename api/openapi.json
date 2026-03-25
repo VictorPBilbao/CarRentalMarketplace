@@ -7,6 +7,309 @@
   },
   "tags": [],
   "paths": {
+    "/search": {
+      "get": {
+        "summary": "Search",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "pickup_store_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "GRU",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dropoff_store_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "CEN",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pickup_datetime",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "2026-01-13T21:30",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dropoff_datetime",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "2026-02-11T22:00",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "LOCALIZA",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "search_id": {
+                      "type": "string"
+                    },
+                    "rental_days": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "available_groups": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "group_code": {
+                            "type": "string"
+                          },
+                          "category": {
+                            "type": "string"
+                          },
+                          "example_vehicle": {
+                            "type": "string"
+                          },
+                          "features": {
+                            "type": "object",
+                            "properties": {
+                              "seats": {
+                                "type": "integer"
+                              },
+                              "doors": {
+                                "type": "integer"
+                              },
+                              "transmission": {
+                                "type": "string"
+                              },
+                              "air_conditioning": {
+                                "type": "boolean"
+                              },
+                              "large_bags": {
+                                "type": "integer"
+                              },
+                              "small_bags": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "seats",
+                              "doors",
+                              "transmission",
+                              "air_conditioning",
+                              "large_bags",
+                              "small_bags"
+                            ]
+                          },
+                          "pricing": {
+                            "type": "object",
+                            "properties": {
+                              "daily_base_rate": {
+                                "type": "integer"
+                              },
+                              "estimated_total_base": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "daily_base_rate",
+                              "estimated_total_base"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "group_code",
+                          "category",
+                          "example_vehicle",
+                          "features",
+                          "pricing"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "search_id",
+                    "rental_days",
+                    "currency",
+                    "available_groups"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/extras": {
+      "get": {
+        "summary": "Extras",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "pickup_store_id",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "GRU",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group_code",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "ECON",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pickup_datetime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "2026-01-13T21:30",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dropoff_datetime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "2026-02-11T22:00",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "currency": {
+                      "type": "string"
+                    },
+                    "protections": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "integer"
+                          },
+                          "recommended": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "name",
+                          "description",
+                          "type",
+                          "price",
+                          "recommended"
+                        ]
+                      }
+                    },
+                    "optionals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "integer"
+                          },
+                          "max_quantity": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "name",
+                          "description",
+                          "type",
+                          "price",
+                          "max_quantity"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "currency",
+                    "protections",
+                    "optionals"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
     "/quote": {
       "post": {
         "summary": "Quote",
@@ -286,6 +589,175 @@
                       "message": "A surcharge applies for drivers under 25."
                     }
                   ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/reserve": {
+      "post": {
+        "summary": "Reserve",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quote_id": {
+                    "type": "string"
+                  },
+                  "customer": {
+                    "type": "object",
+                    "properties": {
+                      "first_name": {
+                        "type": "string"
+                      },
+                      "last_name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string"
+                      },
+                      "phone": {
+                        "type": "string"
+                      },
+                      "document_type": {
+                        "type": "string"
+                      },
+                      "document_number": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "first_name",
+                      "last_name",
+                      "email",
+                      "phone",
+                      "document_type",
+                      "document_number"
+                    ]
+                  },
+                  "flight_details": {
+                    "type": "object",
+                    "properties": {
+                      "airline": {
+                        "type": "string"
+                      },
+                      "flight_number": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "airline",
+                      "flight_number"
+                    ]
+                  },
+                  "payment": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string"
+                      },
+                      "card_token": {
+                        "type": "string"
+                      },
+                      "billing_address": {
+                        "type": "object",
+                        "properties": {
+                          "street": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "country": {
+                            "type": "string"
+                          },
+                          "postal_code": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "street",
+                          "city",
+                          "country",
+                          "postal_code"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "card_token",
+                      "billing_address"
+                    ]
+                  }
+                },
+                "required": [
+                  "quote_id",
+                  "customer",
+                  "payment"
+                ]
+              },
+              "examples": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reservation_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "quote_id": {
+                      "type": "string"
+                    },
+                    "customer_email": {
+                      "type": "string"
+                    },
+                    "grand_total": {
+                      "type": "number"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "reservation_id",
+                    "status",
+                    "quote_id",
+                    "customer_email",
+                    "grand_total",
+                    "currency",
+                    "created_at"
+                  ]
+                },
+                "example": {
+                  "reservation_id": "RES-882910-BR",
+                  "status": "CONFIRMED",
+                  "quote_id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+                  "customer_email": "victor@example.com",
+                  "grand_total": 450.5,
+                  "currency": "BRL",
+                  "created_at": "2026-03-24T10:00:00Z"
                 }
               }
             },
