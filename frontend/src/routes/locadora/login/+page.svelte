@@ -1,0 +1,181 @@
+<script lang="ts">
+  import './login.css';
+  import { authService } from '../../../services/auth.service';
+
+  // ── estado dos campos ──
+  let email = $state('');
+  let senha = $state('');
+  let carregando = $state(false);
+
+  // ── erros por campo ──
+  let erros = $state({ email: '', senha: '', geral: '' });
+
+  // ── toque nos campos (para só mostrar erro após o usuário interagir) ──
+  let tocado = $state({ email: false, senha: false });
+
+  // ── validação ──
+  function validarEmail(v: string) {
+    if (!v) return 'E-mail obrigatório';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'E-mail inválido';
+    return '';
+  }
+
+  function validarSenha(v: string) {
+    if (!v) return 'Senha obrigatória';
+    if (v.length < 6) return 'Mínimo 6 caracteres';
+    return '';
+  }
+
+  function validarTudo() {
+    erros.email = validarEmail(email);
+    erros.senha = validarSenha(senha);
+    tocado.email = true;
+    tocado.senha = true;
+    return !erros.email && !erros.senha;
+  }
+
+  // ── submit ──
+  async function handleLogin(e: Event) {
+    e.preventDefault();
+    erros.geral = '';
+
+    if (!validarTudo()) return;
+
+    carregando = true;
+
+    try {
+      await authService.login({ email, senha });
+      // TODO: redirecionar após login
+      // goto('/dashboard');
+    } catch (err: any) {
+      erros.geral = err?.message ?? 'Erro ao entrar. Tente novamente.';
+    } finally {
+      carregando = false;
+    }
+  }
+</script>
+
+<svelte:head>
+  <title>Login — CarRental Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+</svelte:head>
+
+<div class="page">
+
+  <div class="bg" aria-hidden="true">
+    <div class="grid-lines"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <nav>
+    <a href="/" class="logo">
+      <span class="logo-icon">◈</span>
+      CarRental
+    </a>
+  </nav>
+
+  <main>
+    <div class="login-box">
+
+      <div class="login-header">
+        <p class="login-label">Painel da locadora</p>
+        <h1>Entrar na sua conta</h1>
+        <p class="login-sub">Acesse o painel para gerenciar sua frota e reservas.</p>
+      </div>
+
+      <form onsubmit={handleLogin} novalidate>
+
+        {#if erros.geral}
+          <div class="erro-geral">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M7.5 4.5V8M7.5 10.5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            {erros.geral}
+          </div>
+        {/if}
+
+        <!-- E-MAIL -->
+        <div class="form-group" class:has-error={tocado.email && erros.email}>
+          <label for="email">E-mail</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="seu@email.com"
+            bind:value={email}
+            autocomplete="email"
+            onblur={() => { tocado.email = true; erros.email = validarEmail(email); }}
+            oninput={() => { if (tocado.email) erros.email = validarEmail(email); }}
+          />
+          {#if tocado.email && erros.email}
+            <span class="campo-erro">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <path d="M6.5 1L12 11.5H1L6.5 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                <path d="M6.5 5v3M6.5 9.5h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              {erros.email}
+            </span>
+          {/if}
+        </div>
+
+        <!-- SENHA -->
+        <div class="form-group" class:has-error={tocado.senha && erros.senha}>
+          <div class="label-row">
+            <label for="senha">Senha</label>
+            <a href="/locadora/recuperar-senha" class="link-esqueci">Esqueci minha senha</a>
+          </div>
+          <input
+            id="senha"
+            type="password"
+            placeholder="••••••••"
+            bind:value={senha}
+            autocomplete="current-password"
+            onblur={() => { tocado.senha = true; erros.senha = validarSenha(senha); }}
+            oninput={() => { if (tocado.senha) erros.senha = validarSenha(senha); }}
+          />
+          {#if tocado.senha && erros.senha}
+            <span class="campo-erro">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <path d="M6.5 1L12 11.5H1L6.5 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                <path d="M6.5 5v3M6.5 9.5h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              {erros.senha}
+            </span>
+          {/if}
+        </div>
+
+        <button type="submit" class="btn-entrar" disabled={carregando}>
+          {#if carregando}
+            <span class="spinner" aria-hidden="true"></span>
+            Entrando...
+          {:else}
+            Entrar
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          {/if}
+        </button>
+
+      </form>
+
+      <p class="cadastro-link">
+        Ainda não tem conta?
+        <a href="/locadora/cadastro">Cadastre sua locadora</a>
+      </p>
+
+      <div class="divider"><span>ou acesse como</span></div>
+
+      <a href="/superadmin/login" class="btn-admin">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+          <rect x="1" y="1" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M5 7.5h5M7.5 5v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Acesso administrativo
+      </a>
+
+    </div>
+  </main>
+
+</div>

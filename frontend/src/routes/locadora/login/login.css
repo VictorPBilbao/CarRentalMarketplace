@@ -1,0 +1,307 @@
+/* ── BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #080c14;
+  color: #e8eaf0;
+  min-height: 100vh;
+}
+
+/* ── PAGE ── */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ── BG ── */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 142, 247, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 142, 247, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+}
+.orb-1 { width: 500px; height: 500px; background: rgba(79, 142, 247, 0.18); top: -180px; left: -120px; }
+.orb-2 { width: 420px; height: 420px; background: rgba(124, 58, 237, 0.14); bottom: -100px; right: -100px; }
+
+/* ── NAV ── */
+nav {
+  position: relative;
+  z-index: 10;
+  padding: 24px 40px;
+}
+.logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.4rem;
+  color: #e8eaf0;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.02em;
+}
+.logo-icon { color: #4f8ef7; }
+
+/* ── MAIN ── */
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px 60px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── LOGIN BOX ── */
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.login-header {
+  margin-bottom: 36px;
+  text-align: center;
+}
+.login-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: #4f8ef7;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.login-header h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.2rem;
+  letter-spacing: -0.025em;
+  color: #f0f2f8;
+  margin-bottom: 10px;
+  line-height: 1.1;
+}
+.login-sub {
+  font-size: 0.9rem;
+  color: rgba(232, 234, 240, 0.48);
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+/* ── FORM ── */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* erro geral (ex: credenciais inválidas) */
+.erro-geral {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #f87171;
+}
+
+/* ── FORM GROUP ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.form-group label {
+  font-size: 0.75rem;
+  color: rgba(232, 234, 240, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.link-esqueci {
+  font-size: 0.78rem;
+  color: #4f8ef7;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.link-esqueci:hover { color: #93b8fb; }
+
+/* ── INPUT ── */
+.form-group input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 13px 16px;
+  color: #e8eaf0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem;
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+  width: 100%;
+}
+.form-group input:focus {
+  border-color: rgba(79, 142, 247, 0.55);
+  background: rgba(79, 142, 247, 0.04);
+}
+.form-group input::placeholder {
+  color: rgba(232, 234, 240, 0.2);
+}
+
+/* estado de erro no input */
+.form-group.has-error input {
+  border-color: rgba(239, 68, 68, 0.55);
+  background: rgba(239, 68, 68, 0.04);
+}
+.form-group.has-error input:focus {
+  border-color: rgba(239, 68, 68, 0.7);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+/* mensagem de erro inline abaixo do input */
+.campo-erro {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #f87171;
+  animation: fadeUp 0.2s ease both;
+}
+.campo-erro svg {
+  flex-shrink: 0;
+  color: #f87171;
+}
+
+/* ── BOTÃO ENTRAR ── */
+.btn-entrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: #4f8ef7;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  margin-top: 4px;
+}
+.btn-entrar:hover:not(:disabled) {
+  background: #3a7de8;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(79, 142, 247, 0.32);
+}
+.btn-entrar:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* SPINNER */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── CADASTRO LINK ── */
+.cadastro-link {
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgba(232, 234, 240, 0.45);
+  margin-bottom: 24px;
+}
+.cadastro-link a {
+  color: #4f8ef7;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.cadastro-link a:hover { color: #93b8fb; }
+
+/* ── DIVIDER ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+}
+.divider span {
+  font-size: 0.75rem;
+  color: rgba(232, 234, 240, 0.3);
+  white-space: nowrap;
+}
+
+/* ── BTN ADMIN ── */
+.btn-admin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(232, 234, 240, 0.5);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.btn-admin:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(232, 234, 240, 0.8);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  nav { padding: 20px 24px; }
+  .login-header h1 { font-size: 1.9rem; }
+}
