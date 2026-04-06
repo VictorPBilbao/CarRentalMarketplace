@@ -1,31 +1,50 @@
 import { api } from './api';
 
+// ── tipos ──
 export interface LoginPayload {
   email: string;
   senha: string;
 }
 
+export interface CadastroPayload {
+  nomeEmpresa:     string;
+  cnpj:            string;
+  telefone:        string;
+  cidade:          string;
+  estado:          string;
+  nomeResponsavel: string;
+  email:           string;
+  senha:           string;
+}
+
 export interface LoginResponse {
   token: string;
   usuario: {
-    id: string;
-    nome: string;
-    email: string;
+    id:         string;
+    nome:       string;
+    email:      string;
     locadoraId: string;
   };
 }
 
+export interface CadastroResponse {
+  locadoraId: string;
+  mensagem:   string;
+}
+
+// ── service ──
 export const authService = {
 
   async login(payload: LoginPayload): Promise<LoginResponse> {
     const data = await api.post<LoginResponse>('/auth/login', payload);
-
-    // salva o token para as próximas requisições
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('token', data.token);
     }
-
     return data;
+  },
+
+  async cadastrar(payload: CadastroPayload): Promise<CadastroResponse> {
+    return api.post<CadastroResponse>('/auth/cadastro', payload);
   },
 
   async logout(): Promise<void> {

@@ -1,0 +1,259 @@
+/* ── BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #080c14;
+  color: #e8eaf0;
+  min-height: 100vh;
+}
+
+/* ── PAGE ── */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ── BG ── */
+.bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.grid-lines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.orb { position: absolute; border-radius: 50%; filter: blur(120px); }
+.orb-1 { width: 500px; height: 500px; background: rgba(79,142,247,0.18); top: -180px; left: -120px; }
+.orb-2 { width: 420px; height: 420px; background: rgba(124,58,237,0.14); bottom: -100px; right: -100px; }
+
+/* ── NAV ── */
+nav {
+  position: relative; z-index: 10;
+  padding: 24px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.4rem; color: #e8eaf0;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  letter-spacing: -0.02em;
+}
+.logo-icon { color: #4f8ef7; }
+.nav-login {
+  font-size: 0.875rem;
+  color: rgba(232,234,240,0.5);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-login:hover { color: #e8eaf0; }
+
+/* ── MAIN ── */
+main {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 32px 24px 60px;
+  position: relative; z-index: 1;
+}
+
+/* ── CADASTRO BOX ── */
+.cadastro-box {
+  width: 100%; max-width: 480px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.cadastro-header { margin-bottom: 28px; text-align: center; }
+.cadastro-label {
+  font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.13em; color: #4f8ef7;
+  margin-bottom: 12px; font-weight: 500;
+}
+.cadastro-header h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.1rem; letter-spacing: -0.025em;
+  color: #f0f2f8; margin-bottom: 10px; line-height: 1.1;
+}
+.cadastro-sub {
+  font-size: 0.875rem; color: rgba(232,234,240,0.45);
+  font-weight: 300; line-height: 1.6;
+}
+
+/* ── STEPS INDICATOR ── */
+.steps-indicator {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 28px;
+}
+.step-item {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1;
+}
+.step-item:last-child { flex: none; }
+.step-bubble {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 500; flex-shrink: 0;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(232,234,240,0.4);
+  transition: all 0.3s ease;
+}
+.step-item.active .step-bubble {
+  background: rgba(79,142,247,0.15);
+  border-color: rgba(79,142,247,0.5);
+  color: #4f8ef7;
+}
+.step-item.done .step-bubble {
+  background: rgba(79,142,247,0.2);
+  border-color: #4f8ef7;
+  color: #4f8ef7;
+}
+.step-item span {
+  font-size: 0.8rem;
+  color: rgba(232,234,240,0.35);
+  transition: color 0.3s;
+  white-space: nowrap;
+}
+.step-item.active span { color: rgba(232,234,240,0.75); }
+.step-connector {
+  flex: 1; height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 0 12px;
+  transition: background 0.3s;
+}
+.step-connector.done { background: rgba(79,142,247,0.4); }
+
+/* ── ERRO GERAL ── */
+.erro-geral {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px; margin-bottom: 16px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 8px; font-size: 0.85rem; color: #f87171;
+}
+
+/* ── ETAPA ── */
+.etapa { display: flex; flex-direction: column; gap: 14px; animation: fadeUp 0.3s ease both; }
+
+/* ── FORM GROUP ── */
+.form-group { display: flex; flex-direction: column; gap: 7px; }
+.form-group label {
+  font-size: 0.75rem; color: rgba(232,234,240,0.5);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.form-group input,
+.form-group select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 13px 16px;
+  color: #e8eaf0; font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem; outline: none; width: 100%;
+  transition: border-color 0.2s, background 0.2s;
+  appearance: none;
+}
+.form-group select { background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+.form-group select option { background: #111827; }
+.form-group input:focus,
+.form-group select:focus {
+  border-color: rgba(79,142,247,0.55);
+  background: rgba(79,142,247,0.04);
+}
+.form-group input::placeholder { color: rgba(232,234,240,0.2); }
+.form-group.has-error input,
+.form-group.has-error select {
+  border-color: rgba(239,68,68,0.55);
+  background: rgba(239,68,68,0.04);
+}
+.campo-erro {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.78rem; color: #f87171;
+  animation: fadeUp 0.2s ease both;
+}
+
+/* ── FORM ROW ── */
+.form-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+.form-row .form-group:last-child { width: 90px; }
+
+/* ── BOTÕES ── */
+.btn-avancar {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
+  background: #4f8ef7; color: #fff;
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500;
+  cursor: pointer; margin-top: 4px;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.btn-avancar:hover {
+  background: #3a7de8; transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(79,142,247,0.32);
+}
+
+.btn-group { display: flex; gap: 10px; margin-top: 4px; }
+
+.btn-voltar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 14px 20px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; color: rgba(232,234,240,0.55);
+  font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+  cursor: pointer; flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-voltar:hover { border-color: rgba(255,255,255,0.22); color: #e8eaf0; }
+
+.btn-cadastrar {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  flex: 1; padding: 14px;
+  background: #4f8ef7; color: #fff;
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.btn-cadastrar:hover:not(:disabled) {
+  background: #3a7de8; transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(79,142,247,0.32);
+}
+.btn-cadastrar:disabled { opacity: 0.65; cursor: not-allowed; }
+
+/* SPINNER */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.7s linear infinite; flex-shrink: 0;
+}
+
+/* ── TERMOS ── */
+.termos {
+  font-size: 0.78rem; color: rgba(232,234,240,0.35);
+  text-align: center; line-height: 1.6;
+}
+.termos a { color: #4f8ef7; text-decoration: none; }
+.termos a:hover { color: #93b8fb; }
+
+/* ── LOGIN LINK ── */
+.login-link {
+  text-align: center; font-size: 0.875rem;
+  color: rgba(232,234,240,0.4); margin-top: 20px;
+}
+.login-link a { color: #4f8ef7; text-decoration: none; font-weight: 500; }
+.login-link a:hover { color: #93b8fb; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  nav { padding: 20px 24px; }
+  .cadastro-header h1 { font-size: 1.8rem; }
+  .step-item span { display: none; }
+}
