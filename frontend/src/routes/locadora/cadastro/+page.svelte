@@ -172,7 +172,7 @@
                 oninput={() => input('nomeEmpresa', nomeEmpresa)}
               />
               {#if tocado.nomeEmpresa && erros.nomeEmpresa}
-                <span class="campo-erro"><ErrIcon />{erros.nomeEmpresa}</span>
+                <span class="campo-erro">{@render ErrIcon()}{erros.nomeEmpresa}</span>
               {/if}
             </div>
 
@@ -189,7 +189,7 @@
                 }}
               />
               {#if tocado.cnpj && erros.cnpj}
-                <span class="campo-erro"><ErrIcon />{erros.cnpj}</span>
+                <span class="campo-erro">{@render ErrIcon()}{erros.cnpj}</span>
               {/if}
             </div>
 
@@ -206,7 +206,7 @@
                 }}
               />
               {#if tocado.telefone && erros.telefone}
-                <span class="campo-erro"><ErrIcon />{erros.telefone}</span>
+                <span class="campo-erro">{@render ErrIcon()}{erros.telefone}</span>
               {/if}
             </div>
 
@@ -221,7 +221,7 @@
                   oninput={() => input('cidade', cidade)}
                 />
                 {#if tocado.cidade && erros.cidade}
-                  <span class="campo-erro"><ErrIcon />{erros.cidade}</span>
+                  <span class="campo-erro">{@render ErrIcon()}{erros.cidade}</span>
                 {/if}
               </div>
 
@@ -239,7 +239,7 @@
                   {/each}
                 </select>
                 {#if tocado.estado && erros.estado}
-                  <span class="campo-erro"><ErrIcon />{erros.estado}</span>
+                  <span class="campo-erro">{@render ErrIcon()}{erros.estado}</span>
                 {/if}
               </div>
             </div>
@@ -275,7 +275,7 @@
                 oninput={() => input('nomeResponsavel', nomeResponsavel)}
               />
               {#if tocado.nomeResponsavel && erros.nomeResponsavel}
-                <span class="campo-erro"><ErrIcon />{erros.nomeResponsavel}</span>
+                <span class="campo-erro">{@render ErrIcon()}{erros.nomeResponsavel}</span>
               {/if}
             </div>
 
@@ -289,7 +289,7 @@
                 oninput={() => input('email', email)}
               />
               {#if tocado.email && erros.email}
-                <span class="campo-erro"><ErrIcon />{erros.email}</span>
+                <span class="campo-erro">{@render ErrIcon()}{erros.email}</span>
               {/if}
             </div>
 
@@ -303,7 +303,7 @@
                 oninput={() => { input('senha', senha); if (tocado.confirmarSenha) validar('confirmarSenha', confirmarSenha); }}
               />
               {#if tocado.senha && erros.senha}
-                <span class="campo-erro"><ErrIcon />{erros.senha}</span>
+                <span class="campo-erro">{@render ErrIcon()}{erros.senha}</span>
               {/if}
             </div>
 
@@ -317,7 +317,7 @@
                 oninput={() => input('confirmarSenha', confirmarSenha)}
               />
               {#if tocado.confirmarSenha && erros.confirmarSenha}
-                <span class="campo-erro"><ErrIcon />{erros.confirmarSenha}</span>
+                <span class="campo-erro">{@render ErrIcon()}{erros.confirmarSenha}</span>
               {/if}
             </div>
 
