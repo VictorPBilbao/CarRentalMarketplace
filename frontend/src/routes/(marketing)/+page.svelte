@@ -35,7 +35,8 @@
 <nav class:scrolled={scrollY > 40}>
   <div class="nav-inner">
     <a href="/" class="logo">
-      <img src={logoImage} alt="CarRental logo" class="logo"/>
+      <span class="logo-icon">◈</span>
+      CarRental
     </a>
     <div class="nav-links">
       <a href="#como-funciona">Como funciona</a>
@@ -43,8 +44,8 @@
       <a href="#contato">Contato</a>
     </div>
     <div class="nav-actions">
-      <a href="/locadora/login" class="btn-ghost">Entrar</a>
-      <a href="/locadora/cadastro" class="btn-primary">Cadastrar locadora</a>
+      <a href="/login" class="btn-ghost">Entrar</a>
+      <a href="/cadastro" class="btn-primary">Cadastrar locadora</a>
     </div>
   </div>
 </nav>

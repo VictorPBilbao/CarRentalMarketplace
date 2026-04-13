@@ -1,10 +1,11 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { authService } from '../../../services/auth.service';
+import { authService } from '../../lib/services/auth.service';
+import { setFlash } from '$lib/flash';
 
 export const actions: Actions = {
 
-  cadastrar: async ({ request }) => {
+  cadastrar: async ({ request, cookies }) => {
 
     const data = await request.formData();
 
@@ -55,7 +56,8 @@ export const actions: Actions = {
     }
 
     // ── redireciona para login após sucesso ──
-    redirect(303, '/locadora/login?cadastro=sucesso');
+    setFlash(cookies, { tipo: 'sucesso', mensagem: 'Cadastro realizado com sucesso. Faça login para continuar.' });
+    redirect(303, '/login');
   },
 
 };

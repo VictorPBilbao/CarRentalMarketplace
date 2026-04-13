@@ -24,6 +24,7 @@ nav.scrolled {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 14px 0;
 }
+
 .nav-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -32,8 +33,16 @@ nav.scrolled {
   align-items: center;
   gap: 32px;
 }
+
 .logo {
-  max-width: 100px;
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.4rem;
+  color: #e8eaf0;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.02em;
 }
 
 .logo-icon { color: #4f8ef7; }
@@ -43,12 +52,14 @@ nav.scrolled {
   gap: 28px;
   margin-left: auto;
 }
+
 .nav-links a {
   color: rgba(232, 234, 240, 0.6);
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.2s;
 }
+
 .nav-links a:hover { color: #e8eaf0; }
 .nav-actions { display: flex; gap: 10px; align-items: center; }
 .btn-ghost {

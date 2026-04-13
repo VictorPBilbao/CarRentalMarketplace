@@ -23,6 +23,7 @@ export interface LoginResponse {
     id:         string;
     nome:       string;
     email:      string;
+    role:       'admin' | 'locadora' | 'filial';
     locadoraId: string;
   };
 }

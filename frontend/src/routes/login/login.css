@@ -1,8 +1,10 @@
 /* ── BASE ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+.login-page,
+.login-page *,
+.login-page *::before,
+.login-page *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
+.login-page {
   font-family: 'DM Sans', sans-serif;
   background: #080c14;
   color: #e8eaf0;
@@ -18,13 +20,13 @@ body {
 }
 
 /* ── BG ── */
-.bg {
+.login-page .bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
 }
-.grid-lines {
+.login-page .grid-lines {
   position: absolute;
   inset: 0;
   background-image:
@@ -32,21 +34,23 @@ body {
     linear-gradient(90deg, rgba(79, 142, 247, 0.04) 1px, transparent 1px);
   background-size: 60px 60px;
 }
-.orb {
+.login-page .orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(120px);
 }
-.orb-1 { width: 500px; height: 500px; background: rgba(79, 142, 247, 0.18); top: -180px; left: -120px; }
-.orb-2 { width: 420px; height: 420px; background: rgba(124, 58, 237, 0.14); bottom: -100px; right: -100px; }
+
+.login-page .orb-1 { width: 500px; height: 500px; background: rgba(79, 142, 247, 0.18); top: -180px; left: -120px; }
+.login-page .orb-2 { width: 420px; height: 420px; background: rgba(124, 58, 237, 0.14); bottom: -100px; right: -100px; }
 
 /* ── NAV ── */
-nav {
+.login-page nav {
   position: relative;
   z-index: 10;
   padding: 24px 40px;
 }
-.logo {
+
+.login-page .logo {
   font-family: 'Instrument Serif', serif;
   font-size: 1.4rem;
   color: #e8eaf0;
@@ -56,10 +60,11 @@ nav {
   gap: 8px;
   letter-spacing: -0.02em;
 }
-.logo-icon { color: #4f8ef7; }
+
+.login-page .logo-icon { color: #4f8ef7; }
 
 /* ── MAIN ── */
-main {
+.login-page main {
   flex: 1;
   display: flex;
   align-items: center;
@@ -104,7 +109,7 @@ main {
 }
 
 /* ── FORM ── */
-form {
+.login-page form {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -302,6 +307,6 @@ form {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 480px) {
-  nav { padding: 20px 24px; }
+  .login-page nav { padding: 20px 24px; }
   .login-header h1 { font-size: 1.9rem; }
 }

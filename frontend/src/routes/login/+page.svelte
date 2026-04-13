@@ -1,19 +1,25 @@
 <script lang="ts">
   import './login.css';
-  import { authService } from '../../../services/auth.service';
+  import { enhance } from '$app/forms';
+  import type { ActionData } from './$types';
 
-  // ── estado dos campos ──
+  let { form }: { form: ActionData } = $props();
+  let emailInicial = $derived(form?.email ?? '');
+
+  // campos
   let email = $state('');
   let senha = $state('');
   let carregando = $state(false);
 
-  // ── erros por campo ──
-  let erros = $state({ email: '', senha: '', geral: '' });
+  $effect(() => {
+    email = emailInicial;
+  });
 
-  // ── toque nos campos (para só mostrar erro após o usuário interagir) ──
-  let tocado = $state({ email: false, senha: false });
+  // erros client-side (validação ao sair do campo)
+  let erros = $state<Record<string, string>>({});
+  let tocado = $state<Record<string, boolean>>({});
 
-  // ── validação ──
+  // ── validações ──
   function validarEmail(v: string) {
     if (!v) return 'E-mail obrigatório';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'E-mail inválido';
@@ -26,31 +32,14 @@
     return '';
   }
 
-  function validarTudo() {
-    erros.email = validarEmail(email);
-    erros.senha = validarSenha(senha);
-    tocado.email = true;
-    tocado.senha = true;
-    return !erros.email && !erros.senha;
+  function blur(campo: string, valor: string) {
+    tocado[campo] = true;
+    erros[campo] = campo === 'email' ? validarEmail(valor) : validarSenha(valor);
   }
 
-  // ── submit ──
-  async function handleLogin(e: Event) {
-    e.preventDefault();
-    erros.geral = '';
-
-    if (!validarTudo()) return;
-
-    carregando = true;
-
-    try {
-      await authService.login({ email, senha });
-      // TODO: redirecionar após login
-      // goto('/dashboard');
-    } catch (err: any) {
-      erros.geral = err?.message ?? 'Erro ao entrar. Tente novamente.';
-    } finally {
-      carregando = false;
+  function input(campo: string, valor: string) {
+    if (tocado[campo]) {
+      erros[campo] = campo === 'email' ? validarEmail(valor) : validarSenha(valor);
     }
   }
 </script>
@@ -61,7 +50,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
 </svelte:head>
 
-<div class="page">
+<div class="page login-page">
 
   <div class="bg" aria-hidden="true">
     <div class="grid-lines"></div>
@@ -85,64 +74,77 @@
         <p class="login-sub">Acesse o painel para gerenciar sua frota e reservas.</p>
       </div>
 
-      <form onsubmit={handleLogin} novalidate>
+      <form
+        method="POST"
+        action="?/entrar"
+        novalidate
+        use:enhance={() => {
+          carregando = true;
+          return async ({ update }) => {
+            await update();
+            carregando = false;
+            senha = '';
+          };
+        }}
+      >
 
-        {#if erros.geral}
+        <!-- erro geral vindo do server (ex: credenciais inválidas) -->
+        {#if form?.erro}
           <div class="erro-geral">
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
               <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.4"/>
               <path d="M7.5 4.5V8M7.5 10.5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
-            {erros.geral}
+            {form.erro}
           </div>
         {/if}
 
         <!-- E-MAIL -->
-        <div class="form-group" class:has-error={tocado.email && erros.email}>
+        <div
+          class="form-group"
+          class:has-error={(tocado.email && erros.email) || (form?.erros?.email && !tocado.email)}
+        >
           <label for="email">E-mail</label>
           <input
             id="email"
+            name="email"
             type="email"
             placeholder="seu@email.com"
             bind:value={email}
             autocomplete="email"
-            onblur={() => { tocado.email = true; erros.email = validarEmail(email); }}
-            oninput={() => { if (tocado.email) erros.email = validarEmail(email); }}
+            onblur={() => blur('email', email)}
+            oninput={() => input('email', email)}
           />
           {#if tocado.email && erros.email}
-            <span class="campo-erro">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                <path d="M6.5 1L12 11.5H1L6.5 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-                <path d="M6.5 5v3M6.5 9.5h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-              </svg>
-              {erros.email}
-            </span>
+            <span class="campo-erro">{@render IconErro()}{erros.email}</span>
+          {:else if form?.erros?.email && !tocado.email}
+            <span class="campo-erro">{@render IconErro()}{form.erros.email}</span>
           {/if}
         </div>
 
         <!-- SENHA -->
-        <div class="form-group" class:has-error={tocado.senha && erros.senha}>
+        <div
+          class="form-group"
+          class:has-error={(tocado.senha && erros.senha) || (form?.erros?.senha && !tocado.senha)}
+        >
           <div class="label-row">
             <label for="senha">Senha</label>
             <a href="/locadora/recuperar-senha" class="link-esqueci">Esqueci minha senha</a>
           </div>
           <input
             id="senha"
+            name="senha"
             type="password"
             placeholder="••••••••"
             bind:value={senha}
             autocomplete="current-password"
-            onblur={() => { tocado.senha = true; erros.senha = validarSenha(senha); }}
-            oninput={() => { if (tocado.senha) erros.senha = validarSenha(senha); }}
+            onblur={() => blur('senha', senha)}
+            oninput={() => input('senha', senha)}
           />
           {#if tocado.senha && erros.senha}
-            <span class="campo-erro">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                <path d="M6.5 1L12 11.5H1L6.5 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-                <path d="M6.5 5v3M6.5 9.5h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-              </svg>
-              {erros.senha}
-            </span>
+            <span class="campo-erro">{@render IconErro()}{erros.senha}</span>
+          {:else if form?.erros?.senha && !tocado.senha}
+            <span class="campo-erro">{@render IconErro()}{form.erros.senha}</span>
           {/if}
         </div>
 
@@ -179,3 +181,10 @@
   </main>
 
 </div>
+
+{#snippet IconErro()}
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+    <path d="M6.5 1L12 11.5H1L6.5 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+    <path d="M6.5 5v3M6.5 9.5h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+  </svg>
+{/snippet}

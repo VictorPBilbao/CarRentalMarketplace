@@ -3,7 +3,17 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+      token?: string;
+      usuario?: {
+        id:         string;
+        nome:       string;
+        email:      string;
+        role:       'admin' | 'locadora' | 'filial';
+        locadoraId: string;
+        matrizId?:  string; // só preenchido se role === 'filial'
+      };
+    }
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}

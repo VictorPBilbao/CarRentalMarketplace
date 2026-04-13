@@ -87,7 +87,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
 </svelte:head>
 
-<div class="page">
+<div class="page cadastro-page">
 
   <div class="bg" aria-hidden="true">
     <div class="grid-lines"></div>
