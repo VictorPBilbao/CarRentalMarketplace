@@ -38,9 +38,6 @@ export const authService = {
 
   async login(payload: LoginPayload): Promise<LoginResponse> {
     const data = await api.post<LoginResponse>('/auth/login', payload);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('token', data.token);
-    }
     return data;
   },
 
@@ -50,18 +47,5 @@ export const authService = {
 
   async logout(): Promise<void> {
     await api.post('/auth/logout', {});
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('token');
-    }
   },
-
-  getToken(): string | null {
-    if (typeof localStorage === 'undefined') return null;
-    return localStorage.getItem('token');
-  },
-
-  isAutenticado(): boolean {
-    return !!this.getToken();
-  },
-
 };

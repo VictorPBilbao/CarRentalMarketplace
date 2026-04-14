@@ -1,0 +1,15 @@
+from typing import Literal
+
+from pydantic import BaseModel
+
+RoleEnum = Literal["admin", "locadora", "filial"]
+
+
+class UsuarioPayload(BaseModel):
+    """Dados do usuário presentes no JWT e retornados após login."""
+    id: str
+    nome: str
+    email: str
+    role: RoleEnum
+    locadoraId: str
+    matrizId: str | None = None  # preenchido apenas para role == "filial"
