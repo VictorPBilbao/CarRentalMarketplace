@@ -10,7 +10,6 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(BaseModel):
     token: str
-    usuario: UsuarioPayload
 
 
 class CadastroLocadoraRequest(BaseModel):

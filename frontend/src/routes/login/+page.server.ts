@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { authService } from '$lib/services/auth.service';
+import { decodeJwt } from '$lib/server/jwtDecoder.server';
 
 export const actions: Actions = {
 
@@ -23,33 +24,34 @@ export const actions: Actions = {
       return fail(422, { erros, email });
     }
 
+    let resposta;
     // ── chama a service ──
     try {
-      const resposta = await authService.login({ email, senha });
-
-      // salva o token em cookie httpOnly (mais seguro que localStorage)
-      cookies.set('token', resposta.token, {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 7, // 7 dias
-      });
-
-      const destinoPorRole: Record<string, string> = {
-        locadora: '/locadora/dashboard',
-        admin: '/admin/dashboard',
-        filial: '/filial/dashboard',
-      };
-
-      const destino = destinoPorRole[resposta.usuario?.role] ?? '/';
-      redirect(303, destino);
+      resposta = await authService.login({ email, senha });
     } catch (err: any) {
       return fail(401, {
         erro: err?.message ?? 'E-mail ou senha incorretos.',
-        email,
+        email
       });
     }
-  },
 
+    // salva o token em cookie httpOnly (mais seguro que localStorage)
+    cookies.set('token', resposta.token, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // 7 dias
+    });
+
+    const destinoPorRole: Record<string, string> = {
+      locadora: '/locadora/dashboard',
+      admin: '/admin/dashboard',
+      filial: '/filial/dashboard',
+    };
+
+    const role = decodeJwt(resposta.token)?.role as string;
+    const destino = destinoPorRole[role] ?? '/';
+    throw redirect(303, destino);
+  },
 };

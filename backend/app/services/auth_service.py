@@ -17,6 +17,6 @@ _USUARIO_TESTE_LOCADORA = UsuarioPayload(
 
 async def login(payload: LoginRequest) -> LoginResponse:
     # ── Login de teste (apenas com DEBUG=true) ────────────────────────────────
-    if payload.email == _USUARIO_TESTE_LOCADORA.email:
+    if payload.email == _USUARIO_TESTE_LOCADORA.email and payload.senha == "a123456@":
         token = criar_token(_USUARIO_TESTE_LOCADORA.model_dump(exclude_none=True))
-        return LoginResponse(token=token, usuario=_USUARIO_TESTE_LOCADORA)
+        return LoginResponse(token=token)
