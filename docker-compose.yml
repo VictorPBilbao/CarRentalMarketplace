@@ -1,0 +1,44 @@
+services:
+    # ----------------------------------------------------
+    # Backend: Python FastAPI
+    # ----------------------------------------------------
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: carrental-backend
+        ports:
+            - "8080:8000" # Mapping port 8000 inside the container to 8080 on your host
+        env_file:
+            - ./backend/.env
+        environment:
+            # Overrides the value in .env to use the internal Docker network
+            - SURREAL_URL=ws://surrealdb:8000/rpc
+        volumes:
+            - ./backend:/app # Maps your local files to the container for hot reloading
+        depends_on:
+            - surrealdb
+
+    # ----------------------------------------------------
+    # Database: SurrealDB (In-Memory)
+    # ----------------------------------------------------
+    surrealdb:
+        image: surrealdb/surrealdb:latest
+        container_name: carrental-surrealdb
+        ports:
+            - "8000:8000"
+        command: start --user admin --pass admin memory
+
+    # ----------------------------------------------------
+    # Database Initializer: Loads .surql backup on start
+    # ----------------------------------------------------
+    surrealdb-init:
+        image: surrealdb/surrealdb:latest
+        container_name: carrental-surrealdb-init
+        depends_on:
+            - surrealdb
+        volumes:
+            - ./database/carrentalmarketplace.surql:/backup.surql:ro
+        # Restarts automatically until the main DB is ready to accept the import
+        restart: on-failure
+        command: import --endpoint http://surrealdb:8000 --user admin --pass admin --ns carrental --db main /backup.surql
