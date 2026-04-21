@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     JWT_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 dias
 
     # SurrealDB
-    SURREAL_URL: str = "ws://localhost:8000/rpc"
+    SURREAL_URL: str = "http://localhost:8000/"
     SURREAL_USER: str = "root"
     SURREAL_PASS: str = "root"
     SURREAL_NAMESPACE: str = "carrental"
