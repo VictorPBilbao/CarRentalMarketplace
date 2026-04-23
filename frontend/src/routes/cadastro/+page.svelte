@@ -100,7 +100,7 @@
       <span class="logo-icon">◈</span>
       CarRental
     </a>
-    <a href="/locadora/login" class="nav-login">Já tenho conta</a>
+    <a href="/login" class="nav-login">Já tenho conta</a>
   </nav>
 
   <main>
@@ -354,7 +354,7 @@
 
       <p class="login-link">
         Já tem uma conta?
-        <a href="/locadora/login">Entrar</a>
+        <a href="/login">Entrar</a>
       </p>
 
     </div>

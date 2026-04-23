@@ -53,6 +53,16 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     return LoginResponse(token=token)
 
 
+async def me(usuario: UsuarioPayload, db: AsyncSurreal) -> UsuarioPayload:
+    resultado = await db.query(
+        "SELECT id FROM user WHERE email = $email AND active = true LIMIT 1",
+        {"email": usuario.email},
+    )
+    if not resultado:
+        raise HTTPException(status_code=401, detail="Usuário não encontrado ou inativo.")
+    return usuario
+
+
 async def cadastrar(payload: CadastroLocadoraRequest, db: AsyncSurreal) -> CadastroResponse:
     cnpj_limpo = ''.join(c for c in payload.cnpj if c.isdigit())
 

@@ -1,25 +1,32 @@
 import type { Handle } from '@sveltejs/kit';
-import { decodeJwt } from '$lib/server/jwtDecoder.server';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const handle: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get('token');
 
   if (token) {
-    const payload = decodeJwt(token);
+    try {
+      const response = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (payload && typeof payload.exp === 'number' && payload.exp * 1000 > Date.now()) {
-      event.locals.token = token;
-      event.locals.usuario = {
-        id:         payload.id         as string,
-        nome:       payload.nome       as string,
-        email:      payload.email      as string,
-        role:       payload.role       as 'admin' | 'locadora' | 'filial',
-        locadoraId: payload.locadoraId as string,
-        ...(payload.matrizId ? { matrizId: payload.matrizId as string } : {}),
-      };
-    } else {
-      // token ausente, malformado ou expirado — limpa o cookie
-      event.cookies.delete('token', { path: '/' });
+      if (response.ok) {
+        const usuario = await response.json();
+        event.locals.token = token;
+        event.locals.usuario = {
+          id:         usuario.id,
+          nome:       usuario.nome,
+          email:      usuario.email,
+          role:       usuario.role,
+          locadoraId: usuario.locadoraId,
+          ...(usuario.matrizId ? { matrizId: usuario.matrizId } : {}),
+        };
+      } else {
+        event.cookies.delete('token', { path: '/' });
+      }
+    } catch {
+      // API offline — mantém o cookie para tentar na próxima requisição
     }
   }
 
