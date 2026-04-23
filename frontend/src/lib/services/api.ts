@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8080/api/v1';
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const token = typeof localStorage !== 'undefined'
@@ -16,7 +16,15 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   if (!res.ok) {
     const erro = await res.json().catch(() => ({}));
-    throw new Error(erro?.mensagem ?? `Erro ${res.status}`);
+    
+    // APIs como o FastAPI geralmente retornam os erros na propriedade "detail"
+    let mensagemErro = erro?.mensagem || erro?.error;
+    if (!mensagemErro && erro?.detail) {
+      // Se for validação do FastAPI, o detail vem como um Array
+      mensagemErro = typeof erro.detail === 'string' ? erro.detail : JSON.stringify(erro.detail);
+    }
+    
+    throw new Error(mensagemErro || `Erro de conexão com o servidor (Status HTTP: ${res.status})`);
   }
 
   return res.json() as Promise<T>;

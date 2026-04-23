@@ -17,11 +17,10 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
         {"email": payload.email},
     )
 
-    registros = resultado[0].get("result", [])
-    if not registros:
+    if not resultado:
         raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
-    user = registros[0]
+    user = resultado[0]
 
     if not verificar_senha(payload.senha, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Credenciais inválidas.")
@@ -35,7 +34,12 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     locadora_id = str(locadora_ids[0])
     manage_role = (manage_roles[0] if manage_roles else "ADMIN").upper()
 
-    role: str = "locadora" if manage_role in ("OWNER", "ADMIN") else "filial"
+    if manage_role == "OWNER":
+        role = "locadora"
+    elif manage_role == "ADMIN":
+        role = "admin"
+    else:
+        role = "filial"
 
     token_payload = UsuarioPayload(
         id=str(user["id"]),
@@ -57,7 +61,7 @@ async def cadastrar(payload: CadastroLocadoraRequest, db: AsyncSurreal) -> Cadas
         "SELECT id FROM user WHERE email = $email LIMIT 1",
         {"email": payload.email},
     )
-    if resultado_email and resultado_email[0].get("result"):
+    if resultado_email:
         raise HTTPException(status_code=409, detail="E-mail já cadastrado.")
 
     # ── unicidade de CNPJ ─────────────────────────────────────────────────────
@@ -65,7 +69,7 @@ async def cadastrar(payload: CadastroLocadoraRequest, db: AsyncSurreal) -> Cadas
         "SELECT id FROM company WHERE tax_id = $tax_id LIMIT 1",
         {"tax_id": cnpj_limpo},
     )
-    if resultado_cnpj and resultado_cnpj[0].get("result"):
+    if resultado_cnpj:
         raise HTTPException(status_code=409, detail="CNPJ já cadastrado.")
 
     # ── cria company ──────────────────────────────────────────────────────────
@@ -93,8 +97,9 @@ async def cadastrar(payload: CadastroLocadoraRequest, db: AsyncSurreal) -> Cadas
         },
     )
 
-    company = company_result[0]["result"][0]
-    company_id: str = str(company["id"])
+    company = company_result[0] if company_result else None
+    if not company:
+        raise HTTPException(status_code=500, detail="Erro ao criar a empresa no banco de dados.")
 
     # ── cria user ─────────────────────────────────────────────────────────────
     user_result = await db.query(
@@ -115,15 +120,14 @@ async def cadastrar(payload: CadastroLocadoraRequest, db: AsyncSurreal) -> Cadas
         },
     )
 
-    user = user_result[0]["result"][0]
-    user_id: str = str(user["id"])
+    user = user_result[0] if user_result else None
+    if not user:
+        raise HTTPException(status_code=500, detail="Erro ao criar o usuário no banco de dados.")
 
-    # ── cria relação manages (OWNER) ──────────────────────────────────────────
+    # ── cria relação manages (OWNER) — passa RecordID diretamente ─────────────
     await db.query(
-        """
-        RELATE $user_id->manages->$company_id CONTENT { role: 'OWNER' }
-        """,
-        {"user_id": user_id, "company_id": company_id},
+        "RELATE $user_id->manages->$company_id CONTENT { role: 'OWNER' }",
+        {"user_id": user["id"], "company_id": company["id"]},
     )
 
-    return CadastroResponse(locadoraId=company_id, mensagem="Cadastro realizado com sucesso.")
+    return CadastroResponse(locadoraId=str(company["id"]), mensagem="Cadastro realizado com sucesso.")

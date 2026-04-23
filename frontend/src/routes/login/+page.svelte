@@ -164,7 +164,7 @@
 
       <p class="cadastro-link">
         Ainda não tem conta?
-        <a href="/locadora/cadastro">Cadastre sua locadora</a>
+        <a href="/cadastro">Cadastre sua locadora</a>
       </p>
 
       <div class="divider"><span>ou acesse como</span></div>
