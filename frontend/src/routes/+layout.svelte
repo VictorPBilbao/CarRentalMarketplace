@@ -1,4 +1,5 @@
 <script lang="ts">
+  import '../app.css';
   import type { Snippet } from 'svelte';
   import Notificacoes from '$lib/components/ui/Notificacoes.svelte';
   import { notificacoes } from '$lib/stores/notificacoes.store';

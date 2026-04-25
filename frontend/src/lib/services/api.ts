@@ -1,9 +1,9 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8080/api/v1';
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const token = typeof localStorage !== 'undefined'
+async function request<T>(method: string, path: string, body?: unknown, overrideToken?: string): Promise<T> {
+  const token = overrideToken ?? (typeof localStorage !== 'undefined'
     ? localStorage.getItem('token')
-    : null;
+    : null);
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
@@ -31,9 +31,9 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
-  get:    <T>(path: string)                  => request<T>('GET',    path),
-  post:   <T>(path: string, body: unknown)   => request<T>('POST',   path, body),
-  put:    <T>(path: string, body: unknown)   => request<T>('PUT',    path, body),
-  patch:  <T>(path: string, body: unknown)   => request<T>('PATCH',  path, body),
-  delete: <T>(path: string)                  => request<T>('DELETE', path),
+  get:    <T>(path: string, token?: string)                  => request<T>('GET',    path, undefined, token),
+  post:   <T>(path: string, body: unknown, token?: string)   => request<T>('POST',   path, body,      token),
+  put:    <T>(path: string, body: unknown, token?: string)   => request<T>('PUT',    path, body,      token),
+  patch:  <T>(path: string, body: unknown, token?: string)   => request<T>('PATCH',  path, body,      token),
+  delete: <T>(path: string, token?: string)                  => request<T>('DELETE', path, undefined, token),
 };
