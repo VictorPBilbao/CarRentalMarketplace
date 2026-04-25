@@ -5,6 +5,19 @@ import { decodeJwt } from '$lib/server/jwtDecoder.server';
 
 export const actions: Actions = {
 
+  sair: async ({ cookies }) => {
+    const token = cookies.get('token');
+    if (token) {
+      try {
+        await authService.logout(token);
+      } catch {
+        // mesmo se o backend falhar, limpa o cookie
+      }
+    }
+    cookies.delete('token', { path: '/' });
+    throw redirect(303, '/login');
+  },
+
   entrar: async ({ request, cookies }) => {
 
     const data = await request.formData();

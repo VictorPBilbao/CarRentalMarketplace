@@ -27,3 +27,8 @@ async def cadastro(payload: CadastroLocadoraRequest, db: DB):
 @router.get("/me", response_model=UsuarioPayload)
 async def me(usuario: CurrentUser, db: DB):
     return await auth_service.me(usuario, db)
+
+
+@router.post("/logout")
+async def logout(_usuario: CurrentUser):
+    return {"mensagem": "Logout realizado com sucesso."}

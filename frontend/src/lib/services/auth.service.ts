@@ -45,7 +45,7 @@ export const authService = {
     return api.post<CadastroResponse>('/auth/cadastro', payload);
   },
 
-  async logout(): Promise<void> {
-    await api.post('/auth/logout', {});
+  async logout(token: string): Promise<void> {
+    await api.post('/auth/logout', {}, token);
   },
 };
