@@ -10,9 +10,11 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     resultado = await db.query(
         """
         SELECT id, first_name, last_name, email, password_hash,
-               ->manages.out.id AS locadora_ids,
-               ->manages.role   AS manage_roles
-        FROM user WHERE email = $email LIMIT 1
+               ->manages.out.id  AS locadora_ids,
+               ->manages.role    AS manage_roles,
+               ->works_at.out.id AS filial_ids,
+               ->works_at.out.company AS filial_company_ids
+        FROM user WHERE email = $email AND active = true LIMIT 1
         """,
         {"email": payload.email},
     )
@@ -25,29 +27,46 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     if not verificar_senha(payload.senha, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
-    locadora_ids: list = user.get("locadora_ids") or []
-    manage_roles: list = user.get("manage_roles") or []
+    locadora_ids:      list = user.get("locadora_ids")      or []
+    manage_roles:      list = user.get("manage_roles")      or []
+    filial_ids:        list = user.get("filial_ids")        or []
+    filial_company_ids: list = user.get("filial_company_ids") or []
 
-    if not locadora_ids:
-        raise HTTPException(status_code=403, detail="Usuário sem locadora associada.")
+    nome = f"{user['first_name']} {user['last_name']}"
 
-    locadora_id = str(locadora_ids[0])
-    manage_role = (manage_roles[0] if manage_roles else "ADMIN").upper()
+    # ── usuário gerencia uma empresa (OWNER ou ADMIN) ─────────────────────────
+    if locadora_ids:
+        locadora_id = str(locadora_ids[0])
+        manage_role = (manage_roles[0] if manage_roles else "ADMIN").upper()
+        role = "locadora" if manage_role == "OWNER" else "admin"
 
-    if manage_role == "OWNER":
-        role = "locadora"
-    elif manage_role == "ADMIN":
-        role = "admin"
+        token_payload = UsuarioPayload(
+            id=str(user["id"]),
+            nome=nome,
+            email=user["email"],
+            role=role,
+            locadoraId=locadora_id,
+        )
+
+    # ── funcionário de filial (works_at) ──────────────────────────────────────
+    elif filial_ids:
+        filial_id  = str(filial_ids[0])
+        company_id = str(filial_company_ids[0]) if filial_company_ids else None
+
+        if not company_id:
+            raise HTTPException(status_code=403, detail="Filial sem empresa associada.")
+
+        token_payload = UsuarioPayload(
+            id=str(user["id"]),
+            nome=nome,
+            email=user["email"],
+            role="filial",
+            locadoraId=company_id,
+            matrizId=filial_id,
+        )
+
     else:
-        role = "filial"
-
-    token_payload = UsuarioPayload(
-        id=str(user["id"]),
-        nome=f"{user['first_name']} {user['last_name']}",
-        email=user["email"],
-        role=role,
-        locadoraId=locadora_id,
-    )
+        raise HTTPException(status_code=403, detail="Usuário sem acesso ao sistema.")
 
     token = criar_token(token_payload.model_dump(exclude_none=True))
     return LoginResponse(token=token)

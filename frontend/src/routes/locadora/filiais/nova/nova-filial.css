@@ -1,0 +1,251 @@
+.page-header {
+  margin-bottom: 28px;
+}
+.page-header h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 4px;
+}
+.page-header p {
+  font-size: 13px;
+  color: #475569;
+  margin: 0;
+}
+
+/* ── seções do formulário ── */
+.secao {
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.secao-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+  margin: 0 0 20px;
+}
+
+/* ── grid de campos ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+.col-span-4 { grid-column: span 4; }
+
+/* ── campo individual ── */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.campo label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+.campo label .obrigatorio {
+  color: #f87171;
+  margin-left: 2px;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  background: #080c14;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  padding: 9px 12px;
+  transition: border-color 0.14s, box-shadow 0.14s;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: #334155;
+}
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  border-color: rgba(96,165,250,0.5);
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.08);
+}
+.campo select option {
+  background: #0f172a;
+}
+.campo textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.campo .erro-msg {
+  font-size: 11px;
+  color: #f87171;
+}
+.campo input.erro,
+.campo select.erro,
+.campo textarea.erro {
+  border-color: rgba(248,113,113,0.5);
+}
+
+/* ── horários de funcionamento ── */
+.horarios-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.horario-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #080c14;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+}
+.horario-dia {
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+.horario-row input[type="time"] {
+  background: #080c14;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  padding: 6px 10px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  color-scheme: dark;
+}
+.horario-row input[type="time"]:focus {
+  border-color: rgba(96,165,250,0.5);
+}
+.horario-row input[type="time"]:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.toggle-fechado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.toggle-fechado input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #f87171;
+}
+
+/* ── comodidades ── */
+.amenidades-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.amenidade-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #080c14;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+.amenidade-item:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+.amenidade-item.selecionada {
+  border-color: rgba(96,165,250,0.4);
+  background: rgba(96,165,250,0.05);
+}
+.amenidade-item input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #60a5fa;
+  flex-shrink: 0;
+}
+.amenidade-item span {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ── rodapé de ações ── */
+.acoes {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+  padding-bottom: 40px;
+}
+
+.btn-cancelar {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: border-color 0.14s, color 0.14s;
+}
+.btn-cancelar:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: #94a3b8;
+}
+
+.btn-salvar {
+  padding: 9px 22px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.14s, opacity 0.14s;
+}
+.btn-salvar:hover  { background: #2563eb; }
+.btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── banner de erro global ── */
+.banner-erro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(248,113,113,0.2);
+  background: rgba(248,113,113,0.07);
+  font-size: 13px;
+  color: #f87171;
+}

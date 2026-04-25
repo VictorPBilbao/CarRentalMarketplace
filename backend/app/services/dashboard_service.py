@@ -11,6 +11,7 @@ from app.schemas.dashboard import (
     ReservaRecente,
     ReservasStats,
 )
+from app.core.database import extract_records
 from app.schemas.usuario import UsuarioPayload
 
 
@@ -41,7 +42,8 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
         {"company_id": company_id},
     )
 
-    frota_map: dict[str, int] = {r["status"]: r["total"] for r in (frota_rows or [])}
+    frota_records = extract_records(frota_rows)
+    frota_map: dict[str, int] = {r.get("status"): r.get("total") for r in frota_records if isinstance(r, dict)}
     frota = FrotaStats(
         total=sum(frota_map.values()),
         disponivel=frota_map.get("AVAILABLE", 0),
@@ -61,7 +63,8 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
         {"company_id": company_id},
     )
 
-    res_map: dict[str, int] = {r["status"]: r["total"] for r in (reserva_rows or [])}
+    res_records = extract_records(reserva_rows)
+    res_map: dict[str, int] = {r.get("status"): r.get("total") for r in res_records if isinstance(r, dict)}
 
     # ── 3. Retiradas e devoluções de hoje ─────────────────────────────────────
     hoje_retirada_rows = await db.query(
@@ -88,8 +91,11 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
         {"company_id": company_id},
     )
 
-    hoje_retirada = (hoje_retirada_rows[0]["total"] if hoje_retirada_rows else 0)
-    hoje_devolucao = (hoje_devolucao_rows[0]["total"] if hoje_devolucao_rows else 0)
+    hoje_r_records = extract_records(hoje_retirada_rows)
+    hoje_retirada = (hoje_r_records[0].get("total", 0) if hoje_r_records and isinstance(hoje_r_records[0], dict) else 0)
+    
+    hoje_d_records = extract_records(hoje_devolucao_rows)
+    hoje_devolucao = (hoje_d_records[0].get("total", 0) if hoje_d_records and isinstance(hoje_d_records[0], dict) else 0)
 
     reservas = ReservasStats(
         pendente=res_map.get("PENDING", 0),
@@ -111,8 +117,9 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
         {"company_id": company_id},
     )
 
+    cont_records = extract_records(contratos_rows)
     contratos = ContratosStats(
-        aberto=(contratos_rows[0]["total"] if contratos_rows else 0),
+        aberto=(cont_records[0].get("total", 0) if cont_records and isinstance(cont_records[0], dict) else 0),
     )
 
     # ── 5. Filiais ────────────────────────────────────────────────────────────
@@ -126,7 +133,9 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
         {"company_id": company_id},
     )
 
-    filiais_data = filiais_rows[0] if filiais_rows else {}
+    fil_records = extract_records(filiais_rows)
+    filiais_data = fil_records[0] if fil_records and isinstance(fil_records[0], dict) else {}
+    
     filiais = FiliaisStats(
         total=filiais_data.get("total", 0),
         ativas=filiais_data.get("ativas", 0),
@@ -155,8 +164,12 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
         {"company_id": company_id},
     )
 
+    rec_records = extract_records(recentes_rows)
     reservas_recentes: list[ReservaRecente] = []
-    for row in (recentes_rows or []):
+    
+    for row in rec_records:
+        if not isinstance(row, dict):
+            continue
         reservas_recentes.append(
             ReservaRecente(
                 id=str(row.get("id", "")).split(":")[-1],
