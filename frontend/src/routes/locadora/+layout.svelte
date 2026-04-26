@@ -16,6 +16,7 @@
   const paginaTitulo: Record<string, string> = {
     '/locadora/dashboard':     'Dashboard',
     '/locadora/filiais':       'Filiais',
+    '/locadora/categorias':    'Categorias',
     '/locadora/frota':         'Frota',
     '/locadora/reservas':      'Reservas',
     '/locadora/contratos':     'Contratos',
@@ -106,6 +107,15 @@
           <rect x="5.5" y="9" width="4" height="4" rx="0.5" stroke="currentColor" stroke-width="1.3"/>
         </svg>
         Filiais
+      </a>
+
+      <a href="/locadora/categorias" class="nav-item {ativo('/locadora/categorias') ? 'nav-ativo' : ''}">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
+          <path d="M2 11L5 4h5l3 7M2 11h11M2 11v2h11v-2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <circle cx="5.5" cy="12.5" r="1" fill="currentColor"/>
+          <circle cx="9.5" cy="12.5" r="1" fill="currentColor"/>
+        </svg>
+        Categorias
       </a>
 
       <a href="/locadora/frota" class="nav-item {ativo('/locadora/frota') ? 'nav-ativo' : ''}">
