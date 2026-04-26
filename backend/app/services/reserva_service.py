@@ -1,0 +1,251 @@
+from datetime import datetime
+
+from fastapi import HTTPException
+from surrealdb import AsyncSurreal
+
+from app.core.database import extract_records
+from app.schemas.reserva import (
+    AtualizarStatusRequest,
+    CriarReservaRequest,
+    ItemPricingResponse,
+    PricingResponse,
+    ReservaResponse,
+)
+
+TRANSICOES_VALIDAS: dict[str, list[str]] = {
+    'PENDING':   ['CONFIRMED', 'CANCELLED'],
+    'CONFIRMED': ['ACTIVE', 'CANCELLED', 'NO_SHOW'],
+    'ACTIVE':    ['COMPLETED', 'CANCELLED'],
+    'COMPLETED': [],
+    'CANCELLED': [],
+    'NO_SHOW':   [],
+}
+
+
+def _dt(v: object) -> str:
+    if isinstance(v, datetime):
+        return v.isoformat()
+    return str(v) if v else ''
+
+
+def _pricing_to_response(p: dict) -> PricingResponse:
+    breakdown = [
+        ItemPricingResponse(
+            type=item.get('type', ''),
+            description=item.get('description', ''),
+            amount=float(item.get('amount', 0)),
+        )
+        for item in (p.get('breakdown') or [])
+    ]
+    return PricingResponse(
+        daily_rate=float(p.get('daily_rate', 0)),
+        total_days=int(p.get('total_days', 0)),
+        fees=float(p.get('fees', 0)),
+        total_amount=float(p.get('total_amount', 0)),
+        breakdown=breakdown,
+    )
+
+
+def _row_to_response(row: dict) -> ReservaResponse:
+    return ReservaResponse(
+        id=str(row['id']),
+        customer=str(row['customer']),
+        category=str(row['category']),
+        pickup_store=str(row['pickup_store']),
+        dropoff_store=str(row['dropoff_store']),
+        pickup_time=_dt(row.get('pickup_time')),
+        dropoff_time=_dt(row.get('dropoff_time')),
+        flight_number=row.get('flight_number'),
+        notes=row.get('notes'),
+        pricing=_pricing_to_response(row.get('pricing', {})),
+        status=row.get('status', 'PENDING'),
+        created_at=_dt(row.get('created_at')),
+        updated_at=_dt(row.get('updated_at')),
+    )
+
+
+async def _check_loja(store_id: str, company_id: str, db: AsyncSurreal) -> None:
+    result = await db.query(
+        "SELECT id FROM type::record($id) WHERE company = type::record($cid) LIMIT 1",
+        {'id': store_id, 'cid': company_id},
+    )
+    if not extract_records(result):
+        raise HTTPException(status_code=403, detail='Loja não pertence à sua empresa.')
+
+
+async def _check_categoria(categoria_id: str, company_id: str, db: AsyncSurreal) -> None:
+    result = await db.query(
+        "SELECT id FROM type::record($id) WHERE company = type::record($cid) AND active = true LIMIT 1",
+        {'id': categoria_id, 'cid': company_id},
+    )
+    if not extract_records(result):
+        raise HTTPException(status_code=403, detail='Categoria não pertence à sua empresa ou está inativa.')
+
+
+async def _check_customer(customer_id: str, db: AsyncSurreal) -> None:
+    result = await db.query(
+        "SELECT id FROM type::record($id) WHERE active = true LIMIT 1",
+        {'id': customer_id},
+    )
+    if not extract_records(result):
+        raise HTTPException(status_code=404, detail='Cliente não encontrado ou inativo.')
+
+
+async def listar(
+    company_id: str,
+    db: AsyncSurreal,
+    store_id: str | None = None,
+    status: str | None = None,
+) -> list[ReservaResponse]:
+    params: dict = {'cid': company_id}
+    store_clause = ''
+    status_clause = ''
+
+    if store_id:
+        store_clause = ' AND pickup_store = type::record($sid)'
+        params['sid'] = store_id
+
+    if status:
+        status_clause = ' AND status = $status'
+        params['status'] = status
+
+    result = await db.query(
+        f"""
+        SELECT * FROM reservation
+        WHERE pickup_store.company = type::record($cid){store_clause}{status_clause}
+        ORDER BY created_at DESC
+        """,
+        params,
+    )
+    records = extract_records(result)
+    return [_row_to_response(r) for r in records if isinstance(r, dict)]
+
+
+async def buscar_por_id(
+    reserva_id: str,
+    company_id: str,
+    db: AsyncSurreal,
+    store_id: str | None = None,
+) -> ReservaResponse:
+    params: dict = {'id': reserva_id, 'cid': company_id}
+    store_clause = ''
+
+    if store_id:
+        store_clause = ' AND pickup_store = type::record($sid)'
+        params['sid'] = store_id
+
+    result = await db.query(
+        f"""
+        SELECT * FROM type::record($id)
+        WHERE pickup_store.company = type::record($cid){store_clause}
+        LIMIT 1
+        """,
+        params,
+    )
+    records = extract_records(result)
+    if not records:
+        raise HTTPException(status_code=404, detail='Reserva não encontrada.')
+    return _row_to_response(records[0])
+
+
+async def criar(
+    payload: CriarReservaRequest,
+    company_id: str,
+    db: AsyncSurreal,
+) -> ReservaResponse:
+    await _check_loja(payload.pickup_store_id, company_id, db)
+    await _check_loja(payload.dropoff_store_id, company_id, db)
+    await _check_categoria(payload.category_id, company_id, db)
+    await _check_customer(payload.customer_id, db)
+
+    # Calcula total_amount = daily_rate * total_days + fees + soma do breakdown
+    base = payload.pricing.daily_rate * payload.pricing.total_days
+    breakdown_sum = sum(item.amount for item in payload.pricing.breakdown)
+    total_amount = base + payload.pricing.fees + breakdown_sum
+
+    # Garante que existe pelo menos o item BASE_RATE no breakdown
+    breakdown = [item.model_dump() for item in payload.pricing.breakdown]
+    if not any(item['type'] == 'BASE_RATE' for item in breakdown):
+        breakdown.insert(0, {
+            'type': 'BASE_RATE',
+            'description': f'{payload.pricing.total_days} dia(s) × R$ {payload.pricing.daily_rate:.2f}',
+            'amount': base,
+        })
+
+    result = await db.query(
+        """
+        CREATE reservation CONTENT {
+            customer:      type::record($customer_id),
+            category:      type::record($category_id),
+            pickup_store:  type::record($pickup_store_id),
+            dropoff_store: type::record($dropoff_store_id),
+            pickup_time:   type::datetime($pickup_time),
+            dropoff_time:  type::datetime($dropoff_time),
+            flight_number: $flight_number,
+            notes:         $notes,
+            status:        'PENDING',
+            pricing: {
+                daily_rate:   $daily_rate,
+                total_days:   $total_days,
+                fees:         $fees,
+                total_amount: $total_amount,
+                breakdown:    $breakdown
+            }
+        }
+        """,
+        {
+            'customer_id':      payload.customer_id,
+            'category_id':      payload.category_id,
+            'pickup_store_id':  payload.pickup_store_id,
+            'dropoff_store_id': payload.dropoff_store_id,
+            'pickup_time':      payload.pickup_time.isoformat(),
+            'dropoff_time':     payload.dropoff_time.isoformat(),
+            'flight_number':    payload.flight_number,
+            'notes':            payload.notes,
+            'daily_rate':       payload.pricing.daily_rate,
+            'total_days':       payload.pricing.total_days,
+            'fees':             payload.pricing.fees,
+            'total_amount':     total_amount,
+            'breakdown':        breakdown,
+        },
+    )
+
+    records = extract_records(result)
+    if not records:
+        raise HTTPException(status_code=500, detail='Erro ao criar reserva.')
+
+    row = records[0]
+    if isinstance(row, dict):
+        return _row_to_response(row)
+    return await buscar_por_id(str(row), company_id, db)
+
+
+async def atualizar_status(
+    reserva_id: str,
+    payload: AtualizarStatusRequest,
+    company_id: str,
+    db: AsyncSurreal,
+    store_id: str | None = None,
+) -> ReservaResponse:
+    reserva = await buscar_por_id(reserva_id, company_id, db, store_id)
+
+    permitidos = TRANSICOES_VALIDAS.get(reserva.status, [])
+    if payload.status not in permitidos:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Transição '{reserva.status}' → '{payload.status}' não é permitida.",
+        )
+
+    result = await db.query(
+        "UPDATE type::record($id) MERGE { status: $status }",
+        {'id': reserva_id, 'status': payload.status},
+    )
+
+    records = extract_records(result)
+    if not records:
+        raise HTTPException(status_code=500, detail='Erro ao atualizar status da reserva.')
+
+    row = records[0]
+    if isinstance(row, dict):
+        return _row_to_response(row)
+    return await buscar_por_id(reserva_id, company_id, db)

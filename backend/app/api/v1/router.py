@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, categoria_veiculo, dashboard, filial, funcionario, veiculo
+from app.api.v1.endpoints import auth, categoria_veiculo, dashboard, filial, funcionario, reserva, veiculo
 
 router = APIRouter(prefix="/api/v1")
 
@@ -10,3 +10,4 @@ router.include_router(filial.router)
 router.include_router(funcionario.router)
 router.include_router(categoria_veiculo.router)
 router.include_router(veiculo.router)
+router.include_router(reserva.router)
