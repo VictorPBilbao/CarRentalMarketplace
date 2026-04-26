@@ -3,7 +3,7 @@ from typing import Annotated, TypeAlias
 from fastapi import APIRouter, Depends
 from surrealdb import AsyncSurreal
 
-from app.api.deps import StaffOnly
+from app.api.deps import FilialOnly, StaffOnly
 from app.core.database import get_db
 from app.schemas.filial import FilialRequest, FilialResponse
 from app.services import filial_service
@@ -31,3 +31,5 @@ async def criar_filial(payload: FilialRequest, usuario: StaffOnly, db: DB):
 @router.put("/filiais/{filial_id}", response_model=FilialResponse)
 async def atualizar_filial(filial_id: str, payload: FilialRequest, usuario: StaffOnly, db: DB):
     return await filial_service.atualizar(filial_id, payload, usuario, db)
+
+

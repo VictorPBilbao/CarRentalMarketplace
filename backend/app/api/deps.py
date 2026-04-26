@@ -36,8 +36,9 @@ def require_role(*roles: RoleEnum):
 
 
 # ── Aliases prontos para usar nos routers ─────────────────────────────────────
-CurrentUser   = Annotated[UsuarioPayload, Depends(get_current_user)]
-AdminOnly     = Annotated[UsuarioPayload, Depends(require_role("admin"))]
-LocadoraOnly  = Annotated[UsuarioPayload, Depends(require_role("locadora"))]
-FilialOnly    = Annotated[UsuarioPayload, Depends(require_role("filial"))]
-StaffOnly     = Annotated[UsuarioPayload, Depends(require_role("admin", "locadora"))]
+CurrentUser      = Annotated[UsuarioPayload, Depends(get_current_user)]
+AdminOnly        = Annotated[UsuarioPayload, Depends(require_role("admin"))]
+LocadoraOnly     = Annotated[UsuarioPayload, Depends(require_role("locadora"))]
+FilialOnly       = Annotated[UsuarioPayload, Depends(require_role("filial"))]
+StaffOnly        = Annotated[UsuarioPayload, Depends(require_role("admin", "locadora"))]
+LocadoraOrFilial = Annotated[UsuarioPayload, Depends(require_role("locadora", "filial"))]

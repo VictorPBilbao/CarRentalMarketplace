@@ -3,7 +3,7 @@ from typing import Annotated, TypeAlias
 from fastapi import APIRouter, Depends
 from surrealdb import AsyncSurreal
 
-from app.api.deps import LocadoraOnly, StaffOnly
+from app.api.deps import LocadoraOnly, LocadoraOrFilial
 from app.core.database import get_db
 from app.schemas.categoria_veiculo import CategoriaVeiculoRequest, CategoriaVeiculoResponse
 from app.services import categoria_veiculo_service
@@ -14,12 +14,12 @@ DB: TypeAlias = Annotated[AsyncSurreal, Depends(get_db)]
 
 
 @router.get("/categorias", response_model=list[CategoriaVeiculoResponse])
-async def listar_categorias(usuario: StaffOnly, db: DB):
+async def listar_categorias(usuario: LocadoraOrFilial, db: DB):
     return await categoria_veiculo_service.listar(usuario, db)
 
 
 @router.get("/categorias/{categoria_id}", response_model=CategoriaVeiculoResponse)
-async def buscar_categoria(categoria_id: str, usuario: StaffOnly, db: DB):
+async def buscar_categoria(categoria_id: str, usuario: LocadoraOrFilial, db: DB):
     return await categoria_veiculo_service.buscar_por_id(categoria_id, usuario, db)
 
 

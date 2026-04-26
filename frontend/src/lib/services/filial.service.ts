@@ -54,6 +54,11 @@ export interface Filial extends CriarFilialDTO {
 
 // ── service ──
 export const filialService = {
+  async minhaLoja(token: string): Promise<Filial> {
+    return api.get<Filial>('/filial/minha-loja', token);
+  },
+
+
   async criar(dados: CriarFilialDTO, token: string): Promise<Filial> {
     return api.post<Filial>('/locadora/filiais', dados, token);
   },
