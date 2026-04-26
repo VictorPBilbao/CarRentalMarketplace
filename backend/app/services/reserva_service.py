@@ -220,6 +220,44 @@ async def criar(
     return await buscar_por_id(str(row), company_id, db)
 
 
+async def listar_cliente(
+    user_id: str,
+    db: AsyncSurreal,
+    status: str | None = None,
+) -> list[ReservaResponse]:
+    params: dict = {'uid': user_id}
+    status_clause = ''
+    if status:
+        status_clause = ' AND status = $status'
+        params['status'] = status
+
+    result = await db.query(
+        f"""
+        SELECT * FROM reservation
+        WHERE customer = type::record($uid){status_clause}
+        ORDER BY pickup_time ASC
+        """,
+        params,
+    )
+    records = extract_records(result)
+    return [_row_to_response(r) for r in records if isinstance(r, dict)]
+
+
+async def buscar_por_id_cliente(
+    reserva_id: str,
+    user_id: str,
+    db: AsyncSurreal,
+) -> ReservaResponse:
+    result = await db.query(
+        "SELECT * FROM type::record($id) WHERE customer = type::record($uid) LIMIT 1",
+        {'id': reserva_id, 'uid': user_id},
+    )
+    records = extract_records(result)
+    if not records:
+        raise HTTPException(status_code=404, detail='Reserva não encontrada.')
+    return _row_to_response(records[0])
+
+
 async def atualizar_status(
     reserva_id: str,
     payload: AtualizarStatusRequest,

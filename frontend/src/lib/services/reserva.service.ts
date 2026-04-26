@@ -68,6 +68,17 @@ export const reservaService = {
   },
 };
 
+export const clienteReservaService = {
+  async listar(token: string, status?: string): Promise<Reserva[]> {
+    const q = status ? `?status=${encodeURIComponent(status)}` : '';
+    return api.get<Reserva[]>(`/cliente/reservas${q}`, token);
+  },
+
+  async buscarPorId(id: string, token: string): Promise<Reserva> {
+    return api.get<Reserva>(`/cliente/reservas/${encodeURIComponent(id)}`, token);
+  },
+};
+
 export const filialReservaService = {
   async listar(token: string, status?: string): Promise<Reserva[]> {
     const q = status ? `?status=${encodeURIComponent(status)}` : '';

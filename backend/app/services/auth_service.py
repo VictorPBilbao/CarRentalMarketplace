@@ -3,7 +3,14 @@ from surrealdb import AsyncSurreal
 
 from app.core.config import settings
 from app.core.security import criar_token, hash_senha, verificar_senha
-from app.schemas.auth import CadastroLocadoraRequest, CadastroResponse, LoginRequest, LoginResponse
+from app.schemas.auth import (
+    CadastroClienteRequest,
+    CadastroClienteResponse,
+    CadastroLocadoraRequest,
+    CadastroResponse,
+    LoginRequest,
+    LoginResponse,
+)
 from app.schemas.usuario import UsuarioPayload
 
 async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
@@ -66,7 +73,14 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
         )
 
     else:
-        raise HTTPException(status_code=403, detail="Usuário sem acesso ao sistema.")
+        # Sem vínculo empresarial → cliente final
+        token_payload = UsuarioPayload(
+            id=str(user["id"]),
+            nome=nome,
+            email=user["email"],
+            role="customer",
+            locadoraId="",
+        )
 
     token = criar_token(token_payload.model_dump(exclude_none=True))
     return LoginResponse(token=token)
@@ -160,3 +174,38 @@ async def cadastrar(payload: CadastroLocadoraRequest, db: AsyncSurreal) -> Cadas
     )
 
     return CadastroResponse(locadoraId=str(company["id"]), mensagem="Cadastro realizado com sucesso.")
+
+
+async def cadastrar_cliente(payload: CadastroClienteRequest, db: AsyncSurreal) -> CadastroClienteResponse:
+    resultado_email = await db.query(
+        "SELECT id FROM user WHERE email = $email LIMIT 1",
+        {"email": payload.email},
+    )
+    if resultado_email:
+        raise HTTPException(status_code=409, detail="E-mail já cadastrado.")
+
+    user_result = await db.query(
+        """
+        CREATE user CONTENT {
+            first_name:    $first_name,
+            last_name:     $last_name,
+            email:         $email,
+            password_hash: $password_hash,
+            phone:         $phone,
+            active:        true
+        }
+        """,
+        {
+            "first_name":    payload.primeiroNome.strip(),
+            "last_name":     payload.sobrenome.strip(),
+            "email":         payload.email,
+            "password_hash": hash_senha(payload.senha),
+            "phone":         payload.telefone,
+        },
+    )
+
+    user = user_result[0] if user_result else None
+    if not user:
+        raise HTTPException(status_code=500, detail="Erro ao criar o cliente.")
+
+    return CadastroClienteResponse(userId=str(user["id"]), mensagem="Cadastro realizado com sucesso.")

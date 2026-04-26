@@ -9,9 +9,9 @@ declare global {
         id:         string;
         nome:       string;
         email:      string;
-        role:       'admin' | 'locadora' | 'filial';
+        role:       'admin' | 'locadora' | 'filial' | 'customer';
         locadoraId: string;
-        matrizId?:  string; // só preenchido se role === 'filial'
+        matrizId?:  string;
       };
     }
 		// interface PageData {}

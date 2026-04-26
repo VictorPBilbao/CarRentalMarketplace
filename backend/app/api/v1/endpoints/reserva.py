@@ -3,7 +3,7 @@ from typing import Annotated, TypeAlias
 from fastapi import APIRouter, Depends, Query
 from surrealdb import AsyncSurreal
 
-from app.api.deps import FilialOnly, LocadoraOnly, StaffOnly
+from app.api.deps import CustomerOnly, FilialOnly, LocadoraOnly, StaffOnly
 from app.core.database import get_db
 from app.schemas.reserva import AtualizarStatusRequest, CriarReservaRequest, ReservaResponse
 from app.services import reserva_service
@@ -77,3 +77,19 @@ async def atualizar_status_filial(
     return await reserva_service.atualizar_status(
         reserva_id, payload, usuario.locadoraId, db, store_id=usuario.matrizId
     )
+
+
+# ── Cliente ───────────────────────────────────────────────────────────────────
+
+@router.get("/cliente/reservas", response_model=list[ReservaResponse])
+async def listar_reservas_cliente(
+    usuario: CustomerOnly,
+    db: DB,
+    status: str | None = Query(None),
+):
+    return await reserva_service.listar_cliente(usuario.id, db, status=status)
+
+
+@router.get("/cliente/reservas/{reserva_id}", response_model=ReservaResponse)
+async def buscar_reserva_cliente(reserva_id: str, usuario: CustomerOnly, db: DB):
+    return await reserva_service.buscar_por_id_cliente(reserva_id, usuario.id, db)

@@ -26,3 +26,16 @@ class CadastroLocadoraRequest(BaseModel):
 class CadastroResponse(BaseModel):
     locadoraId: str
     mensagem: str
+
+
+class CadastroClienteRequest(BaseModel):
+    primeiroNome: str
+    sobrenome: str
+    email: EmailStr
+    telefone: str | None = None
+    senha: str
+
+
+class CadastroClienteResponse(BaseModel):
+    userId: str
+    mensagem: str

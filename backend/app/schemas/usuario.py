@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-RoleEnum = Literal["admin", "locadora", "filial"]
+RoleEnum = Literal["admin", "locadora", "filial", "customer"]
 
 
 class UsuarioPayload(BaseModel):
@@ -11,5 +11,5 @@ class UsuarioPayload(BaseModel):
     nome: str
     email: str
     role: RoleEnum
-    locadoraId: str
+    locadoraId: str = ""
     matrizId: str | None = None  # preenchido apenas para role == "filial"

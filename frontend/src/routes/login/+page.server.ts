@@ -61,6 +61,7 @@ export const actions: Actions = {
       locadora: '/locadora/dashboard',
       admin: '/admin/dashboard',
       filial: '/filial/dashboard',
+      customer: '/cliente/dashboard',
     };
 
     const role = decodeJwt(resposta.token)?.role as string;
