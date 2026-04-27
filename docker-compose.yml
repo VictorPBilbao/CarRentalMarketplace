@@ -1,44 +1,79 @@
 services:
-    # ----------------------------------------------------
-    # Backend: Python FastAPI
-    # ----------------------------------------------------
+    surrealdb:
+        image: surrealdb/surrealdb:latest
+        container_name: carrental-surrealdb
+        user: root
+        ports:
+            - "8000:8000"
+        # Starting SurrealDB in memory for a fresh instance every time
+        # using the root credentials expected by your backend
+        command: start --user root --pass root memory
+        restart: unless-stopped
+
+    surrealdb-init:
+        image: surrealdb/surrealdb:latest
+        container_name: carrental-surrealdb-init
+        depends_on:
+            - surrealdb
+        # If the database isn't fully ready immediately, this will retry until the import succeeds
+        restart: on-failure
+        volumes:
+            - ./database/carrentalmarketplace.surql:/init.surql:ro
+        # Executes the import command against the main running database container
+        entrypoint:
+            - /surreal
+            - import
+            - --endpoint
+            - http://surrealdb:8000
+            - --user
+            - root
+            - --pass
+            - root
+            - --ns
+            - carrental
+            - --db
+            - main
+            - /init.surql
+
     backend:
         build:
             context: ./backend
             dockerfile: Dockerfile
         container_name: carrental-backend
         ports:
-            - "8083:8000" # Mapping port 8000 inside the container to 8083 on your host
+            - "8080:8000" # Frontend defaults to expecting backend at 8080
+        depends_on:
+            - surrealdb
         env_file:
             - ./backend/.env
         environment:
-            # Overrides the value in .env to use the internal Docker network
             - SURREAL_URL=ws://surrealdb:8000/rpc
+            - SURREAL_USER=root
+            - SURREAL_PASS=root
+            - SURREAL_NAMESPACE=carrental
+            - SURREAL_DATABASE=main
+        # Override the production command to run FastAPI in dev (hot-reload) mode
+        command: ["fastapi", "dev", "main.py", "--port", "8000", "--host", "0.0.0.0"]
+        # Map our local backend folder to the container to watch for file changes
         volumes:
-            - ./backend:/app # Maps your local files to the container for hot reloading
-        depends_on:
-            - surrealdb
+            - ./backend:/app
+            - /app/.venv # Prevent your local .venv from overriding the container's Linux dependencies
+        restart: unless-stopped
 
-    # ----------------------------------------------------
-    # Database: SurrealDB (In-Memory)
-    # ----------------------------------------------------
-    surrealdb:
-        image: surrealdb/surrealdb:latest
-        container_name: carrental-surrealdb
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: carrental-frontend
         ports:
-            - "8000:8000"
-        command: start --user admin --pass admin memory
-
-    # ----------------------------------------------------
-    # Database Initializer: Loads .surql backup on start
-    # ----------------------------------------------------
-    surrealdb-init:
-        image: surrealdb/surrealdb:latest
-        container_name: carrental-surrealdb-init
+            - "5173:5173" # Expose the SvelteKit development server
         depends_on:
-            - surrealdb
+            - backend
+        environment:
+            # We override the backend API URL inside the frontend container
+            - VITE_API_URL=http://localhost:8080/api/v1
+        # Optional: Map your local frontend folder inside the container so you get hot reloading when you edit code!
         volumes:
-            - ./database/carrentalmarketplace.surql:/backup.surql:ro
-        # Restarts automatically until the main DB is ready to accept the import
-        restart: on-failure
-        command: import --endpoint http://surrealdb:8000 --user admin --pass admin --ns carrental --db main /backup.surql
+            - ./frontend:/app
+            - /app/node_modules # Prevents your local node_modules from overriding the container's linux dependencies
+        restart: unless-stopped

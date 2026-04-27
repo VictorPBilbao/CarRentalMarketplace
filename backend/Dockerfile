@@ -1,18 +1,35 @@
-FROM python:3.12-slim
+# Use the Python 3.14 release candidate to match the pyproject.toml requires-python
+FROM python:3.14-slim-bookworm
 
-# Copy the uv binary directly from the official image
+# Copy the uv binary from the official Astral image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+# Set the working directory
 WORKDIR /app
 
-# Copy dependency definition files first (for caching layer)
-COPY pyproject.toml uv.lock ./
+# Enable bytecode compilation to improve startup time
+ENV UV_COMPILE_BYTECODE=1
 
-# Install dependencies directly into the system python
-RUN uv sync
+# Copy the lockfile and pyproject.toml first for optimal layer caching
+COPY uv.lock pyproject.toml ./
 
-# Copy the rest of the application
+# Install dependencies using uv.
+# We create a virtual environment inside the container automatically via uv sync.
+# --frozen ensures we don't accidentally update uv.lock during building.
+# --no-dev ensures we only install production dependencies.
+RUN uv sync --frozen --no-dev --no-install-project
+
+# Copy the rest of the application code
 COPY . .
 
-# By default, start with fastapi dev for hot reloading
-CMD ["fastapi", "dev", "main.py", "--host", "0.0.0.0", "--port", "8000"]
+# Sync again to install the project itself (if applicable)
+RUN uv sync --frozen --no-dev
+
+# Expose the port that FastAPI will run on
+EXPOSE 8000
+
+# Put the virtual environment in the PATH so we can run 'fastapi' directly
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Start the FastAPI application
+CMD ["fastapi", "run", "main.py", "--port", "8000", "--host", "0.0.0.0"]

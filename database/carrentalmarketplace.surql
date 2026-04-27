@@ -30,6 +30,7 @@ DEFINE FIELD updated_at ON addon TYPE datetime VALUE time::now() PERMISSIONS FUL
 -- TABLE DATA: addon
 -- ------------------------------
 
+INSERT [ { active: true, company: company:localiza, created_at: d'2026-04-27T22:31:53.040150444Z', description: 'Assento de segurança obrigatório para crianças de 1 a 4 anos.', id: addon:loc_cadeira_bebe, name: 'Cadeira de Bebê', pricing: { amount: 35dec, calculation_type: 'PER_DAY', max_amount_per_trip: 200dec }, stores: [], type: 'EQUIPMENT', updated_at: d'2026-04-27T22:31:53.045733565Z' }, { active: true, company: company:localiza, created_at: d'2026-04-27T22:31:53.045961527Z', description: 'Devolva o carro sujo sem se preocupar com taxas extras de limpeza simples.', id: addon:loc_lavagem, name: 'Lavagem Garantida', pricing: { amount: 45dec, calculation_type: 'PER_TRIP' }, stores: [], type: 'SERVICE', updated_at: d'2026-04-27T22:31:53.046002615Z' }, { active: true, company: company:movida, created_at: d'2026-04-27T22:31:53.046148481Z', description: 'Sistema de navegação para facilitar sua viagem.', id: addon:mov_gps, name: 'GPS Integrado', pricing: { amount: 25dec, calculation_type: 'PER_DAY', max_amount_per_trip: 150dec }, stores: [], type: 'EQUIPMENT', updated_at: d'2026-04-27T22:31:53.046169220Z' } ];
 
 -- ------------------------------
 -- TABLE: allows_return_to
@@ -51,6 +52,7 @@ DEFINE FIELD out ON allows_return_to TYPE record<store> PERMISSIONS FULL;
 -- TABLE DATA: allows_return_to
 -- ------------------------------
 
+INSERT RELATION [ { active: true, created_at: d'2026-04-27T22:34:01.064443069Z', fee: { amount: 80dec, type: 'FIXED' }, id: allows_return_to:vw5sb7sa8r9nfjtby3it, in: store:cgh_localiza, out: store:gru_localiza } ];
 
 -- ------------------------------
 -- TABLE: availability_ledger
@@ -74,6 +76,7 @@ DEFINE INDEX store_category_date ON availability_ledger FIELDS store, category, 
 -- TABLE DATA: availability_ledger
 -- ------------------------------
 
+INSERT [ { block_date: d'2026-04-29T22:35:07.474071560Z', category: vehicle_category:mov_eco, created_at: d'2026-04-27T22:35:07.474082752Z', id: availability_ledger:efc9tgmpo1xx5mocu1ng, store: store:sdumont_movida, total_booked: 1, total_fleet: 5, total_maintenance: 0, updated_at: d'2026-04-27T22:35:07.474094024Z' }, { block_date: d'2026-04-28T22:35:07.472974537Z', category: vehicle_category:loc_eco, created_at: d'2026-04-27T22:35:07.472992532Z', id: availability_ledger:rvxhlnnqyyt5338cuu20, store: store:cgh_localiza, total_booked: 1, total_fleet: 10, total_maintenance: 1, updated_at: d'2026-04-27T22:35:07.473002552Z' } ];
 
 -- ------------------------------
 -- TABLE: can_supply_to
@@ -96,6 +99,7 @@ DEFINE FIELD transit_time_hours ON can_supply_to TYPE int ASSERT $value >= 1 PER
 -- TABLE DATA: can_supply_to
 -- ------------------------------
 
+INSERT RELATION [ { active: true, allowed_categories: [vehicle_category:loc_eco, vehicle_category:loc_suv], created_at: d'2026-04-27T22:34:01.064601829Z', id: can_supply_to:02qvtwln89494tv0wqwi, in: store:gru_localiza, out: store:cgh_localiza, transfer_fee: 150dec, transit_time_hours: 2 } ];
 
 -- ------------------------------
 -- TABLE: company
@@ -121,7 +125,7 @@ DEFINE FIELD website ON company TYPE none | string ASSERT $value = NONE OR strin
 -- TABLE DATA: company
 -- ------------------------------
 
-INSERT [ { id: company:localiza, name: 'Localiza Rent a Car' } ];
+INSERT [ { active: true, contact: { email: 'contato@localiza.com', phone: '+55 31 3247-7000' }, created_at: d'2026-04-27T22:29:24.793679257Z', id: company:localiza, logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Localiza_logo.png/640px-Localiza_logo.png', name: 'Localiza Rent a Car S.A.', tax_id: '16.670.085/0001-55', trading_name: 'Localiza', updated_at: d'2026-04-27T22:29:24.793776187Z', website: 'https://www.localiza.com' }, { active: true, contact: { email: 'atendimento@movida.com.br', phone: '0800 606 8686' }, created_at: d'2026-04-27T22:29:24.793994215Z', id: company:movida, logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Movida_logo.png/640px-Movida_logo.png', name: 'Movida Participações S.A.', tax_id: '07.976.147/0001-60', trading_name: 'Movida Rent a Car', updated_at: d'2026-04-27T22:29:24.794024475Z', website: 'https://www.movida.com.br' } ];
 
 -- ------------------------------
 -- TABLE: fee
@@ -145,6 +149,7 @@ DEFINE FIELD store ON fee TYPE record<store> PERMISSIONS FULL;
 -- TABLE DATA: fee
 -- ------------------------------
 
+INSERT [ { active: true, conditions: {  }, id: fee:loc_taxa_aeroporto_cgh, name: 'Taxa Aeroportuária - Congonhas', pricing: { amount: 12dec, calculation_type: 'PERCENTAGE' }, store: store:cgh_localiza }, { active: true, conditions: {  }, id: fee:mov_taxa_limpeza_pesada, name: 'Taxa de Limpeza Pesada ou Estofado', pricing: { amount: 250dec, calculation_type: 'FLAT_FEE' }, store: store:sdumont_movida } ];
 
 -- ------------------------------
 -- TABLE: manages
@@ -163,6 +168,7 @@ DEFINE FIELD role ON manages TYPE string DEFAULT 'ADMIN' ASSERT $value INSIDE ['
 -- TABLE DATA: manages
 -- ------------------------------
 
+INSERT RELATION [ { created_at: d'2026-04-27T22:30:47.324584627Z', id: manages:6kgg4i31r4n1sxm1k79q, in: user:admin_movida, out: company:movida, role: 'ADMIN' }, { created_at: d'2026-04-27T22:30:47.324466327Z', id: manages:nz85sfd5nyq5y8lrngdj, in: user:admin_localiza, out: company:localiza, role: 'ADMIN' } ];
 
 -- ------------------------------
 -- TABLE: protection
@@ -185,6 +191,7 @@ DEFINE FIELD pricing_matrix.*.deductible_amount ON protection TYPE decimal PERMI
 -- TABLE DATA: protection
 -- ------------------------------
 
+INSERT [ { code: 'PROT_BASICA', company: company:localiza, id: protection:loc_basica, name: 'Proteção Básica do Veículo (LDW)', pricing_matrix: [{ category: vehicle_category:loc_eco, daily_rate: 38dec, deductible_amount: 3000dec }, { category: vehicle_category:loc_suv, daily_rate: 55dec, deductible_amount: 5000dec }] }, { code: 'PROT_COMPLETA', company: company:movida, id: protection:mov_completa, name: 'Proteção Completa (Casco + Terceiros)', pricing_matrix: [{ category: vehicle_category:mov_eco, daily_rate: 65dec, deductible_amount: 1000dec }] } ];
 
 -- ------------------------------
 -- TABLE: quote
@@ -268,6 +275,7 @@ DEFINE FIELD updated_at ON rate_plan TYPE datetime VALUE time::now() PERMISSIONS
 -- TABLE DATA: rate_plan
 -- ------------------------------
 
+INSERT [ { active: true, company: company:localiza, conditions: { advance_booking_days: 0, allow_one_way: true, allowed_nationalities: [], categories: [vehicle_category:loc_eco, vehicle_category:loc_suv], min_age: 21, min_days: 1, stores: [store:cgh_localiza, store:gru_localiza] }, created_at: d'2026-04-27T22:34:01.070567142Z', id: rate_plan:loc_flex, included_protections: [], name: 'Tarifa Flexível SP', price: { currency: 'BRL', daily_rate: 90dec, extra_km_price: 0dec, included_km_per_day: 0, mileage_policy: 'UNLIMITED' }, priority: 10, updated_at: d'2026-04-27T22:34:01.070616799Z' }, { active: true, company: company:movida, conditions: { advance_booking_days: 2, allow_one_way: false, allowed_nationalities: [], categories: [vehicle_category:mov_eco], max_days: 4, min_age: 18, min_days: 2, promo_code: 'VERAO2024', stores: [store:sdumont_movida] }, created_at: d'2026-04-27T22:34:01.071164571Z', id: rate_plan:mov_weekend, included_protections: [protection:mov_completa], name: 'Promoção Fim de Semana Carioca', price: { currency: 'BRL', daily_rate: 75dec, extra_km_price: 1.25dec, included_km_per_day: 150, mileage_policy: 'LIMITED' }, priority: 50, updated_at: d'2026-04-27T22:34:01.071183969Z' } ];
 
 -- ------------------------------
 -- TABLE: rental_agreement
@@ -309,6 +317,7 @@ DEFINE FIELD vehicle ON rental_agreement TYPE record<vehicle> PERMISSIONS FULL;
 -- TABLE DATA: rental_agreement
 -- ------------------------------
 
+INSERT [ { checkout: { employee: user:atendente_sp_localiza, fuel_level: 100, mileage: 15400, notes: 'Veículo em perfeitas condições. Cadeira de bebê instalada no banco traseiro.', photo_urls: ['https://storage.exemplo.com/photos/kwid_frente.jpg', 'https://storage.exemplo.com/photos/kwid_painel.jpg'], store: store:cgh_localiza, time: d'2026-04-27T22:35:07.472741241Z' }, contract_number: 'LOC-2026-001', created_at: d'2026-04-27T22:35:07.472791970Z', customer: user:cliente1, extra_charges: 0dec, id: rental_agreement:ra_loc_1, reservation: reservation:res_loc_1, signed_contract_url: 'https://exemplo.localiza.com/contracts/LOC-2026-001.pdf', status: 'OPEN', updated_at: d'2026-04-27T22:35:07.472811859Z', vehicle: vehicle:loc_kwid_1 } ];
 
 -- ------------------------------
 -- TABLE: reservation
@@ -344,6 +353,7 @@ DEFINE FIELD updated_at ON reservation TYPE datetime VALUE time::now() PERMISSIO
 -- TABLE DATA: reservation
 -- ------------------------------
 
+INSERT [ { category: vehicle_category:loc_eco, created_at: d'2026-04-27T22:35:07.471932361Z', customer: user:cliente1, dropoff_store: store:gru_localiza, dropoff_time: d'2026-05-01T22:35:07.471874798Z', flight_number: 'LA3344', id: reservation:res_loc_1, notes: 'Cliente solicitou cadeirinha de bebê e lavagem antecipada.', pickup_store: store:cgh_localiza, pickup_time: d'2026-04-28T22:35:07.471856954Z', pricing: { breakdown: [{ amount: 270dec, description: '3 diárias x R$ 90 (Tarifa Flexível)', type: 'BASE_RATE' }, { amount: 80dec, description: 'Taxa de Retorno (Drop-off GRU)', type: 'LOGISTICS_FEE' }], daily_rate: 90dec, fees: 80dec, total_amount: 350dec, total_days: 3 }, status: 'ACTIVE', updated_at: d'2026-04-27T22:35:07.471993921Z' }, { category: vehicle_category:mov_eco, created_at: d'2026-04-27T22:35:07.472448980Z', customer: user:cliente2, dropoff_store: store:sdumont_movida, dropoff_time: d'2026-05-01T22:35:07.472407429Z', id: reservation:res_mov_1, notes: 'Reserva Promocional de Fim de Semana', pickup_store: store:sdumont_movida, pickup_time: d'2026-04-29T22:35:07.472405095Z', pricing: { breakdown: [{ amount: 150dec, description: '2 diárias Promoção Fim de Semana', type: 'BASE_RATE' }], daily_rate: 75dec, fees: 0dec, total_amount: 150dec, total_days: 2 }, status: 'CONFIRMED', updated_at: d'2026-04-27T22:35:07.472512074Z' } ];
 
 -- ------------------------------
 -- TABLE: store
@@ -398,6 +408,7 @@ DEFINE FIELD updated_at ON store TYPE datetime VALUE time::now() PERMISSIONS FUL
 -- TABLE DATA: store
 -- ------------------------------
 
+INSERT [ { active: true, address: { city: 'São Paulo', complement: 'Desembarque', country: 'Brasil', neighborhood: 'Vila Congonhas', number: 's/n', postal_code: '04626-911', state: 'SP', street: 'Av. Washington Luís' }, amenities: ['Wi-Fi', 'Café', 'Sala VIP', 'Banheiros'], code: 'CGH', company: company:localiza, contact: { email: 'agencia.cgh@localiza.com', manager_name: 'Ana Santos', phone: '+55 11 5090-0000' }, created_at: d'2026-04-27T22:30:47.322181437Z', id: store:cgh_localiza, instructions: { dropoff: 'Devolução no estacionamento G2, setor de Locadoras.', extra: 'Tolerância de 1h em caso de atrasos de voo informados previamente.', pickup: 'Siga para o balcão no saguão de desembarque principal.' }, location: (-46.6622, -23.6273), location_type: 'AIRPORT', name: 'Localiza Aeroporto Congonhas', operating_hours: [{ close: '23:59', day_of_week: 'MONDAY', is_closed: false, open: '05:00' }, { close: '23:59', day_of_week: 'TUESDAY', is_closed: false, open: '05:00' }, { close: '23:59', day_of_week: 'WEDNESDAY', is_closed: false, open: '05:00' }, { close: '23:59', day_of_week: 'THURSDAY', is_closed: false, open: '05:00' }, { close: '23:59', day_of_week: 'FRIDAY', is_closed: false, open: '05:00' }, { close: '22:00', day_of_week: 'SATURDAY', is_closed: false, open: '05:00' }, { close: '23:59', day_of_week: 'SUNDAY', is_closed: false, open: '06:00' }], pickup_method: 'IN_TERMINAL', special_hours: [], updated_at: d'2026-04-27T22:30:47.322381376Z' }, { active: true, address: { city: 'Guarulhos', complement: 'Terminal 2 Desembarque Oitão', country: 'Brasil', neighborhood: 'Cumbica', number: 's/n', postal_code: '07190-100', state: 'SP', street: 'Rodovia Hélio Smidt' }, amenities: ['Wi-Fi', 'Van/Shuttle Gratuito', 'Café'], code: 'GRU', company: company:localiza, contact: { email: 'agencia.gru@localiza.com', manager_name: 'Marcos Silva', phone: '+55 11 2445-0000' }, created_at: d'2026-04-27T22:34:01.064020963Z', id: store:gru_localiza, instructions: { dropoff: 'Siga as placas "Pátio Locadoras" na entrada do aeroporto.', extra: 'Funcionamento 24h.', pickup: 'Pegue a van Localiza na calçada fora do desembarque do T2 ou T3.' }, location: (-46.473, -23.4355), location_type: 'AIRPORT', name: 'Localiza Aeroporto Guarulhos', operating_hours: [{ close: '23:59', day_of_week: 'MONDAY', is_closed: false, open: '00:00' }, { close: '23:59', day_of_week: 'TUESDAY', is_closed: false, open: '00:00' }, { close: '23:59', day_of_week: 'WEDNESDAY', is_closed: false, open: '00:00' }, { close: '23:59', day_of_week: 'THURSDAY', is_closed: false, open: '00:00' }, { close: '23:59', day_of_week: 'FRIDAY', is_closed: false, open: '00:00' }, { close: '23:59', day_of_week: 'SATURDAY', is_closed: false, open: '00:00' }, { close: '23:59', day_of_week: 'SUNDAY', is_closed: false, open: '00:00' }], pickup_method: 'SHUTTLE', special_hours: [], updated_at: d'2026-04-27T22:34:01.064135046Z' }, { active: true, address: { city: 'Rio de Janeiro', complement: 'Saguão de Desembarque', country: 'Brasil', neighborhood: 'Centro', number: 's/n', postal_code: '20021-340', state: 'RJ', street: 'Praça Sen. Salgado Filho' }, amenities: ['Wi-Fi', 'Água', 'Atendimento Rápido'], code: 'SDU', company: company:movida, contact: { email: 'agencia.sdu@movida.com.br', manager_name: 'Pedro Alves', phone: '+55 21 3333-0000' }, created_at: d'2026-04-27T22:30:47.324101728Z', id: store:sdumont_movida, instructions: { dropoff: 'Acesso pela pista lateral antes do embarque.', extra: 'Recomendamos antecedência de 2 horas para a devolução.', pickup: 'Desça a escada rolante até o desembarque, nosso balcão estará à esquerda.' }, location: (-43.1631, -22.9105), location_type: 'AIRPORT', name: 'Movida Aeroporto Santos Dumont', operating_hours: [{ close: '23:00', day_of_week: 'MONDAY', is_closed: false, open: '06:00' }, { close: '23:00', day_of_week: 'TUESDAY', is_closed: false, open: '06:00' }, { close: '23:00', day_of_week: 'WEDNESDAY', is_closed: false, open: '06:00' }, { close: '23:00', day_of_week: 'THURSDAY', is_closed: false, open: '06:00' }, { close: '23:00', day_of_week: 'FRIDAY', is_closed: false, open: '06:00' }, { close: '22:00', day_of_week: 'SATURDAY', is_closed: false, open: '06:00' }, { close: '23:00', day_of_week: 'SUNDAY', is_closed: false, open: '06:00' }], pickup_method: 'IN_TERMINAL', special_hours: [], updated_at: d'2026-04-27T22:30:47.324211321Z' } ];
 
 -- ------------------------------
 -- TABLE: user
@@ -422,6 +433,7 @@ DEFINE FIELD updated_at ON user TYPE datetime VALUE time::now() PERMISSIONS FULL
 -- TABLE DATA: user
 -- ------------------------------
 
+INSERT [ { active: true, created_at: d'2026-04-27T22:29:24.794477063Z', document_id: '111.222.333-44', email: 'roberto.costa@localiza.com', first_name: 'Roberto', id: user:admin_localiza, last_name: 'Costa', password_hash: 'admin123', phone: '+55 31 97777-3333', updated_at: d'2026-04-27T22:29:24.794494617Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794942716Z', document_id: '444.555.666-77', email: 'fernanda.lima@movida.com.br', first_name: 'Fernanda', id: user:admin_movida, last_name: 'Lima', password_hash: 'admin123', phone: '+55 11 94444-6666', updated_at: d'2026-04-27T22:29:24.794959299Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794792993Z', email: 'carlos.pereira@localiza.com', first_name: 'Carlos', id: user:atendente_sp_localiza, last_name: 'Pereira', password_hash: 'atend123', phone: '+55 11 95555-5555', updated_at: d'2026-04-27T22:29:24.794815427Z' }, { active: true, birth_date: d'1985-05-15T00:00:00Z', created_at: d'2026-04-27T22:29:24.794170812Z', document_id: '123.456.789-00', email: 'joao.silva@email.com', first_name: 'João', id: user:cliente1, last_name: 'Silva', password_hash: 'hash_do_joao_123', phone: '+55 11 99999-1111', updated_at: d'2026-04-27T22:29:24.794188226Z' }, { active: true, birth_date: d'1990-10-20T00:00:00Z', created_at: d'2026-04-27T22:29:24.794339042Z', document_id: '987.654.321-11', email: 'maria.oliveira@email.com', first_name: 'Maria', id: user:cliente2, last_name: 'Oliveira', password_hash: 'hash_da_maria_456', phone: '+55 21 98888-2222', updated_at: d'2026-04-27T22:29:24.794355775Z' }, { active: true, created_at: d'2026-04-27T22:29:24.795076900Z', email: 'pedro.alves@movida.com.br', first_name: 'Pedro', id: user:gerente_rj_movida, last_name: 'Alves', password_hash: 'gerente123', phone: '+55 21 93333-7777', updated_at: d'2026-04-27T22:29:24.795094083Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794616566Z', email: 'ana.santos@localiza.com', first_name: 'Ana', id: user:gerente_sp_localiza, last_name: 'Santos', password_hash: 'gerente123', phone: '+55 11 96666-4444', updated_at: d'2026-04-27T22:29:24.794633910Z' } ];
 
 -- ------------------------------
 -- TABLE: vehicle
@@ -449,6 +461,7 @@ DEFINE FIELD year ON vehicle TYPE int ASSERT $value >= 2000 PERMISSIONS FULL;
 -- TABLE DATA: vehicle
 -- ------------------------------
 
+INSERT [ { category: vehicle_category:loc_eco, chassis_number: '9BR1234567890ABCD', color: 'Branco', company: company:localiza, created_at: d'2026-04-27T22:31:53.039531982Z', current_store: store:cgh_localiza, id: vehicle:loc_kwid_1, make: 'Renault', mileage_km: 15400, model: 'Kwid Zen 1.0', plate: 'ABC1D23', status: 'AVAILABLE', updated_at: d'2026-04-27T22:31:53.039577158Z', year: 2023 }, { category: vehicle_category:loc_suv, chassis_number: '9BR9876543210WXYZ', color: 'Prata', company: company:localiza, created_at: d'2026-04-27T22:31:53.039800631Z', current_store: store:cgh_localiza, id: vehicle:loc_renegade_1, make: 'Jeep', mileage_km: 5200, model: 'Renegade Sport 1.3 Turbo', plate: 'XYZ9W87', status: 'AVAILABLE', updated_at: d'2026-04-27T22:31:53.039855696Z', year: 2024 }, { category: vehicle_category:mov_eco, chassis_number: '9BW1112223334ABCD', color: 'Preto', company: company:movida, created_at: d'2026-04-27T22:31:53.040007273Z', current_store: store:sdumont_movida, id: vehicle:mov_polo_1, make: 'Volkswagen', mileage_km: 8100, model: 'Polo Track 1.0 TSI', plate: 'RIO2A22', status: 'AVAILABLE', updated_at: d'2026-04-27T22:31:53.040022151Z', year: 2024 } ];
 
 -- ------------------------------
 -- TABLE: vehicle_category
@@ -483,6 +496,7 @@ DEFINE FIELD updated_at ON vehicle_category TYPE datetime VALUE time::now() PERM
 -- TABLE DATA: vehicle_category
 -- ------------------------------
 
+INSERT [ { acriss_code: 'CFAR', active: true, code: 'GX', company: company:localiza, created_at: d'2026-04-27T22:30:47.325241964Z', description: 'Veículos mais altos e confortáveis, ideais para famílias.', features: { air_conditioning: true, capacity: { large_suitcases: 2, passengers: 5, small_suitcases: 2 }, doors: 4, fuel_type: 'FLEX', transmission: 'AUTOMATIC' }, group_name: 'SUV Compacto', id: vehicle_category:loc_suv, image_url: 'https://example.com/images/loc_suv.png', representative_models: ['Jeep Renegade', 'VW Kicks', 'Hyundai T-Cross'], updated_at: d'2026-04-27T22:30:47.325272593Z' }, { acriss_code: 'ECAR', active: true, code: 'AX', company: company:movida, created_at: d'2026-04-27T22:30:47.325541876Z', description: 'Econômico, prático com o conforto do câmbio automático.', features: { air_conditioning: true, capacity: { large_suitcases: 1, passengers: 5, small_suitcases: 2 }, doors: 4, fuel_type: 'FLEX', transmission: 'AUTOMATIC' }, group_name: 'Econômico com Ar', id: vehicle_category:mov_eco, image_url: 'https://example.com/images/mov_eco.png', representative_models: ['VW Polo', 'Chevrolet Onix', 'Hyundai HB20'], updated_at: d'2026-04-27T22:30:47.325568178Z' } ];
 
 -- ------------------------------
 -- TABLE: works_at
@@ -501,4 +515,5 @@ DEFINE FIELD role ON works_at TYPE string DEFAULT 'CLERK' ASSERT $value INSIDE [
 -- TABLE DATA: works_at
 -- ------------------------------
 
+INSERT RELATION [ { created_at: d'2026-04-27T22:30:47.324686755Z', id: works_at:7uhk6m9zkrtgipwwb27b, in: user:gerente_sp_localiza, out: store:cgh_localiza, role: 'MANAGER' }, { created_at: d'2026-04-27T22:30:47.324912193Z', id: works_at:ichgcu8su4fktghzltge, in: user:gerente_rj_movida, out: store:sdumont_movida, role: 'MANAGER' }, { created_at: d'2026-04-27T22:30:47.324796348Z', id: works_at:n6x1ohk5f5z0vfks60ca, in: user:atendente_sp_localiza, out: store:cgh_localiza, role: 'CLERK' } ];
 
