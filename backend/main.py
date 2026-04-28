@@ -6,12 +6,15 @@ from loguru import logger
 
 from app.api.v1.router import router
 from app.core.config import settings
+from app.core.database import init_db, close_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"{settings.APP_NAME} v{settings.APP_VERSION} iniciado")
+    await init_db()
     yield
+    await close_db()
     logger.info("Servidor encerrado")
 
 

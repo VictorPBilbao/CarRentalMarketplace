@@ -26,12 +26,19 @@ def extract_records(result: object) -> list[dict]:
     return []
 
 
-async def get_db() -> AsyncGenerator[AsyncSurreal, None]:
-    async with AsyncSurreal(settings.SURREAL_URL) as db:
-        await db.signin({"username": settings.SURREAL_USER, "password": settings.SURREAL_PASS})
-        await db.use(settings.SURREAL_NAMESPACE, settings.SURREAL_DATABASE)
-        logger.debug("SurrealDB conectado")
-        try:
-            yield db
-        finally:
-            logger.debug("SurrealDB desconectado")
+# Global persistent connection
+db_client = AsyncSurreal(settings.SURREAL_URL)
+
+async def init_db():
+    logger.info("Conectando ao SurrealDB...")
+    await db_client.connect()
+    await db_client.signin({"username": settings.SURREAL_USER, "password": settings.SURREAL_PASS})
+    await db_client.use(settings.SURREAL_NAMESPACE, settings.SURREAL_DATABASE)
+    logger.info("SurrealDB conectado com sucesso")
+
+async def close_db():
+    await db_client.close()
+    logger.info("SurrealDB desconectado")
+
+async def get_db() -> AsyncSurreal:
+    return db_client

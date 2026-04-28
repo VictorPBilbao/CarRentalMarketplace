@@ -71,7 +71,8 @@ services:
             - backend
         environment:
             # We override the backend API URL inside the frontend container
-            - VITE_API_URL=http://localhost:8080/api/v1
+            # Using the internal docker network address 'backend:8000'
+            - VITE_API_URL=http://backend:8000/api/v1
         # Optional: Map your local frontend folder inside the container so you get hot reloading when you edit code!
         volumes:
             - ./frontend:/app
