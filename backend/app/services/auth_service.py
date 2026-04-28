@@ -45,7 +45,7 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     if locadora_ids:
         locadora_id = str(locadora_ids[0])
         manage_role = (manage_roles[0] if manage_roles else "ADMIN").upper()
-        role = "locadora" if manage_role == "OWNER" else "admin"
+        role = "locadora" if manage_role == "OWNER" or manage_role == "ADMIN" else "admin"
 
         token_payload = UsuarioPayload(
             id=str(user["id"]),
