@@ -8,6 +8,7 @@
     - Revisar se `protection` (atualmente a nível de `company`) precisa ser alterada para array de `stores` no SurrealDB caso as regras locais exijam divergência de proteção.
 - [ ] **One Way Fee (Taxa de Retorno)**:
     - Ao fazer a cotação, se `pickup_store != dropoff_store`, consultar a edge `allows_return_to` para somar a taxa de devolução no extrato de preços.
+    - Criar uma aba "One Way" no painel de configuração de lojas para definir quais filiais permitem devolução e qual a taxa associada. Esta aba será interativa em formato de grafos e linhas, no centro a loja atual, e as linhas conectando às outras lojas terão a taxa de retorno exibida. Seriam os valores de uma loja externa para a loja atual, ou seja, o custo que a loja atual cobraria para receber um veículo de outra filial. Eles devem poder configurar somente as taxas de retorno para sua própria loja, e não para as outras filiais, para evitar confusão.
 - [ ] **Motor de Disponibilidade**:
     - Implementar lógica no backend/banco para consultar/modificar a `availability_ledger`.
     - Bloquear reserva se `total_fleet - total_booked - total_maintenance <= 0`.
