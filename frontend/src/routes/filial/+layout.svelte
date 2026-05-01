@@ -19,6 +19,7 @@
     '/filial/frota':     'Frota',
     '/filial/reservas':  'Reservas',
     '/filial/contratos': 'Contratos',
+    '/filial/tarifas':   'Tarifas',
   };
 
   const titulo = $derived(paginaTitulo[page.url.pathname] ?? 'Painel');
@@ -132,6 +133,16 @@
           <path d="M9 1.5V4.5H12M5.5 7.5h4M5.5 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
         </svg>
         Contratos
+      </a>
+
+      <a href="/filial/tarifas" class="nav-item {ativo('/filial/tarifas') ? 'nav-ativo' : ''}">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
+          <path d="M1.5 7.5h12M1.5 4.5h12M1.5 10.5h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="5" cy="7.5" r="1" fill="currentColor"/>
+          <circle cx="10" cy="4.5" r="1" fill="currentColor"/>
+          <circle cx="7.5" cy="10.5" r="1" fill="currentColor"/>
+        </svg>
+        Tarifas
       </a>
 
     </nav>
