@@ -67,6 +67,10 @@ export const filialService = {
     return api.get<Filial[]>('/locadora/filiais', token);
   },
 
+  async listarLojas(token: string): Promise<Filial[]> {
+    return api.get<Filial[]>('/locadora/lojas', token);
+  },
+
   async buscarPorId(id: string, token: string): Promise<Filial> {
     return api.get<Filial>(`/locadora/filiais/${id}`, token);
   },

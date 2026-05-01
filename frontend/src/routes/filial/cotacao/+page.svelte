@@ -74,7 +74,7 @@
 <!-- ── Cabeçalho ─────────────────────────────────────────────────────────── -->
 <div class="page-header">
   <div>
-    <h1>Consulta de Tarifas</h1>
+    <h1>Cotação</h1>
     <p>Pesquise planos disponíveis e calcule cotações para clientes</p>
   </div>
 </div>
@@ -444,7 +444,7 @@
     <div class="cotacao-acoes">
       <a href="/filial/reservas" class="btn-ghost">Ver Reservas</a>
       <a
-        href="/locadora/reservas/nova?category={encodeURIComponent(data.params.categoryId)}&pickup_store={encodeURIComponent(filial?.id ?? '')}&dropoff_store={encodeURIComponent(data.params.dropoffStoreId)}&pickup={encodeURIComponent(data.params.pickupTime)}&dropoff={encodeURIComponent(data.params.dropoffTime)}"
+        href="/filial/reservas/nova?category={encodeURIComponent(data.params.categoryId)}&pickup_store={encodeURIComponent(filial?.id ?? '')}&dropoff_store={encodeURIComponent(data.params.dropoffStoreId)}&pickup={encodeURIComponent(data.params.pickupTime)}&dropoff={encodeURIComponent(data.params.dropoffTime)}"
         class="btn-criar"
       >
         Criar Reserva com esta Cotação →

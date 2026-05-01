@@ -3,7 +3,7 @@ from typing import Annotated, TypeAlias
 from fastapi import APIRouter, Depends
 from surrealdb import AsyncSurreal
 
-from app.api.deps import FilialOnly, StaffOnly
+from app.api.deps import FilialOnly, LocadoraOrFilial, StaffOnly
 from app.core.database import get_db
 from app.schemas.filial import FilialRequest, FilialResponse
 from app.services import filial_service
@@ -15,6 +15,12 @@ DB: TypeAlias = Annotated[AsyncSurreal, Depends(get_db)]
 
 @router.get("/filiais", response_model=list[FilialResponse])
 async def listar_filiais(usuario: StaffOnly, db: DB):
+    return await filial_service.listar(usuario, db)
+
+
+@router.get("/lojas", response_model=list[FilialResponse])
+async def listar_lojas_empresa(usuario: LocadoraOrFilial, db: DB):
+    """Lista todas as lojas da empresa — acessível por filial e locadora (ex: seleção de devolução)."""
     return await filial_service.listar(usuario, db)
 
 

@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
   const [categorias, todasLojas] = await Promise.all([
     categoriaService.listar(token).catch(() => []),
-    filialService.listar(token).catch(() => []),
+    filialService.listarLojas(token).catch(() => []),
   ]);
 
   const dropoffStoreId = url.searchParams.get('dropoff_store') ?? '';
