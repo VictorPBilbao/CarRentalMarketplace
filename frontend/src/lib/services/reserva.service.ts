@@ -68,17 +68,6 @@ export const reservaService = {
   },
 };
 
-export const clienteReservaService = {
-  async listar(token: string, status?: string): Promise<Reserva[]> {
-    const q = status ? `?status=${encodeURIComponent(status)}` : '';
-    return api.get<Reserva[]>(`/cliente/reservas${q}`, token);
-  },
-
-  async buscarPorId(id: string, token: string): Promise<Reserva> {
-    return api.get<Reserva>(`/cliente/reservas/${encodeURIComponent(id)}`, token);
-  },
-};
-
 export const filialReservaService = {
   async listar(token: string, status?: string): Promise<Reserva[]> {
     const q = status ? `?status=${encodeURIComponent(status)}` : '';
@@ -89,7 +78,42 @@ export const filialReservaService = {
     return api.get<Reserva>(`/filial/reservas/${encodeURIComponent(id)}`, token);
   },
 
+  async criar(dados: CriarReservaDTO, token: string): Promise<Reserva> {
+    return api.post<Reserva>('/filial/reservas', dados, token);
+  },
+
   async atualizarStatus(id: string, status: StatusReserva, token: string): Promise<Reserva> {
     return api.patch<Reserva>(`/filial/reservas/${encodeURIComponent(id)}/status`, { status }, token);
+  },
+};
+
+export interface CriarReservaClienteDTO {
+  category_id: string;
+  pickup_store_id: string;
+  dropoff_store_id: string;
+  pickup_time: string;
+  dropoff_time: string;
+  flight_number?: string | null;
+  notes?: string | null;
+  pricing: {
+    daily_rate: number;
+    total_days: number;
+    fees: number;
+    breakdown: ItemPricing[];
+  };
+}
+
+export const clienteReservaService = {
+  async listar(token: string, status?: string): Promise<Reserva[]> {
+    const q = status ? `?status=${encodeURIComponent(status)}` : '';
+    return api.get<Reserva[]>(`/cliente/reservas${q}`, token);
+  },
+
+  async buscarPorId(id: string, token: string): Promise<Reserva> {
+    return api.get<Reserva>(`/cliente/reservas/${encodeURIComponent(id)}`, token);
+  },
+
+  async criar(dados: CriarReservaClienteDTO, token: string): Promise<Reserva> {
+    return api.post<Reserva>('/cliente/reservas', dados, token);
   },
 };

@@ -53,6 +53,13 @@ def _row_to_response(row: dict) -> FilialResponse:
     )
 
 
+async def listar_todos(db: AsyncSurreal) -> list[FilialResponse]:
+    """Lista todas as lojas ativas de todas as empresas (uso público/single-tenant)."""
+    result = await db.query("SELECT * FROM store WHERE active = true ORDER BY name ASC")
+    records = extract_records(result)
+    return [_row_to_response(r) for r in records if isinstance(r, dict)]
+
+
 async def listar(usuario: UsuarioPayload, db: AsyncSurreal) -> list[FilialResponse]:
     result = await db.query(
         """

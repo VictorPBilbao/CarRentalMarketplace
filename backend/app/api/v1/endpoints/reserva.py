@@ -5,7 +5,7 @@ from surrealdb import AsyncSurreal
 
 from app.api.deps import CustomerOnly, FilialOnly, LocadoraOnly, StaffOnly
 from app.core.database import get_db
-from app.schemas.reserva import AtualizarStatusRequest, CriarReservaRequest, ReservaResponse
+from app.schemas.reserva import AtualizarStatusRequest, CriarReservaClienteRequest, CriarReservaRequest, ReservaResponse
 from app.services import reserva_service
 
 router = APIRouter(tags=["reservas"])
@@ -67,6 +67,15 @@ async def buscar_reserva_filial(reserva_id: str, usuario: FilialOnly, db: DB):
     )
 
 
+@router.post("/filial/reservas", response_model=ReservaResponse, status_code=201)
+async def criar_reserva_filial(
+    payload: CriarReservaRequest,
+    usuario: FilialOnly,
+    db: DB,
+):
+    return await reserva_service.criar(payload, usuario.locadoraId, db)
+
+
 @router.patch("/filial/reservas/{reserva_id}/status", response_model=ReservaResponse)
 async def atualizar_status_filial(
     reserva_id: str,
@@ -80,6 +89,15 @@ async def atualizar_status_filial(
 
 
 # ── Cliente ───────────────────────────────────────────────────────────────────
+
+@router.post("/cliente/reservas", response_model=ReservaResponse, status_code=201)
+async def criar_reserva_cliente(
+    payload: CriarReservaClienteRequest,
+    usuario: CustomerOnly,
+    db: DB,
+):
+    return await reserva_service.criar_cliente(payload, usuario.id, db)
+
 
 @router.get("/cliente/reservas", response_model=list[ReservaResponse])
 async def listar_reservas_cliente(

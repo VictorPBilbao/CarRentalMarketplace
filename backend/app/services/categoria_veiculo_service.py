@@ -43,6 +43,13 @@ def _row_to_response(row: dict) -> CategoriaVeiculoResponse:
     )
 
 
+async def listar_todos(db: AsyncSurreal) -> list[CategoriaVeiculoResponse]:
+    """Lista todas as categorias ativas de todas as empresas (uso público/single-tenant)."""
+    result = await db.query("SELECT * FROM vehicle_category WHERE active = true ORDER BY group_name ASC")
+    records = extract_records(result)
+    return [_row_to_response(r) for r in records if isinstance(r, dict)]
+
+
 async def listar(usuario: UsuarioPayload, db: AsyncSurreal) -> list[CategoriaVeiculoResponse]:
     result = await db.query(
         """

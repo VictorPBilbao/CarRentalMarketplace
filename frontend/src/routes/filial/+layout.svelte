@@ -20,6 +20,7 @@
     '/filial/reservas':  'Reservas',
     '/filial/contratos': 'Contratos',
     '/filial/cotacao':   'Cotação',
+    '/filial/one-way':   'One-Way',
   };
 
   const titulo = $derived(paginaTitulo[page.url.pathname] ?? 'Painel');
@@ -133,6 +134,14 @@
           <path d="M9 1.5V4.5H12M5.5 7.5h4M5.5 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
         </svg>
         Contratos
+      </a>
+
+      <a href="/filial/one-way" class="nav-item {ativo('/filial/one-way') ? 'nav-ativo' : ''}">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
+          <path d="M1.5 7.5h12M9.5 4.5l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="4" cy="7.5" r="1.5" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+        One-Way
       </a>
 
       <a href="/filial/cotacao" class="nav-item {ativo('/filial/cotacao') ? 'nav-ativo' : ''}">

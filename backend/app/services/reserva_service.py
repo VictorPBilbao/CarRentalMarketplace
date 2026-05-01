@@ -1,11 +1,14 @@
 from datetime import datetime
 
 from fastapi import HTTPException
+from loguru import logger
 from surrealdb import AsyncSurreal
 
 from app.core.database import extract_records
+from app.services import disponibilidade_service
 from app.schemas.reserva import (
     AtualizarStatusRequest,
+    CriarReservaClienteRequest,
     CriarReservaRequest,
     ItemPricingResponse,
     PricingResponse,
@@ -80,6 +83,17 @@ async def _check_categoria(categoria_id: str, company_id: str, db: AsyncSurreal)
     )
     if not extract_records(result):
         raise HTTPException(status_code=403, detail='Categoria não pertence à sua empresa ou está inativa.')
+
+
+async def _get_company_from_store(store_id: str, db: AsyncSurreal) -> str:
+    result = await db.query(
+        "SELECT company FROM type::record($id) LIMIT 1",
+        {'id': store_id},
+    )
+    records = extract_records(result)
+    if not records or not records[0].get('company'):
+        raise HTTPException(status_code=404, detail='Loja não encontrada.')
+    return str(records[0]['company'])
 
 
 async def _check_customer(customer_id: str, db: AsyncSurreal) -> None:
@@ -158,6 +172,16 @@ async def criar(
     await _check_categoria(payload.category_id, company_id, db)
     await _check_customer(payload.customer_id, db)
 
+    disponivel = await disponibilidade_service.verificar_disponibilidade(
+        payload.pickup_store_id, payload.category_id,
+        payload.pickup_time, payload.dropoff_time, db,
+    )
+    if disponivel <= 0:
+        raise HTTPException(
+            status_code=409,
+            detail='Sem disponibilidade para a categoria solicitada nas datas informadas.',
+        )
+
     # Calcula total_amount = daily_rate * total_days + fees + soma do breakdown
     base = payload.pricing.daily_rate * payload.pricing.total_days
     breakdown_sum = sum(item.amount for item in payload.pricing.breakdown)
@@ -184,6 +208,8 @@ async def criar(
             flight_number: $flight_number,
             notes:         $notes,
             status:        'PENDING',
+            created_at:    time::now(),
+            updated_at:    time::now(),
             pricing: {
                 daily_rate:   $daily_rate,
                 total_days:   $total_days,
@@ -213,6 +239,11 @@ async def criar(
     records = extract_records(result)
     if not records:
         raise HTTPException(status_code=500, detail='Erro ao criar reserva.')
+
+    await disponibilidade_service.ocupar_disponibilidade(
+        payload.pickup_store_id, payload.category_id,
+        payload.pickup_time, payload.dropoff_time, db,
+    )
 
     row = records[0]
     if isinstance(row, dict):
@@ -275,9 +306,20 @@ async def atualizar_status(
         )
 
     result = await db.query(
-        "UPDATE type::record($id) MERGE { status: $status }",
+        "UPDATE type::record($id) MERGE { status: $status, updated_at: time::now() }",
         {'id': reserva_id, 'status': payload.status},
     )
+
+    if payload.status in ('CANCELLED', 'NO_SHOW'):
+        try:
+            pickup = datetime.fromisoformat(reserva.pickup_time)
+            dropoff = datetime.fromisoformat(reserva.dropoff_time)
+            await disponibilidade_service.liberar_disponibilidade(
+                reserva.pickup_store, reserva.category,
+                pickup, dropoff, db,
+            )
+        except Exception as exc:
+            logger.warning(f"Falha ao liberar disponibilidade na reserva {reserva_id}: {exc}")
 
     records = extract_records(result)
     if not records:
@@ -287,3 +329,23 @@ async def atualizar_status(
     if isinstance(row, dict):
         return _row_to_response(row)
     return await buscar_por_id(reserva_id, company_id, db)
+
+
+async def criar_cliente(
+    payload: CriarReservaClienteRequest,
+    user_id: str,
+    db: AsyncSurreal,
+) -> ReservaResponse:
+    company_id = await _get_company_from_store(payload.pickup_store_id, db)
+    full = CriarReservaRequest(
+        customer_id=user_id,
+        category_id=payload.category_id,
+        pickup_store_id=payload.pickup_store_id,
+        dropoff_store_id=payload.dropoff_store_id,
+        pickup_time=payload.pickup_time,
+        dropoff_time=payload.dropoff_time,
+        flight_number=payload.flight_number,
+        notes=payload.notes,
+        pricing=payload.pricing,
+    )
+    return await criar(full, company_id, db)

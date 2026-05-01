@@ -4,9 +4,19 @@ from typing import Annotated, TypeAlias
 from fastapi import APIRouter, Depends, Query
 from surrealdb import AsyncSurreal
 
-from app.api.deps import FilialOnly, LocadoraOrFilial
+from app.api.deps import FilialOnly, LocadoraOnly, LocadoraOrFilial
 from app.core.database import get_db
-from app.schemas.tarifa import BuscarTarifasResponse, CotacaoRequest, CotacaoResponse
+from app.schemas.tarifa import (
+    AddonRequest,
+    AddonResponse,
+    BuscarTarifasResponse,
+    CotacaoRequest,
+    CotacaoResponse,
+    FeeRequest,
+    FeeResponse,
+    OneWayRequest,
+    OneWayResponse,
+)
 from app.services import tarifa_service
 
 router = APIRouter(tags=["tarifas"])
@@ -14,25 +24,19 @@ router = APIRouter(tags=["tarifas"])
 DB: TypeAlias = Annotated[AsyncSurreal, Depends(get_db)]
 
 
-# ── Filial ────────────────────────────────────────────────────────────────────
+# ── Filial: busca e cotação ───────────────────────────────────────────────────
 
 @router.get("/filial/tarifas", response_model=BuscarTarifasResponse)
 async def buscar_tarifas_filial(
     usuario: FilialOnly,
     db: DB,
-    dropoff_store_id: str = Query(..., description="ID da loja de devolução (ex: store:gru_localiza)"),
-    category_id: str = Query(..., description="ID da categoria do veículo"),
-    pickup_time: datetime = Query(..., description="Data/hora de retirada (ISO 8601)"),
-    dropoff_time: datetime = Query(..., description="Data/hora de devolução (ISO 8601)"),
-    customer_age: int = Query(..., ge=18, description="Idade do condutor principal"),
-    promo_code: str | None = Query(None, description="Código promocional (opcional)"),
+    dropoff_store_id: str = Query(...),
+    category_id: str = Query(...),
+    pickup_time: datetime = Query(...),
+    dropoff_time: datetime = Query(...),
+    customer_age: int = Query(..., ge=18),
+    promo_code: str | None = Query(None),
 ):
-    """
-    Busca planos tarifários aplicáveis, taxas obrigatórias da loja e adicionais
-    disponíveis para a filial do usuário autenticado.
-
-    Planos são retornados em ordem crescente de diária (mais barato primeiro).
-    """
     return await tarifa_service.buscar_tarifas(
         company_id=usuario.locadoraId,
         pickup_store_id=usuario.matrizId,
@@ -47,42 +51,49 @@ async def buscar_tarifas_filial(
 
 
 @router.post("/filial/cotacao", response_model=CotacaoResponse)
-async def calcular_cotacao_filial(
-    payload: CotacaoRequest,
-    usuario: FilialOnly,
-    db: DB,
-):
-    """
-    Calcula uma cotação completa (breakdown detalhado) para a filial do usuário.
-
-    - Aplica taxas obrigatórias da loja de retirada
-    - Soma adicionais selecionados com cálculo PER_DAY / PER_TRIP / PERCENTAGE
-    - Inclui taxa de retorno one-way quando aplicável
-    - Lista proteções incluídas no plano
-
-    O resultado pode ser usado diretamente para criar uma reserva.
-    """
+async def calcular_cotacao_filial(payload: CotacaoRequest, usuario: FilialOnly, db: DB):
     payload.pickup_store_id = usuario.matrizId
     return await tarifa_service.calcular_cotacao(payload, usuario.locadoraId, db)
 
 
-# ── Locadora ──────────────────────────────────────────────────────────────────
+# ── Filial: one-way config ────────────────────────────────────────────────────
+
+@router.get("/filial/one-way", response_model=list[OneWayResponse])
+async def listar_one_way(usuario: FilialOnly, db: DB):
+    """Lista regras de devolução one-way para a loja da filial."""
+    return await tarifa_service.listar_one_way_filial(usuario.matrizId, db)
+
+
+@router.post("/filial/one-way", response_model=OneWayResponse, status_code=201)
+async def criar_one_way(payload: OneWayRequest, usuario: FilialOnly, db: DB):
+    """Cria regra: cobra X quando um veículo de outra loja é devolvido aqui."""
+    return await tarifa_service.criar_one_way(payload, usuario.matrizId, db)
+
+
+@router.put("/filial/one-way/{rule_id}", response_model=OneWayResponse)
+async def atualizar_one_way(rule_id: str, payload: OneWayRequest, usuario: FilialOnly, db: DB):
+    return await tarifa_service.atualizar_one_way(rule_id, payload, usuario.matrizId, db)
+
+
+@router.delete("/filial/one-way/{rule_id}", status_code=204)
+async def excluir_one_way(rule_id: str, usuario: FilialOnly, db: DB):
+    await tarifa_service.excluir_one_way(rule_id, usuario.matrizId, db)
+
+
+# ── Locadora: busca e cotação ─────────────────────────────────────────────────
 
 @router.get("/locadora/tarifas", response_model=BuscarTarifasResponse)
 async def buscar_tarifas_locadora(
     usuario: LocadoraOrFilial,
     db: DB,
-    pickup_store_id: str = Query(..., description="ID da loja de retirada"),
-    dropoff_store_id: str = Query(..., description="ID da loja de devolução"),
-    category_id: str = Query(..., description="ID da categoria do veículo"),
+    pickup_store_id: str = Query(...),
+    dropoff_store_id: str = Query(...),
+    category_id: str = Query(...),
     pickup_time: datetime = Query(...),
     dropoff_time: datetime = Query(...),
     customer_age: int = Query(..., ge=18),
     promo_code: str | None = Query(None),
 ):
-    """
-    Busca planos tarifários para qualquer loja da locadora (visão gerencial).
-    """
     return await tarifa_service.buscar_tarifas(
         company_id=usuario.locadoraId,
         pickup_store_id=pickup_store_id,
@@ -96,32 +107,57 @@ async def buscar_tarifas_locadora(
     )
 
 
+@router.post("/locadora/cotacao", response_model=CotacaoResponse)
+async def calcular_cotacao_locadora(payload: CotacaoRequest, usuario: LocadoraOrFilial, db: DB):
+    return await tarifa_service.calcular_cotacao(payload, usuario.locadoraId, db)
+
+
+# ── Locadora: listagem gerencial ──────────────────────────────────────────────
+
 @router.get("/locadora/rate_plans")
 async def listar_rate_plans(usuario: LocadoraOrFilial, db: DB):
-    """Lista todos os planos tarifários da locadora."""
     return await tarifa_service.listar_rate_plans_empresa(usuario.locadoraId, db)
 
 
-@router.get("/locadora/fees")
+@router.get("/locadora/fees", response_model=list[FeeResponse])
 async def listar_fees(usuario: LocadoraOrFilial, db: DB):
-    """Lista todas as taxas de todas as lojas da locadora."""
     return await tarifa_service.listar_fees_empresa(usuario.locadoraId, db)
 
 
-@router.get("/locadora/addons")
+@router.get("/locadora/addons", response_model=list[AddonResponse])
 async def listar_addons(usuario: LocadoraOrFilial, db: DB):
-    """Lista todos os adicionais da locadora."""
     return await tarifa_service.listar_addons_empresa(usuario.locadoraId, db)
 
 
-@router.post("/locadora/cotacao", response_model=CotacaoResponse)
-async def calcular_cotacao_locadora(
-    payload: CotacaoRequest,
-    usuario: LocadoraOrFilial,
-    db: DB,
-):
-    """
-    Calcula cotação completa para qualquer loja da locadora.
-    O `pickup_store_id` deve ser informado no body.
-    """
-    return await tarifa_service.calcular_cotacao(payload, usuario.locadoraId, db)
+# ── Locadora: CRUD addons ─────────────────────────────────────────────────────
+
+@router.post("/locadora/addons", response_model=AddonResponse, status_code=201)
+async def criar_addon(payload: AddonRequest, usuario: LocadoraOnly, db: DB):
+    return await tarifa_service.criar_addon(payload, usuario.locadoraId, db)
+
+
+@router.put("/locadora/addons/{addon_id}", response_model=AddonResponse)
+async def atualizar_addon(addon_id: str, payload: AddonRequest, usuario: LocadoraOnly, db: DB):
+    return await tarifa_service.atualizar_addon(addon_id, payload, usuario.locadoraId, db)
+
+
+@router.delete("/locadora/addons/{addon_id}", status_code=204)
+async def desativar_addon(addon_id: str, usuario: LocadoraOnly, db: DB):
+    await tarifa_service.desativar_addon(addon_id, usuario.locadoraId, db)
+
+
+# ── Locadora: CRUD fees ───────────────────────────────────────────────────────
+
+@router.post("/locadora/fees", response_model=FeeResponse, status_code=201)
+async def criar_fee(payload: FeeRequest, usuario: LocadoraOnly, db: DB):
+    return await tarifa_service.criar_fee(payload, usuario.locadoraId, db)
+
+
+@router.put("/locadora/fees/{fee_id}", response_model=FeeResponse)
+async def atualizar_fee(fee_id: str, payload: FeeRequest, usuario: LocadoraOnly, db: DB):
+    return await tarifa_service.atualizar_fee(fee_id, payload, usuario.locadoraId, db)
+
+
+@router.delete("/locadora/fees/{fee_id}", status_code=204)
+async def desativar_fee(fee_id: str, usuario: LocadoraOnly, db: DB):
+    await tarifa_service.desativar_fee(fee_id, usuario.locadoraId, db)

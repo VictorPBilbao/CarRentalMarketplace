@@ -27,6 +27,9 @@ async function request<T>(method: string, path: string, body?: unknown, override
     throw new Error(mensagemErro || `Erro de conexão com o servidor (Status HTTP: ${res.status})`);
   }
 
+  if (res.status === 204 || res.headers.get('content-length') === '0') {
+    return undefined as unknown as T;
+  }
   return res.json() as Promise<T>;
 }
 

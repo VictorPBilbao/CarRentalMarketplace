@@ -197,7 +197,34 @@
     <span class="resumo-item" style="margin-left:auto; color:#475569; font-size:11px;">
       {t.rate_plans.length} plano{t.rate_plans.length !== 1 ? 's' : ''} disponível{t.rate_plans.length !== 1 ? 'is' : ''}
     </span>
+    <!-- Disponibilidade -->
+    {#if t.disponibilidade > 0}
+      <span class="resumo-item" style="color:#34d399; font-size:12px; font-weight:500;">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 6l2 2 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        {t.disponibilidade} unidade{t.disponibilidade !== 1 ? 's' : ''} disponível{t.disponibilidade !== 1 ? 'is' : ''}
+      </span>
+    {:else}
+      <span class="resumo-item" style="color:#f87171; font-size:12px; font-weight:500;">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M4 4l4 4M8 4l-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Sem disponibilidade
+      </span>
+    {/if}
   </div>
+
+  <!-- Lojas alternativas quando sem disponibilidade -->
+  {#if t.disponibilidade === 0 && t.lojas_alternativas?.length > 0}
+    <div style="background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.2); border-radius:10px; padding:14px 16px; margin-bottom:16px;">
+      <p style="font-size:13px; font-weight:600; color:#fbbf24; margin:0 0 10px;">Sem estoque nesta loja — lojas vizinhas com disponibilidade:</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        {#each t.lojas_alternativas as alt}
+          <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px; font-size:12px;">
+            <div style="font-weight:600; color:#e2e8f0;">{alt.store_name}</div>
+            <div style="color:#64748b; margin-top:2px;">{alt.available_units} unidade{alt.available_units !== 1 ? 's' : ''} · {alt.transit_time_hours}h trânsito{alt.transfer_fee > 0 ? ` · +${alt.transfer_fee.toLocaleString('pt-BR', {style:'currency',currency:'BRL'})}` : ''}</div>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
 
   <!-- Layout em duas colunas: planos (esq) + lateral (dir) -->
   <div class="resultado-grid">

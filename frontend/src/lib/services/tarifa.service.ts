@@ -5,6 +5,7 @@ import { api } from './api';
 export type TipoCalculoAddon = 'PER_DAY' | 'PER_TRIP' | 'PERCENTAGE';
 export type TipoCalculoFee   = 'PERCENTAGE' | 'FLAT_FEE';
 export type TipoFeeOneWay    = 'FREE' | 'FIXED' | 'PER_KM';
+export type TipoAddon        = 'INSURANCE' | 'EQUIPMENT' | 'SERVICE' | 'FEE';
 
 export interface RatePlanDisponivel {
   id: string;
@@ -46,6 +47,14 @@ export interface TaxaOneWay {
   amount: number;
 }
 
+export interface LojaAlternativa {
+  store_id: string;
+  store_name: string;
+  transit_time_hours: number;
+  transfer_fee: number;
+  available_units: number;
+}
+
 export interface BuscarTarifasResponse {
   total_days: number;
   is_one_way: boolean;
@@ -53,6 +62,8 @@ export interface BuscarTarifasResponse {
   available_addons: AddonDisponivel[];
   store_fees: FeeCalculado[];
   one_way_fee: TaxaOneWay | null;
+  disponibilidade: number;
+  lojas_alternativas: LojaAlternativa[];
 }
 
 export interface AddonSelecionado {
@@ -89,7 +100,7 @@ export interface CotacaoResponse {
   available_addons: AddonDisponivel[];
 }
 
-// Tipos para listagem gerencial (locadora)
+// Tipos gerenciais (locadora)
 export interface RatePlanCompleto {
   id: string;
   name: string;
@@ -120,15 +131,10 @@ export interface RatePlanCompleto {
   updated_at: string;
 }
 
-export interface TaxaLoja {
-  id: string;
-  name: string;
-  store: string;
-  store_name?: string;
-  store_code?: string;
-  active: boolean;
-  pricing: { amount: number; calculation_type: TipoCalculoFee };
-  conditions: { applies_after_time: string | null; applies_before_time: string | null };
+export interface AddonPricing {
+  amount: number;
+  calculation_type: TipoCalculoAddon;
+  max_amount_per_trip: number | null;
 }
 
 export interface AddonCompleto {
@@ -138,8 +144,39 @@ export interface AddonCompleto {
   type: string;
   active: boolean;
   stores: string[];
-  pricing: { amount: number; calculation_type: TipoCalculoAddon; max_amount_per_trip: number | null };
+  pricing: AddonPricing;
   updated_at: string;
+}
+
+export interface FeePricing {
+  amount: number;
+  calculation_type: TipoCalculoFee;
+}
+
+export interface FeeConditions {
+  applies_after_time: string | null;
+  applies_before_time: string | null;
+}
+
+export interface TaxaLoja {
+  id: string;
+  name: string;
+  store: string;
+  store_name?: string;
+  store_code?: string;
+  active: boolean;
+  pricing: FeePricing;
+  conditions: FeeConditions;
+}
+
+export interface OneWayRule {
+  id: string;
+  from_store_id: string;
+  from_store_name: string;
+  to_store_id: string;
+  fee_type: TipoFeeOneWay;
+  amount: number;
+  active: boolean;
 }
 
 // ── Parâmetros de busca ───────────────────────────────────────────────────────
@@ -165,6 +202,32 @@ export interface CotacaoRequest {
   selected_addons?: AddonSelecionado[];
 }
 
+// ── CRUD requests ─────────────────────────────────────────────────────────────
+
+export interface AddonRequest {
+  name: string;
+  description: string;
+  type: TipoAddon;
+  pricing: AddonPricing;
+  stores: string[];
+  active: boolean;
+}
+
+export interface FeeRequest {
+  name: string;
+  store_id: string;
+  pricing: FeePricing;
+  conditions: FeeConditions;
+  active: boolean;
+}
+
+export interface OneWayRequest {
+  from_store_id: string;
+  fee_type: TipoFeeOneWay;
+  amount: number;
+  active: boolean;
+}
+
 // ── Service ───────────────────────────────────────────────────────────────────
 
 function buildParams(obj: Record<string, string | number | null | undefined>): string {
@@ -176,15 +239,9 @@ function buildParams(obj: Record<string, string | number | null | undefined>): s
 }
 
 export const tarifaService = {
+  // Busca/cotação
   async buscarTarifasFilial(params: BuscarTarifasParams, token: string): Promise<BuscarTarifasResponse> {
-    const qs = buildParams({
-      dropoff_store_id: params.dropoff_store_id,
-      category_id: params.category_id,
-      pickup_time: params.pickup_time,
-      dropoff_time: params.dropoff_time,
-      customer_age: params.customer_age,
-      promo_code: params.promo_code ?? null,
-    });
+    const qs = buildParams({ ...params, promo_code: params.promo_code ?? null });
     return api.get<BuscarTarifasResponse>(`/filial/tarifas?${qs}`, token);
   },
 
@@ -204,6 +261,7 @@ export const tarifaService = {
     return api.post<CotacaoResponse>('/locadora/cotacao', data, token);
   },
 
+  // Listagem gerencial
   async listarRatePlans(token: string): Promise<RatePlanCompleto[]> {
     return api.get<RatePlanCompleto[]>('/locadora/rate_plans', token);
   },
@@ -214,5 +272,48 @@ export const tarifaService = {
 
   async listarAddons(token: string): Promise<AddonCompleto[]> {
     return api.get<AddonCompleto[]>('/locadora/addons', token);
+  },
+
+  // CRUD addons
+  async criarAddon(data: AddonRequest, token: string): Promise<AddonCompleto> {
+    return api.post<AddonCompleto>('/locadora/addons', data, token);
+  },
+
+  async atualizarAddon(id: string, data: AddonRequest, token: string): Promise<AddonCompleto> {
+    return api.put<AddonCompleto>(`/locadora/addons/${id}`, data, token);
+  },
+
+  async desativarAddon(id: string, token: string): Promise<void> {
+    return api.delete(`/locadora/addons/${id}`, token);
+  },
+
+  // CRUD fees
+  async criarFee(data: FeeRequest, token: string): Promise<TaxaLoja> {
+    return api.post<TaxaLoja>('/locadora/fees', data, token);
+  },
+
+  async atualizarFee(id: string, data: FeeRequest, token: string): Promise<TaxaLoja> {
+    return api.put<TaxaLoja>(`/locadora/fees/${id}`, data, token);
+  },
+
+  async desativarFee(id: string, token: string): Promise<void> {
+    return api.delete(`/locadora/fees/${id}`, token);
+  },
+
+  // One-Way (filial)
+  async listarOneWay(token: string): Promise<OneWayRule[]> {
+    return api.get<OneWayRule[]>('/filial/one-way', token);
+  },
+
+  async criarOneWay(data: OneWayRequest, token: string): Promise<OneWayRule> {
+    return api.post<OneWayRule>('/filial/one-way', data, token);
+  },
+
+  async atualizarOneWay(id: string, data: OneWayRequest, token: string): Promise<OneWayRule> {
+    return api.put<OneWayRule>(`/filial/one-way/${id}`, data, token);
+  },
+
+  async excluirOneWay(id: string, token: string): Promise<void> {
+    return api.delete(`/filial/one-way/${id}`, token);
   },
 };

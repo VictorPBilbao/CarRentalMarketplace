@@ -40,6 +40,26 @@ class CriarReservaRequest(BaseModel):
         return v
 
 
+class CriarReservaClienteRequest(BaseModel):
+    """Reserva criada pelo cliente — customer_id vem do JWT, company_id é derivado da loja."""
+    category_id: str
+    pickup_store_id: str
+    dropoff_store_id: str
+    pickup_time: datetime
+    dropoff_time: datetime
+    flight_number: str | None = None
+    notes: str | None = None
+    pricing: PricingRequest
+
+    @field_validator('dropoff_time')
+    @classmethod
+    def dropoff_after_pickup(cls, v: datetime, info) -> datetime:
+        pickup = info.data.get('pickup_time')
+        if pickup and v <= pickup:
+            raise ValueError('dropoff_time deve ser posterior a pickup_time.')
+        return v
+
+
 class AtualizarStatusRequest(BaseModel):
     status: StatusReserva
 
