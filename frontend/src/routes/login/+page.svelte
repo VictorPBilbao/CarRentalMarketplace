@@ -70,9 +70,35 @@
 
       <div class="login-header">
         <p class="login-label">Painel da locadora</p>
-        <h1>Entrar na sua conta</h1>
-        <p class="login-sub">Acesse o painel para gerenciar sua frota e reservas.</p>
+        {#if (form as any)?.stores}
+          <h1>Selecione a filial</h1>
+          <p class="login-sub">Você trabalha em mais de uma filial. Escolha com qual deseja entrar.</p>
+        {:else}
+          <h1>Entrar na sua conta</h1>
+          <p class="login-sub">Acesse o painel para gerenciar sua frota e reservas.</p>
+        {/if}
       </div>
+
+      {#if (form as any)?.stores}
+        <!-- ── seleção de filial para funcionários multi-loja ── -->
+        <div class="store-selector">
+          {#each (form as any).stores as store}
+            <form method="POST" action="?/entrar" use:enhance={() => { carregando = true; return async ({ update }) => { await update(); carregando = false; }; }}>
+              <input type="hidden" name="email"   value={(form as any).email} />
+              <input type="hidden" name="senha"   value={(form as any).senha} />
+              <input type="hidden" name="storeId" value={store.id} />
+              <button type="submit" class="store-btn" disabled={carregando}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="1" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M4 5V4a4 4 0 018 0v1" stroke="currentColor" stroke-width="1.3"/>
+                </svg>
+                {store.name}
+              </button>
+            </form>
+          {/each}
+          <a href="/login" class="btn-voltar">← Voltar ao login</a>
+        </div>
+      {:else}
 
       <form
         method="POST"
@@ -161,6 +187,8 @@
         </button>
 
       </form>
+
+      {/if}
 
       <p class="cadastro-link">
         Ainda não tem conta?

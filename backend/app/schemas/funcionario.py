@@ -6,11 +6,12 @@ RoleFuncionario = Literal['MANAGER', 'CLERK', 'MECHANIC']
 
 
 class FuncionarioRequest(BaseModel):
-    first_name: str
-    last_name:  str
-    email:      str
-    senha:      str
-    role:       RoleFuncionario = 'CLERK'
+    first_name:      str
+    last_name:       str
+    email:           str
+    senha:           str
+    role:            RoleFuncionario = 'CLERK'
+    extra_store_ids: list[str] = []
 
 
 class FuncionarioResponse(BaseModel):

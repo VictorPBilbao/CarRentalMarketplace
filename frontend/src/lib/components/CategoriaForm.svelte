@@ -76,6 +76,81 @@
     { value: 'AUTOMATIC', label: 'Automático' },
     { value: 'MANUAL',    label: 'Manual'     },
   ];
+
+  // ── ACRISS ──────────────────────────────────────────────────────────────────
+  const ACRISS_CAT: { value: string; label: string }[] = [
+    { value: 'M', label: 'M — Mini' },
+    { value: 'E', label: 'E — Economy' },
+    { value: 'C', label: 'C — Compact' },
+    { value: 'I', label: 'I — Intermediário' },
+    { value: 'S', label: 'S — Standard' },
+    { value: 'F', label: 'F — Full-size' },
+    { value: 'P', label: 'P — Premium' },
+    { value: 'L', label: 'L — Luxo' },
+    { value: 'X', label: 'X — Especial' },
+    { value: 'J', label: 'J — SUV' },
+    { value: 'K', label: 'K — Pickup / Caminhonete' },
+    { value: 'V', label: 'V — Van / Minivan' },
+    { value: 'W', label: 'W — Perua / Station Wagon' },
+  ];
+
+  const ACRISS_TIPO: { value: string; label: string }[] = [
+    { value: 'B', label: 'B — 2-3 Portas' },
+    { value: 'C', label: 'C — 2/4 Portas' },
+    { value: 'D', label: 'D — 4-5 Portas' },
+    { value: 'W', label: 'W — Perua / Estate' },
+    { value: 'V', label: 'V — Van de Passageiros' },
+    { value: 'L', label: 'L — Limusine' },
+    { value: 'S', label: 'S — Esportivo' },
+    { value: 'T', label: 'T — Conversível' },
+    { value: 'F', label: 'F — SUV / 4×4 Aberto' },
+    { value: 'J', label: 'J — Aberto (Jipe)' },
+    { value: 'X', label: 'X — Especial' },
+    { value: 'P', label: 'P — Pickup Cabine Simples' },
+    { value: 'Q', label: 'Q — Pickup 4×4' },
+    { value: 'Z', label: 'Z — Especial 4×4' },
+    { value: 'M', label: 'M — Monovolume' },
+    { value: 'E', label: 'E — Cupê' },
+    { value: 'H', label: 'H — Motorhome / Trailer' },
+    { value: 'Y', label: 'Y — Pickup Cab. Regular' },
+  ];
+
+  const ACRISS_TRANS: { value: string; label: string }[] = [
+    { value: 'M', label: 'M — Manual' },
+    { value: 'N', label: 'N — Manual 4×4' },
+    { value: 'C', label: 'C — Manual AWD' },
+    { value: 'A', label: 'A — Automático' },
+    { value: 'B', label: 'B — Automático 4×4' },
+    { value: 'D', label: 'D — Automático AWD' },
+  ];
+
+  const ACRISS_COMB: { value: string; label: string }[] = [
+    { value: 'R', label: 'R — Indefinido / Ar' },
+    { value: 'N', label: 'N — Indefinido / Sem Ar' },
+    { value: 'D', label: 'D — Diesel / Ar' },
+    { value: 'Q', label: 'Q — Diesel / Sem Ar' },
+    { value: 'H', label: 'H — Híbrido / Ar' },
+    { value: 'I', label: 'I — Híbrido / Sem Ar' },
+    { value: 'E', label: 'E — Elétrico / Ar' },
+    { value: 'C', label: 'C — Elétrico / Sem Ar' },
+    { value: 'L', label: 'L — GLP / Ar' },
+    { value: 'S', label: 'S — GLP / Sem Ar' },
+    { value: 'M', label: 'M — Etanol / Ar' },
+    { value: 'F', label: 'F — Etanol / Sem Ar' },
+    { value: 'A', label: 'A — Hidrogênio / Ar' },
+    { value: 'B', label: 'B — Hidrogênio / Sem Ar' },
+  ];
+
+  const _acrissInit = ((form as any)?.campos?.acrissCode ?? categoria?.acriss_code ?? '') as string;
+  let acrissP1 = $state(_acrissInit[0] ?? '');
+  let acrissP2 = $state(_acrissInit[1] ?? '');
+  let acrissP3 = $state(_acrissInit[2] ?? '');
+  let acrissP4 = $state(_acrissInit[3] ?? '');
+  const acrissCode = $derived(
+    acrissP1 && acrissP2 && acrissP3 && acrissP4
+      ? `${acrissP1}${acrissP2}${acrissP3}${acrissP4}`
+      : ''
+  );
 </script>
 
 {#if erroGlobal}
@@ -102,7 +177,7 @@
     <p class="secao-titulo">Identificação</p>
     <div class="grid-4">
 
-      <div class="campo col-span-2">
+      <div class="campo col-span-3">
         <label for="groupName">Nome do Grupo <span class="obrigatorio">*</span></label>
         <input id="groupName" name="groupName" type="text"
           placeholder="Ex.: Econômico, SUV, Luxo"
@@ -121,17 +196,50 @@
         {#if erros.code}<span class="erro-msg">{erros.code}</span>{/if}
       </div>
 
-      <div class="campo">
-        <label for="acrissCode">
+      <div class="campo col-span-4">
+        <label>
           Código ACRISS
-          <span class="campo-hint">4 letras, opcional</span>
+          <span class="campo-hint">4 posições — padrão internacional (opcional)</span>
         </label>
-        <input id="acrissCode" name="acrissCode" type="text"
-          placeholder="Ex.: ECMR"
-          maxlength="4"
-          value={v('acrissCode', categoria?.acriss_code)}
-          class={erros.acrissCode ? 'erro' : ''}
-          style="text-transform:uppercase" />
+        <input type="hidden" name="acrissCode" value={acrissCode} />
+        <div class="acriss-builder">
+          <div class="acriss-selects">
+            <div class="acriss-pos">
+              <span class="acriss-pos-label">1 — Categoria</span>
+              <select bind:value={acrissP1}>
+                <option value="">—</option>
+                {#each ACRISS_CAT as o}<option value={o.value}>{o.label}</option>{/each}
+              </select>
+            </div>
+            <div class="acriss-pos">
+              <span class="acriss-pos-label">2 — Carroceria</span>
+              <select bind:value={acrissP2}>
+                <option value="">—</option>
+                {#each ACRISS_TIPO as o}<option value={o.value}>{o.label}</option>{/each}
+              </select>
+            </div>
+            <div class="acriss-pos">
+              <span class="acriss-pos-label">3 — Câmbio / Tração</span>
+              <select bind:value={acrissP3}>
+                <option value="">—</option>
+                {#each ACRISS_TRANS as o}<option value={o.value}>{o.label}</option>{/each}
+              </select>
+            </div>
+            <div class="acriss-pos">
+              <span class="acriss-pos-label">4 — Combustível / Ar</span>
+              <select bind:value={acrissP4}>
+                <option value="">—</option>
+                {#each ACRISS_COMB as o}<option value={o.value}>{o.label}</option>{/each}
+              </select>
+            </div>
+          </div>
+          <div class="acriss-preview {acrissCode ? 'acriss-ready' : ''}">
+            <span class="acriss-char {acrissP1 ? 'acriss-set' : ''}">{acrissP1 || '?'}</span>
+            <span class="acriss-char {acrissP2 ? 'acriss-set' : ''}">{acrissP2 || '?'}</span>
+            <span class="acriss-char {acrissP3 ? 'acriss-set' : ''}">{acrissP3 || '?'}</span>
+            <span class="acriss-char {acrissP4 ? 'acriss-set' : ''}">{acrissP4 || '?'}</span>
+          </div>
+        </div>
         {#if erros.acrissCode}<span class="erro-msg">{erros.acrissCode}</span>{/if}
       </div>
 
@@ -329,6 +437,7 @@
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
   .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
   .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 3; }
   .col-span-4 { grid-column: span 4; }
 
   .campo { display: flex; flex-direction: column; gap: 6px; }
@@ -479,6 +588,73 @@
     background: rgba(248,113,113,0.07);
     font-size: 13px; color: #f87171;
   }
+
+  /* ── ACRISS builder ── */
+  .acriss-builder {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+  }
+  .acriss-selects {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .acriss-pos {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .acriss-pos-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .acriss-pos select {
+    background: #080c14;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 8px 10px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.14s;
+    cursor: pointer;
+  }
+  .acriss-pos select:focus { border-color: rgba(96,165,250,0.5); }
+  .acriss-pos select option { background: #0f172a; }
+  .acriss-preview {
+    display: flex;
+    gap: 1px;
+    padding: 8px 16px;
+    background: #080c14;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 8px;
+    align-items: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .acriss-ready {
+    border-color: rgba(52,211,153,0.35);
+    background: rgba(52,211,153,0.04);
+  }
+  .acriss-char {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    color: #1e293b;
+    width: 26px;
+    text-align: center;
+    transition: color 0.14s;
+    line-height: 1;
+  }
+  .acriss-set { color: #34d399; }
 
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>

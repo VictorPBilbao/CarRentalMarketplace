@@ -4,11 +4,12 @@
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
-  const filial       = $derived(data.filial);
-  const funcionarios = $derived(data.funcionarios ?? []);
-  const erros        = $derived((form as any)?.erros  ?? {});
-  const erroGlobal   = $derived((form as any)?.erro   ?? null);
-  const campos       = $derived((form as any)?.campos ?? {});
+  const filial        = $derived(data.filial);
+  const funcionarios  = $derived(data.funcionarios ?? []);
+  const outrasFiliais = $derived((data as any).outrasFiliais ?? []);
+  const erros         = $derived((form as any)?.erros  ?? {});
+  const erroGlobal    = $derived((form as any)?.erro   ?? null);
+  const campos        = $derived((form as any)?.campos ?? {});
 
   const ROLES = [
     { value: 'CLERK',    label: 'Atendente'  },
@@ -22,9 +23,18 @@
     MECHANIC: 'bg-amber-400/10 text-amber-400',
   };
 
-  let enviando  = $state(false);
-  let removendo = $state<string | null>(null);
+  let enviando    = $state(false);
+  let removendo   = $state<string | null>(null);
   let mostrarForm = $state(false);
+
+  let extraStoreIds = $state<string[]>((form as any)?.campos?.extraStoreIds ?? []);
+  const extraStoreIdsJSON = $derived(JSON.stringify(extraStoreIds));
+
+  function toggleStore(id: string) {
+    extraStoreIds = extraStoreIds.includes(id)
+      ? extraStoreIds.filter((x) => x !== id)
+      : [...extraStoreIds, id];
+  }
 </script>
 
 <svelte:head>
@@ -97,9 +107,15 @@
     <form method="POST" action="?/criar"
       use:enhance={() => {
         enviando = true;
-        return async ({ update }) => { await update(); enviando = false; mostrarForm = Object.keys(erros).length > 0 || !!erroGlobal; };
+        return async ({ update }) => {
+          await update();
+          enviando = false;
+          mostrarForm = Object.keys(erros).length > 0 || !!erroGlobal;
+          if (!mostrarForm) extraStoreIds = [];
+        };
       }}
     >
+      <input type="hidden" name="extraStoreIds" value={extraStoreIdsJSON} />
       <div class="form-grid">
 
         <div class="campo">
@@ -138,6 +154,21 @@
             {/each}
           </select>
         </div>
+
+        {#if outrasFiliais.length > 0}
+          <div class="campo campo-full">
+            <label>Também trabalha em</label>
+            <div class="filiais-checks">
+              {#each outrasFiliais as f}
+                <label class="check-item {extraStoreIds.includes(f.id) ? 'check-ativo' : ''}">
+                  <input type="checkbox" checked={extraStoreIds.includes(f.id)}
+                    onchange={() => toggleStore(f.id)} />
+                  {f.name} <span class="check-code">({f.code})</span>
+                </label>
+              {/each}
+            </div>
+          </div>
+        {/if}
 
         <div class="campo campo-acao">
           <button type="submit" class="btn-salvar" disabled={enviando}>
@@ -349,7 +380,36 @@
   .campo select option { background: #0f172a; }
   .campo input.erro { border-color: rgba(248,113,113,0.5); }
   .campo .erro-msg { font-size: 11px; color: #f87171; }
-  .campo-acao { justify-content: flex-end; }
+  .campo-acao  { justify-content: flex-end; }
+  .campo-full  { grid-column: 1 / -1; }
+
+  /* ── multi-loja checkboxes ── */
+  .filiais-checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .check-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border-radius: 7px;
+    border: 1px solid rgba(255,255,255,0.09);
+    background: #080c14;
+    font-size: 12px;
+    color: #64748b;
+    cursor: pointer;
+    transition: border-color 0.14s, color 0.14s, background 0.14s;
+  }
+  .check-item input[type="checkbox"] { display: none; }
+  .check-item:hover { border-color: rgba(96,165,250,0.3); color: #94a3b8; }
+  .check-ativo {
+    border-color: rgba(96,165,250,0.5);
+    background: rgba(96,165,250,0.07);
+    color: #93c5fd;
+  }
+  .check-code { color: #334155; font-size: 11px; }
 
   /* ── botões de ação no form ── */
   .btn-salvar {

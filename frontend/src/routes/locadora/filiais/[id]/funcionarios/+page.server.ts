@@ -8,13 +8,15 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   const filialId = decodeURIComponent(params.id);
 
   try {
-    const [filial, funcionarios] = await Promise.all([
+    const [filial, funcionarios, todasFiliais] = await Promise.all([
       filialService.buscarPorId(filialId, locals.token!),
       funcionarioService.listar(filialId, locals.token!),
+      filialService.listar(locals.token!).catch(() => []),
     ]);
-    return { filial, funcionarios, erro: null };
+    const outrasFiliais = todasFiliais.filter((f) => f.id !== filialId);
+    return { filial, funcionarios, outrasFiliais, erro: null };
   } catch (e: any) {
-    return { filial: null, funcionarios: [], erro: e?.message ?? 'Erro ao carregar dados.' };
+    return { filial: null, funcionarios: [], outrasFiliais: [], erro: e?.message ?? 'Erro ao carregar dados.' };
   }
 };
 
@@ -24,26 +26,30 @@ export const actions: Actions = {
     const filialId = decodeURIComponent(params.id);
     const data = await request.formData();
 
-    const firstName = String(data.get('firstName') ?? '').trim();
-    const lastName  = String(data.get('lastName')  ?? '').trim();
-    const email     = String(data.get('email')     ?? '').trim();
-    const senha     = String(data.get('senha')     ?? '');
-    const role      = String(data.get('role')      ?? 'CLERK') as RoleFuncionario;
+    const firstName        = String(data.get('firstName')        ?? '').trim();
+    const lastName         = String(data.get('lastName')         ?? '').trim();
+    const email            = String(data.get('email')            ?? '').trim();
+    const senha            = String(data.get('senha')            ?? '');
+    const role             = String(data.get('role')             ?? 'CLERK') as RoleFuncionario;
+    const extraStoreIdsRaw = String(data.get('extraStoreIds')    ?? '[]');
+
+    let extraStoreIds: string[] = [];
+    try { extraStoreIds = JSON.parse(extraStoreIdsRaw); } catch { /* ignore */ }
 
     const erros: Record<string, string> = {};
-    if (firstName.length < 2)                          erros.firstName = 'Nome deve ter ao menos 2 caracteres.';
-    if (lastName.length < 2)                           erros.lastName  = 'Sobrenome deve ter ao menos 2 caracteres.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))    erros.email     = 'E-mail inválido.';
-    if (senha.length < 6)                              erros.senha     = 'Senha deve ter ao menos 6 caracteres.';
+    if (firstName.length < 2)                       erros.firstName = 'Nome deve ter ao menos 2 caracteres.';
+    if (lastName.length < 2)                        erros.lastName  = 'Sobrenome deve ter ao menos 2 caracteres.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) erros.email     = 'E-mail inválido.';
+    if (senha.length < 6)                           erros.senha     = 'Senha deve ter ao menos 6 caracteres.';
 
     if (Object.keys(erros).length > 0) {
-      return fail(422, { erros, campos: { firstName, lastName, email, role } });
+      return fail(422, { erros, campos: { firstName, lastName, email, role, extraStoreIds } });
     }
 
     try {
       await funcionarioService.criar(
         filialId,
-        { first_name: firstName, last_name: lastName, email, senha, role },
+        { first_name: firstName, last_name: lastName, email, senha, role, extra_store_ids: extraStoreIds },
         locals.token!,
       );
       return { sucesso: true };

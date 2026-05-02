@@ -2,8 +2,14 @@ import { api } from './api';
 
 // ── tipos ──
 export interface LoginPayload {
-  email: string;
-  senha: string;
+  email:    string;
+  senha:    string;
+  store_id?: string | null;
+}
+
+export interface StoreOption {
+  id:   string;
+  name: string;
 }
 
 export interface CadastroPayload {
@@ -18,14 +24,8 @@ export interface CadastroPayload {
 }
 
 export interface LoginResponse {
-  token: string;
-  usuario: {
-    id:         string;
-    nome:       string;
-    email:      string;
-    role:       'admin' | 'locadora' | 'filial';
-    locadoraId: string;
-  };
+  token:  string | null;
+  stores: StoreOption[] | null;
 }
 
 export interface CadastroResponse {
@@ -37,8 +37,7 @@ export interface CadastroResponse {
 export const authService = {
 
   async login(payload: LoginPayload): Promise<LoginResponse> {
-    const data = await api.post<LoginResponse>('/auth/login', payload);
-    return data;
+    return api.post<LoginResponse>('/auth/login', payload);
   },
 
   async cadastrar(payload: CadastroPayload): Promise<CadastroResponse> {

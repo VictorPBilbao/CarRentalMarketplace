@@ -10,6 +10,7 @@ from app.schemas.auth import (
     CadastroResponse,
     LoginRequest,
     LoginResponse,
+    StoreOption,
 )
 from app.schemas.usuario import UsuarioPayload
 
@@ -17,9 +18,10 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     resultado = await db.query(
         """
         SELECT id, first_name, last_name, email, password_hash,
-               ->manages.out.id  AS locadora_ids,
-               ->manages.role    AS manage_roles,
-               ->works_at.out.id AS filial_ids,
+               ->manages.out.id   AS locadora_ids,
+               ->manages.role     AS manage_roles,
+               ->works_at.out.id   AS filial_ids,
+               ->works_at.out.name AS filial_names,
                ->works_at.out.company AS filial_company_ids
         FROM user WHERE email = $email AND active = true LIMIT 1
         """,
@@ -34,9 +36,10 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     if not verificar_senha(payload.senha, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
-    locadora_ids:      list = user.get("locadora_ids")      or []
-    manage_roles:      list = user.get("manage_roles")      or []
-    filial_ids:        list = user.get("filial_ids")        or []
+    locadora_ids:       list = user.get("locadora_ids")       or []
+    manage_roles:       list = user.get("manage_roles")       or []
+    filial_ids:         list = user.get("filial_ids")         or []
+    filial_names:       list = user.get("filial_names")       or []
     filial_company_ids: list = user.get("filial_company_ids") or []
 
     nome = f"{user['first_name']} {user['last_name']}"
@@ -45,7 +48,7 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     if locadora_ids:
         locadora_id = str(locadora_ids[0])
         manage_role = (manage_roles[0] if manage_roles else "ADMIN").upper()
-        role = "locadora" if manage_role == "OWNER" or manage_role == "ADMIN" else "admin"
+        role = "locadora" if manage_role in ("OWNER", "ADMIN") else "admin"
 
         token_payload = UsuarioPayload(
             id=str(user["id"]),
@@ -57,8 +60,22 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
 
     # ── funcionário de filial (works_at) ──────────────────────────────────────
     elif filial_ids:
-        filial_id  = str(filial_ids[0])
-        company_id = str(filial_company_ids[0]) if filial_company_ids else None
+        # Múltiplas filiais → pede seleção se nenhuma foi informada
+        if len(filial_ids) > 1 and not payload.store_id:
+            stores = [
+                StoreOption(id=str(fid), name=str(fname))
+                for fid, fname in zip(filial_ids, filial_names)
+            ]
+            return LoginResponse(stores=stores)
+
+        chosen_id = payload.store_id if payload.store_id else str(filial_ids[0])
+        # Valida que o store escolhido pertence ao funcionário
+        filial_ids_str = [str(f) for f in filial_ids]
+        if chosen_id not in filial_ids_str:
+            raise HTTPException(status_code=403, detail="Filial não autorizada para este usuário.")
+
+        idx = filial_ids_str.index(chosen_id)
+        company_id = str(filial_company_ids[idx]) if idx < len(filial_company_ids) else None
 
         if not company_id:
             raise HTTPException(status_code=403, detail="Filial sem empresa associada.")
@@ -69,7 +86,7 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
             email=user["email"],
             role="filial",
             locadoraId=company_id,
-            matrizId=filial_id,
+            matrizId=chosen_id,
         )
 
     else:

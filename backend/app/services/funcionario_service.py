@@ -113,6 +113,17 @@ async def criar(
         {'user_id': user.get('id'), 'filial_id': filial_id, 'role': payload.role},
     )
 
+    for extra_id in payload.extra_store_ids:
+        if extra_id and extra_id != filial_id:
+            await db.query(
+                """
+                LET $u = type::record($user_id);
+                LET $f = type::record($extra_id);
+                RELATE $u->works_at->$f CONTENT { role: $role };
+                """,
+                {'user_id': user.get('id'), 'extra_id': extra_id, 'role': payload.role},
+            )
+
     return FuncionarioResponse(
         id=str(user.get('id')),
         first_name=user.get('first_name'),

@@ -3,11 +3,12 @@ import { api } from './api';
 export type RoleFuncionario = 'MANAGER' | 'CLERK' | 'MECHANIC';
 
 export interface CriarFuncionarioDTO {
-  first_name: string;
-  last_name:  string;
-  email:      string;
-  senha:      string;
-  role:       RoleFuncionario;
+  first_name:      string;
+  last_name:       string;
+  email:           string;
+  senha:           string;
+  role:            RoleFuncionario;
+  extra_store_ids?: string[];
 }
 
 export interface Funcionario {

@@ -3,13 +3,20 @@ from pydantic import BaseModel, EmailStr
 from app.schemas.usuario import UsuarioPayload
 
 
+class StoreOption(BaseModel):
+    id:   str
+    name: str
+
+
 class LoginRequest(BaseModel):
-    email: EmailStr
-    senha: str
+    email:    EmailStr
+    senha:    str
+    store_id: str | None = None
 
 
 class LoginResponse(BaseModel):
-    token: str
+    token:  str | None = None
+    stores: list[StoreOption] | None = None
 
 
 class CadastroLocadoraRequest(BaseModel):

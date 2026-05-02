@@ -296,6 +296,51 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+/* ── STORE SELECTOR ── */
+.store-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.store-selector form { margin: 0; }
+.store-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #e2e8f0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s, background 0.18s, transform 0.15s;
+}
+.store-btn:hover:not(:disabled) {
+  border-color: rgba(79, 142, 247, 0.4);
+  background: rgba(79, 142, 247, 0.07);
+  transform: translateX(2px);
+}
+.store-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-voltar {
+  background: none;
+  border: none;
+  color: rgba(232, 234, 240, 0.4);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: left;
+  transition: color 0.15s;
+  margin-top: 4px;
+}
+.btn-voltar:hover { color: rgba(232, 234, 240, 0.7); }
+
 /* ── ANIMATIONS ── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
