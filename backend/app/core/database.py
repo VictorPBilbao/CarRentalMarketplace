@@ -16,11 +16,15 @@ def extract_records(result: object) -> list[dict]:
                 return result[0]
             if isinstance(result[0], dict):
                 if 'status' in result[0] and 'result' in result[0]:
+                    if result[0].get('status') != 'OK':
+                        return []
                     res = result[0].get('result')
                     return res if isinstance(res, list) else [res] if res else []
                 return result
     elif isinstance(result, dict):
         if 'status' in result and 'result' in result:
+            if result.get('status') != 'OK':
+                return []
             res = result.get('result')
             return res if isinstance(res, list) else [res] if res else []
     return []

@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from surrealdb import AsyncSurreal
 
 from app.core.config import settings
+from app.core.database import extract_records
 from app.core.security import criar_token, hash_senha, verificar_senha
 from app.schemas.auth import (
     CadastroClienteRequest,
@@ -87,6 +88,8 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
             role="filial",
             locadoraId=company_id,
             matrizId=chosen_id,
+            filialIds=[str(f) for f in filial_ids],
+            filialNames=[str(n) for n in filial_names],
         )
 
     else:
@@ -226,3 +229,44 @@ async def cadastrar_cliente(payload: CadastroClienteRequest, db: AsyncSurreal) -
         raise HTTPException(status_code=500, detail="Erro ao criar o cliente.")
 
     return CadastroClienteResponse(userId=str(user["id"]), mensagem="Cadastro realizado com sucesso.")
+
+
+async def trocar_filial(store_id: str, usuario: UsuarioPayload, db: AsyncSurreal) -> LoginResponse:
+    result = await db.query(
+        """
+        SELECT ->works_at.out.id      AS filial_ids,
+               ->works_at.out.name    AS filial_names,
+               ->works_at.out.company AS filial_company_ids
+        FROM type::record($uid) LIMIT 1
+        """,
+        {'uid': usuario.id},
+    )
+    records = extract_records(result)
+    if not records:
+        raise HTTPException(status_code=403, detail='Filial não autorizada.')
+
+    row = records[0]
+    filial_ids         = [str(f) for f in (row.get('filial_ids')         or [])]
+    filial_names       = [str(n) for n in (row.get('filial_names')       or [])]
+    filial_company_ids = row.get('filial_company_ids') or []
+
+    if store_id not in filial_ids:
+        raise HTTPException(status_code=403, detail='Filial não autorizada para este usuário.')
+
+    idx = filial_ids.index(store_id)
+    company_id = str(filial_company_ids[idx]) if idx < len(filial_company_ids) else None
+    if not company_id:
+        raise HTTPException(status_code=403, detail='Filial sem empresa associada.')
+
+    token_payload = UsuarioPayload(
+        id=usuario.id,
+        nome=usuario.nome,
+        email=usuario.email,
+        role='filial',
+        locadoraId=company_id,
+        matrizId=store_id,
+        filialIds=filial_ids,
+        filialNames=filial_names,
+    )
+    token = criar_token(token_payload.model_dump(exclude_none=True))
+    return LoginResponse(token=token)

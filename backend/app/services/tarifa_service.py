@@ -1,5 +1,6 @@
 import asyncio
 from datetime import date, datetime
+from decimal import Decimal
 
 from fastapi import HTTPException
 from surrealdb import AsyncSurreal
@@ -671,7 +672,7 @@ async def criar_one_way(payload: OneWayRequest, store_id: str, db: AsyncSurreal)
             'to': store_id,
             'active': payload.active,
             'fee_type': payload.fee_type,
-            'amount': payload.amount,
+            'amount': Decimal(str(payload.amount)),
         },
     )
     rows = extract_records(result)
@@ -702,7 +703,7 @@ async def atualizar_one_way(rule_id: str, payload: OneWayRequest, store_id: str,
             fee: { type: $fee_type, amount: $amount }
         }
         """,
-        {'id': rule_id, 'active': payload.active, 'fee_type': payload.fee_type, 'amount': payload.amount},
+        {'id': rule_id, 'active': payload.active, 'fee_type': payload.fee_type, 'amount': Decimal(str(payload.amount))},
     )
     rules = await listar_one_way_filial(store_id, db)
     found = next((r for r in rules if r.id == rule_id), None)

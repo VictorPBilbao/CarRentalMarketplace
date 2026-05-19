@@ -20,7 +20,9 @@ export const handle: Handle = async ({ event, resolve }) => {
           email:      usuario.email,
           role:       usuario.role,
           locadoraId: usuario.locadoraId,
-          ...(usuario.matrizId ? { matrizId: usuario.matrizId } : {}),
+          ...(usuario.matrizId    ? { matrizId:    usuario.matrizId    } : {}),
+          ...(usuario.filialIds   ? { filialIds:   usuario.filialIds   } : {}),
+          ...(usuario.filialNames ? { filialNames: usuario.filialNames } : {}),
         };
       } else {
         event.cookies.delete('token', { path: '/' });

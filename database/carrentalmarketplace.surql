@@ -333,7 +333,7 @@ DEFINE FIELD dropoff_time ON reservation TYPE datetime ASSERT $value > $this.pic
 DEFINE FIELD flight_number ON reservation TYPE none | string PERMISSIONS FULL;
 DEFINE FIELD notes ON reservation TYPE none | string PERMISSIONS FULL;
 DEFINE FIELD pickup_store ON reservation TYPE record<store> PERMISSIONS FULL;
-DEFINE FIELD pickup_time ON reservation TYPE datetime ASSERT $value > time::now() PERMISSIONS FULL;
+DEFINE FIELD pickup_time ON reservation TYPE datetime ASSERT $before IS NOT NONE OR $value > time::now() PERMISSIONS FULL;
 DEFINE FIELD pricing ON reservation TYPE object PERMISSIONS FULL;
 DEFINE FIELD pricing.breakdown ON reservation TYPE array<object> DEFAULT [] PERMISSIONS FULL;
 DEFINE FIELD pricing.breakdown.* ON reservation TYPE object PERMISSIONS FULL;

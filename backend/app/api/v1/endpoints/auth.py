@@ -3,7 +3,7 @@ from typing import Annotated, TypeAlias
 from fastapi import APIRouter, Depends
 from surrealdb import AsyncSurreal
 
-from app.api.deps import CurrentUser
+from app.api.deps import CurrentUser, FilialOnly
 from app.core.database import get_db
 from app.schemas.auth import (
     CadastroClienteRequest,
@@ -12,6 +12,7 @@ from app.schemas.auth import (
     CadastroResponse,
     LoginRequest,
     LoginResponse,
+    TrocaFilialRequest,
 )
 from app.schemas.usuario import UsuarioPayload
 from app.services import auth_service
@@ -44,3 +45,8 @@ async def cadastro_cliente(payload: CadastroClienteRequest, db: DB):
 @router.post("/logout")
 async def logout(_usuario: CurrentUser):
     return {"mensagem": "Logout realizado com sucesso."}
+
+
+@router.post("/troca-filial", response_model=LoginResponse)
+async def troca_filial(payload: TrocaFilialRequest, usuario: FilialOnly, db: DB):
+    return await auth_service.trocar_filial(payload.store_id, usuario, db)

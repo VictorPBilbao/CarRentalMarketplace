@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from fastapi import HTTPException
 from loguru import logger
@@ -182,10 +183,7 @@ async def criar(
             detail='Sem disponibilidade para a categoria solicitada nas datas informadas.',
         )
 
-    # Calcula total_amount = daily_rate * total_days + fees + soma do breakdown
     base = payload.pricing.daily_rate * payload.pricing.total_days
-    breakdown_sum = sum(item.amount for item in payload.pricing.breakdown)
-    total_amount = base + payload.pricing.fees + breakdown_sum
 
     # Garante que existe pelo menos o item BASE_RATE no breakdown
     breakdown = [item.model_dump() for item in payload.pricing.breakdown]
@@ -195,6 +193,15 @@ async def criar(
             'description': f'{payload.pricing.total_days} dia(s) × R$ {payload.pricing.daily_rate:.2f}',
             'amount': base,
         })
+
+    # total_amount = fees + soma dos itens do breakdown (sem double-counting)
+    total_amount = payload.pricing.fees + sum(item['amount'] for item in breakdown)
+
+    # Converte para Decimal — campos decimal no SurrealDB rejeitam float CBOR
+    breakdown_db = [
+        {**item, 'amount': Decimal(str(item['amount']))}
+        for item in breakdown
+    ]
 
     result = await db.query(
         """
@@ -208,8 +215,6 @@ async def criar(
             flight_number: $flight_number,
             notes:         $notes,
             status:        'PENDING',
-            created_at:    time::now(),
-            updated_at:    time::now(),
             pricing: {
                 daily_rate:   $daily_rate,
                 total_days:   $total_days,
@@ -228,11 +233,11 @@ async def criar(
             'dropoff_time':     payload.dropoff_time.isoformat(),
             'flight_number':    payload.flight_number,
             'notes':            payload.notes,
-            'daily_rate':       payload.pricing.daily_rate,
+            'daily_rate':       Decimal(str(payload.pricing.daily_rate)),
             'total_days':       payload.pricing.total_days,
-            'fees':             payload.pricing.fees,
-            'total_amount':     total_amount,
-            'breakdown':        breakdown,
+            'fees':             Decimal(str(payload.pricing.fees)),
+            'total_amount':     Decimal(str(total_amount)),
+            'breakdown':        breakdown_db,
         },
     )
 
@@ -306,7 +311,7 @@ async def atualizar_status(
         )
 
     result = await db.query(
-        "UPDATE type::record($id) MERGE { status: $status, updated_at: time::now() }",
+        "UPDATE type::record($id) MERGE { status: $status }",
         {'id': reserva_id, 'status': payload.status},
     )
 

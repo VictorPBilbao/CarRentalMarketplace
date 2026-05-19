@@ -7,6 +7,7 @@
 
   const usuario = $derived(data.usuario);
   const filial  = $derived((data as any).filial);
+  const lojas   = $derived((data as any).lojas as { id: string; name: string }[] ?? []);
 
   const iniciais = $derived(
     usuario?.nome
@@ -73,18 +74,54 @@
       CarRental
     </a>
 
-    <!-- Filial badge -->
-    {#if filial}
-      <div style="
-        flex-shrink: 0;
-        padding: 10px 14px 6px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-      ">
-        <p style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #334155; margin: 0 0 3px;">Loja</p>
+    <!-- Filial badge / store switcher -->
+    <div style="
+      flex-shrink: 0;
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    ">
+      <p style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #334155; margin: 0 0 4px;">Loja</p>
+
+      {#if lojas.length > 1}
+        <!-- Multi-store: show a selector that auto-submits -->
+        <form method="POST" action="?/trocarFilial" id="form-troca-filial">
+          <select
+            name="store_id"
+            onchange="document.getElementById('form-troca-filial').requestSubmit()"
+            style="
+              width: 100%;
+              background: rgba(255,255,255,0.04);
+              border: 1px solid rgba(255,255,255,0.10);
+              border-radius: 6px;
+              color: #94a3b8;
+              font-size: 12px;
+              font-weight: 600;
+              font-family: inherit;
+              padding: 5px 8px;
+              cursor: pointer;
+              appearance: none;
+              background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");
+              background-repeat: no-repeat;
+              background-position: right 8px center;
+              padding-right: 24px;
+            "
+          >
+            {#each lojas as loja}
+              <option value={loja.id} selected={loja.id === usuario?.matrizId}>
+                {loja.name}
+              </option>
+            {/each}
+          </select>
+        </form>
+        {#if filial}
+          <span style="font-size: 11px; color: #334155;">{filial.code}</span>
+        {/if}
+      {:else if filial}
+        <!-- Single store: static display -->
         <p style="font-size: 13px; font-weight: 600; color: #94a3b8; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{filial.name}</p>
         <span style="font-size: 11px; color: #334155;">{filial.code}</span>
-      </div>
-    {/if}
+      {/if}
+    </div>
 
     <!-- Nav -->
     <nav style="

@@ -46,3 +46,7 @@ class CadastroClienteRequest(BaseModel):
 class CadastroClienteResponse(BaseModel):
     userId: str
     mensagem: str
+
+
+class TrocaFilialRequest(BaseModel):
+    store_id: str

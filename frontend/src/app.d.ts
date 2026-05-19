@@ -6,12 +6,14 @@ declare global {
 		interface Locals {
       token?: string;
       usuario?: {
-        id:         string;
-        nome:       string;
-        email:      string;
-        role:       'admin' | 'locadora' | 'filial' | 'customer';
-        locadoraId: string;
-        matrizId?:  string;
+        id:           string;
+        nome:         string;
+        email:        string;
+        role:         'admin' | 'locadora' | 'filial' | 'customer';
+        locadoraId:   string;
+        matrizId?:    string;
+        filialIds?:   string[];
+        filialNames?: string[];
       };
     }
 		// interface PageData {}

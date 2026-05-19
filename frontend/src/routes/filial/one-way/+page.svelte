@@ -258,15 +258,15 @@
             {editRule ? 'Salvar' : 'Criar Regra'}
           </button>
         </div>
-        {#if editRule}
-          <form method="POST" action="?/excluir" use:enhance style="border-top:1px solid rgba(255,255,255,0.07); padding-top:12px; margin-top:4px;">
-            <input type="hidden" name="id" value={editRule.id}/>
-            <button type="submit" style="width:100%; padding:8px; border-radius:8px; border:1px solid rgba(248,113,113,0.2); background:rgba(248,113,113,0.06); color:#f87171; font-size:13px; cursor:pointer; font-family:inherit;">
-              Excluir Regra
-            </button>
-          </form>
-        {/if}
       </form>
+      {#if editRule}
+        <form method="POST" action="?/excluir" use:enhance style="border-top:1px solid rgba(255,255,255,0.07); padding:0 24px 24px;">
+          <input type="hidden" name="id" value={editRule.id}/>
+          <button type="submit" style="width:100%; padding:8px; border-radius:8px; border:1px solid rgba(248,113,113,0.2); background:rgba(248,113,113,0.06); color:#f87171; font-size:13px; cursor:pointer; font-family:inherit;">
+            Excluir Regra
+          </button>
+        </form>
+      {/if}
     </div>
   </div>
 {/if}
