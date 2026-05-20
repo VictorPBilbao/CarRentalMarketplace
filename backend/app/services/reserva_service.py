@@ -51,10 +51,17 @@ def _pricing_to_response(p: dict) -> PricingResponse:
 
 
 def _row_to_response(row: dict) -> ReservaResponse:
+    first = str(row.get('_cust_fn') or '')
+    last  = str(row.get('_cust_ln') or '')
+    customer_name = f"{first} {last}".strip() or str(row['customer'])
+
     return ReservaResponse(
         id=str(row['id']),
         customer=str(row['customer']),
+        customer_name=customer_name,
         category=str(row['category']),
+        category_name=str(row.get('_cat_name') or ''),
+        category_code=str(row.get('_cat_code') or ''),
         pickup_store=str(row['pickup_store']),
         dropoff_store=str(row['dropoff_store']),
         pickup_time=_dt(row.get('pickup_time')),
@@ -70,7 +77,7 @@ def _row_to_response(row: dict) -> ReservaResponse:
 
 async def _check_loja(store_id: str, company_id: str, db: AsyncSurreal) -> None:
     result = await db.query(
-        "SELECT id FROM type::record($id) WHERE company = type::record($cid) LIMIT 1",
+        "SELECT id FROM store WHERE id = type::record($id) AND company = type::record($cid) LIMIT 1",
         {'id': store_id, 'cid': company_id},
     )
     if not extract_records(result):
@@ -79,7 +86,7 @@ async def _check_loja(store_id: str, company_id: str, db: AsyncSurreal) -> None:
 
 async def _check_categoria(categoria_id: str, company_id: str, db: AsyncSurreal) -> None:
     result = await db.query(
-        "SELECT id FROM type::record($id) WHERE company = type::record($cid) AND active = true LIMIT 1",
+        "SELECT id FROM vehicle_category WHERE id = type::record($id) AND company = type::record($cid) AND active = true LIMIT 1",
         {'id': categoria_id, 'cid': company_id},
     )
     if not extract_records(result):
@@ -88,7 +95,7 @@ async def _check_categoria(categoria_id: str, company_id: str, db: AsyncSurreal)
 
 async def _get_company_from_store(store_id: str, db: AsyncSurreal) -> str:
     result = await db.query(
-        "SELECT company FROM type::record($id) LIMIT 1",
+        "SELECT company FROM store WHERE id = type::record($id) LIMIT 1",
         {'id': store_id},
     )
     records = extract_records(result)
@@ -99,7 +106,7 @@ async def _get_company_from_store(store_id: str, db: AsyncSurreal) -> str:
 
 async def _check_customer(customer_id: str, db: AsyncSurreal) -> None:
     result = await db.query(
-        "SELECT id FROM type::record($id) WHERE active = true LIMIT 1",
+        "SELECT id FROM user WHERE id = type::record($id) AND active = true LIMIT 1",
         {'id': customer_id},
     )
     if not extract_records(result):
@@ -126,7 +133,12 @@ async def listar(
 
     result = await db.query(
         f"""
-        SELECT * FROM reservation
+        SELECT *,
+            customer.first_name AS _cust_fn,
+            customer.last_name  AS _cust_ln,
+            category.group_name AS _cat_name,
+            category.code       AS _cat_code
+        FROM reservation
         WHERE pickup_store.company = type::record($cid){store_clause}{status_clause}
         ORDER BY created_at DESC
         """,
@@ -151,8 +163,14 @@ async def buscar_por_id(
 
     result = await db.query(
         f"""
-        SELECT * FROM type::record($id)
-        WHERE pickup_store.company = type::record($cid){store_clause}
+        SELECT *,
+            customer.first_name AS _cust_fn,
+            customer.last_name  AS _cust_ln,
+            category.group_name AS _cat_name,
+            category.code       AS _cat_code
+        FROM reservation
+        WHERE id = type::record($id)
+          AND pickup_store.company = type::record($cid){store_clause}
         LIMIT 1
         """,
         params,
@@ -269,7 +287,10 @@ async def listar_cliente(
 
     result = await db.query(
         f"""
-        SELECT * FROM reservation
+        SELECT *,
+            category.group_name AS _cat_name,
+            category.code       AS _cat_code
+        FROM reservation
         WHERE customer = type::record($uid){status_clause}
         ORDER BY pickup_time ASC
         """,
@@ -285,7 +306,15 @@ async def buscar_por_id_cliente(
     db: AsyncSurreal,
 ) -> ReservaResponse:
     result = await db.query(
-        "SELECT * FROM type::record($id) WHERE customer = type::record($uid) LIMIT 1",
+        """
+        SELECT *,
+            category.group_name AS _cat_name,
+            category.code       AS _cat_code
+        FROM reservation
+        WHERE id = type::record($id)
+          AND customer = type::record($uid)
+        LIMIT 1
+        """,
         {'id': reserva_id, 'uid': user_id},
     )
     records = extract_records(result)

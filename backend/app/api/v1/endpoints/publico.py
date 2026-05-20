@@ -28,6 +28,12 @@ async def listar_categorias(db: DB):
     return await categoria_veiculo_service.listar_todos(db)
 
 
+@router.get("/lojas-com-categoria", response_model=list[FilialResponse])
+async def lojas_com_categoria(db: DB, category_id: str = Query(...)):
+    """Lojas ativas que possuem frota da categoria informada (sem autenticação)."""
+    return await filial_service.listar_com_categoria(category_id, db)
+
+
 @router.get("/buscar", response_model=BuscarTarifasResponse)
 async def buscar_tarifas(
     db: DB,

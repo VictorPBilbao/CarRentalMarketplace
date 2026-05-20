@@ -60,6 +60,25 @@ async def listar_todos(db: AsyncSurreal) -> list[FilialResponse]:
     return [_row_to_response(r) for r in records if isinstance(r, dict)]
 
 
+async def listar_com_categoria(category_id: str, db: AsyncSurreal) -> list[FilialResponse]:
+    """Retorna lojas ativas que possuem ao menos um veículo da categoria informada."""
+    result = await db.query(
+        """
+        SELECT current_store FROM vehicle
+        WHERE category = type::record($cat)
+          AND status != 'DECOMMISSIONED'
+        GROUP BY current_store
+        """,
+        {'cat': category_id},
+    )
+    rows = extract_records(result)
+    store_ids = {str(r['current_store']) for r in rows if isinstance(r, dict) and r.get('current_store')}
+    if not store_ids:
+        return []
+    all_stores = await listar_todos(db)
+    return [s for s in all_stores if s.id in store_ids]
+
+
 async def listar(usuario: UsuarioPayload, db: AsyncSurreal) -> list[FilialResponse]:
     result = await db.query(
         """

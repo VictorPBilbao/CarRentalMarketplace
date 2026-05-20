@@ -81,7 +81,10 @@ class PricingResponse(BaseModel):
 class ReservaResponse(BaseModel):
     id: str
     customer: str
+    customer_name: str
     category: str
+    category_name: str
+    category_code: str
     pickup_store: str
     dropoff_store: str
     pickup_time: str

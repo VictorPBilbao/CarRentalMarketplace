@@ -107,12 +107,14 @@
       <dl class="info-list">
         <div class="info-item">
           <dt>Cliente</dt>
-          <dd><span class="mono">{data.reserva.customer}</span></dd>
+          <dd>{data.reserva.customer_name}</dd>
         </div>
         <div class="info-item">
           <dt>Categoria</dt>
           <dd>
-            {#if cat}
+            {#if data.reserva.category_name}
+              {data.reserva.category_name} <span class="cat-code">{data.reserva.category_code}</span>
+            {:else if cat}
               {cat.group_name} <span class="cat-code">{cat.code}</span>
             {:else}
               <span class="mono">{data.reserva.category}</span>

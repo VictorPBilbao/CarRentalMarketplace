@@ -5,11 +5,8 @@ import { publicoService } from '$lib/services/publico.service';
 import { setFlash } from '$lib/flash';
 
 export const load: PageServerLoad = async () => {
-  const [lojas, categorias] = await Promise.all([
-    publicoService.listarLojas().catch(() => []),
-    publicoService.listarCategorias().catch(() => []),
-  ]);
-  return { lojas, categorias };
+  const categorias = await publicoService.listarCategorias().catch(() => []);
+  return { categorias };
 };
 
 export const actions: Actions = {
@@ -22,6 +19,12 @@ export const actions: Actions = {
     const pickupTime     = String(data.get('pickupTime')     ?? '').trim();
     const dropoffTime    = String(data.get('dropoffTime')    ?? '').trim();
     const customerAge    = parseInt(String(data.get('customerAge') ?? '25'));
+    const pickupCep      = String(data.get('pickupCep')      ?? '').trim();
+    const dropoffCep     = String(data.get('dropoffCep')     ?? '').trim();
+    const pickupStoreName  = String(data.get('pickupStoreName')  ?? '').trim();
+    const dropoffStoreName = String(data.get('dropoffStoreName') ?? '').trim();
+
+    const campos = { pickupStoreId, dropoffStoreId, categoryId, pickupTime, dropoffTime, customerAge: String(customerAge), pickupCep, dropoffCep, pickupStoreName, dropoffStoreName };
 
     const erros: Record<string, string> = {};
     if (!pickupStoreId)  erros.pickupStoreId  = 'Selecione a loja de retirada.';
@@ -31,7 +34,7 @@ export const actions: Actions = {
     if (!dropoffTime)    erros.dropoffTime    = 'Informe a data de devolução.';
 
     if (Object.keys(erros).length > 0) {
-      return fail(422, { erros, campos: { pickupStoreId, dropoffStoreId, categoryId, pickupTime, dropoffTime, customerAge: String(customerAge) } });
+      return fail(422, { erros, campos });
     }
 
     try {
@@ -44,15 +47,11 @@ export const actions: Actions = {
         customer_age:     customerAge,
       });
 
-      return {
-        etapa: 'confirmar' as const,
-        resultado,
-        campos: { pickupStoreId, dropoffStoreId, categoryId, pickupTime, dropoffTime, customerAge: String(customerAge) },
-      };
+      return { etapa: 'confirmar' as const, resultado, campos };
     } catch (e: any) {
       return fail(400, {
         erro: e?.message ?? 'Erro ao buscar tarifas.',
-        campos: { pickupStoreId, dropoffStoreId, categoryId, pickupTime, dropoffTime, customerAge: String(customerAge) },
+        campos,
       });
     }
   },
@@ -73,8 +72,9 @@ export const actions: Actions = {
     const flightNumber   = String(data.get('flightNumber')  ?? '').trim() || null;
     const notes          = String(data.get('notes')         ?? '').trim() || null;
 
+    let reserva;
     try {
-      const reserva = await clienteReservaService.criar(
+      reserva = await clienteReservaService.criar(
         {
           category_id:      categoryId,
           pickup_store_id:  pickupStoreId,
@@ -92,11 +92,11 @@ export const actions: Actions = {
         },
         token,
       );
-
-      setFlash(cookies, { tipo: 'sucesso', mensagem: 'Reserva criada com sucesso!' });
-      redirect(303, `/cliente/reservas/${encodeURIComponent(reserva.id)}`);
     } catch (e: any) {
       return fail(400, { erro: e?.message ?? 'Erro ao criar reserva.' });
     }
+
+    setFlash(cookies, { tipo: 'sucesso', mensagem: 'Reserva criada com sucesso!' });
+    redirect(303, `/cliente/reservas/${encodeURIComponent(reserva.id)}`);
   },
 };

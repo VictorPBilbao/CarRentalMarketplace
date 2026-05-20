@@ -658,18 +658,16 @@ async def criar_one_way(payload: OneWayRequest, store_id: str, db: AsyncSurreal)
         raise HTTPException(status_code=409, detail='Regra one-way já existe para este par de lojas.')
 
     result = await db.query(
-        """
-        RELATE type::record($from)->allows_return_to->type::record($to) CONTENT {
+        f"""
+        RELATE {payload.from_store_id}->allows_return_to->{store_id} CONTENT {{
             active: $active,
-            fee: {
+            fee: {{
                 type:   $fee_type,
                 amount: $amount
-            }
-        }
+            }}
+        }}
         """,
         {
-            'from': payload.from_store_id,
-            'to': store_id,
             'active': payload.active,
             'fee_type': payload.fee_type,
             'amount': Decimal(str(payload.amount)),

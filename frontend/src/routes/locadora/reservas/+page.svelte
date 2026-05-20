@@ -150,8 +150,8 @@
           {@const sc = statusCfg(r.status)}
           <tr>
             <td><span class="id-badge">{shortId(r.id)}</span></td>
-            <td><span class="cliente-id">{shortId(r.customer)}</span></td>
-            <td><span style="font-size:12px; color:#cbd5e1">{nomeCategoria(r.category)}</span></td>
+            <td><span class="cliente-nome">{r.customer_name}</span></td>
+            <td><span style="font-size:12px; color:#cbd5e1">{r.category_name ? `${r.category_name} (${r.category_code})` : nomeCategoria(r.category)}</span></td>
             <td>
               <div class="lojas-cell">
                 <span>{nomeLoja(r.pickup_store)}</span>
@@ -259,8 +259,8 @@
     font-family: monospace; font-size: 11px; font-weight: 600;
     color: #475569; letter-spacing: 0.05em;
   }
-  .cliente-id {
-    font-family: monospace; font-size: 11px; color: #64748b;
+  .cliente-nome {
+    font-size: 13px; color: #cbd5e1;
   }
   .lojas-cell { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #94a3b8; flex-wrap: wrap; }
   .seta { color: #334155; font-size: 10px; }

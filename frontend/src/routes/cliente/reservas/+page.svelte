@@ -74,6 +74,12 @@
     <h1>Minhas Reservas</h1>
     <p>Visualize o histórico e o status das suas reservas</p>
   </div>
+  <a href="/cliente/reservas/nova" class="btn-nova">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+      <path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    Nova Reserva
+  </a>
 </div>
 
 <div class="stats-row">
@@ -173,9 +179,22 @@
 {/if}
 
 <style>
-  .page-header { margin-bottom: 24px; }
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 24px;
+  }
   .page-header h1 { font-size: 22px; font-weight: 700; color: #f1f5f9; margin: 0 0 4px; }
   .page-header p  { font-size: 13px; color: #475569; margin: 0; }
+
+  .btn-nova {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; border-radius: 8px;
+    background: #a78bfa; color: #fff;
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    font-family: 'DM Sans', sans-serif; flex-shrink: 0;
+    transition: background 0.14s;
+  }
+  .btn-nova:hover { background: #7c3aed; }
 
   .stats-row {
     display: grid; grid-template-columns: repeat(4, 1fr);

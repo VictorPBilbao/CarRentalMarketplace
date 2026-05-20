@@ -61,8 +61,9 @@ export const actions: Actions = {
 
     if (Object.keys(erros).length > 0) return fail(422, { erros, campos });
 
+    let reserva;
     try {
-      const reserva = await filialReservaService.criar(
+      reserva = await filialReservaService.criar(
         {
           customer_id:      customerId,
           category_id:      categoryId,
@@ -81,11 +82,11 @@ export const actions: Actions = {
         },
         token,
       );
-
-      setFlash(cookies, { tipo: 'sucesso', mensagem: 'Reserva criada com sucesso.' });
-      redirect(303, `/filial/reservas/${encodeURIComponent(reserva.id)}`);
     } catch (e: any) {
       return fail(400, { erros: {}, erro: e?.message ?? 'Erro ao criar reserva.', campos });
     }
+
+    setFlash(cookies, { tipo: 'sucesso', mensagem: 'Reserva criada com sucesso.' });
+    redirect(303, `/filial/reservas/${encodeURIComponent(reserva.id)}`);
   },
 };
