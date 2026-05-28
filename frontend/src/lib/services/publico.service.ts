@@ -9,6 +9,7 @@ export interface BuscarTarifasParams {
   pickup_time: string;
   dropoff_time: string;
   customer_age: number;
+  nationality?: string | null;
   promo_code?: string | null;
 }
 
@@ -64,7 +65,8 @@ export const publicoService = {
       pickup_time:      params.pickup_time,
       dropoff_time:     params.dropoff_time,
       customer_age:     String(params.customer_age),
-      ...(params.promo_code ? { promo_code: params.promo_code } : {}),
+      ...(params.nationality  ? { nationality:  params.nationality  } : {}),
+      ...(params.promo_code   ? { promo_code:   params.promo_code   } : {}),
     });
     return api.get<BuscarTarifasResponse>(`/publico/buscar?${q}`);
   },

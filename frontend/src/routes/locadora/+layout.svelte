@@ -19,11 +19,8 @@
     '/locadora/categorias':    'Categorias',
     '/locadora/frota':         'Frota',
     '/locadora/reservas':      'Reservas',
-    '/locadora/contratos':     'Contratos',
     '/locadora/tarifas':       'Tarifas',
-    '/locadora/adicionais':    'Adicionais',
     '/locadora/protecoes':     'Proteções',
-    '/locadora/configuracoes': 'Configurações',
   };
 
   const titulo = $derived(paginaTitulo[page.url.pathname] ?? 'Painel');
@@ -135,14 +132,6 @@
         Reservas
       </a>
 
-      <a href="/locadora/contratos" class="nav-item {ativo('/locadora/contratos') ? 'nav-ativo' : ''}">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-          <path d="M4 1.5h5L12 4.5v9H3v-12z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-          <path d="M9 1.5V4.5H12M5.5 7.5h4M5.5 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-        Contratos
-      </a>
-
       <p class="nav-label" style="margin-top:12px;">Configurações</p>
 
       <a href="/locadora/tarifas" class="nav-item {ativo('/locadora/tarifas') ? 'nav-ativo' : ''}">
@@ -153,26 +142,11 @@
         Tarifas
       </a>
 
-      <a href="/locadora/adicionais" class="nav-item {ativo('/locadora/adicionais') ? 'nav-ativo' : ''}">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-          <path d="M5.5 2.5v1a1 1 0 01-2 0v-1H1.5v4h1a1 1 0 010 2h-1v4h3.5v-1a1 1 0 012 0v1h4v-3h-1a1 1 0 010-2h1V2.5h-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-        </svg>
-        Adicionais
-      </a>
-
       <a href="/locadora/protecoes" class="nav-item {ativo('/locadora/protecoes') ? 'nav-ativo' : ''}">
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
           <path d="M7.5 1.5L2 4v4.5c0 3 2.5 5 5.5 5.5 3-.5 5.5-2.5 5.5-5.5V4L7.5 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
         </svg>
         Proteções
-      </a>
-
-      <a href="/locadora/configuracoes" class="nav-item {ativo('/locadora/configuracoes') ? 'nav-ativo' : ''}">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-          <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.3"/>
-          <path d="M7.5 1.5v1M7.5 12.5v1M1.5 7.5h1M12.5 7.5h1M3.4 3.4l.7.7M10.9 10.9l.7.7M3.4 11.6l.7-.7M10.9 4.1l.7-.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-        Configurações
       </a>
 
     </nav>

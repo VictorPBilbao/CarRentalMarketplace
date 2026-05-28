@@ -43,6 +43,7 @@ async def buscar_tarifas(
     pickup_time: datetime = Query(...),
     dropoff_time: datetime = Query(...),
     customer_age: int = Query(..., ge=18),
+    nationality: str | None = Query(None),
     promo_code: str | None = Query(None),
 ):
     """Busca tarifas e disponibilidade sem autenticação."""
@@ -55,6 +56,7 @@ async def buscar_tarifas(
         pickup_time=pickup_time,
         dropoff_time=dropoff_time,
         customer_age=customer_age,
+        nationality=nationality,
         promo_code=promo_code,
         db=db,
     )

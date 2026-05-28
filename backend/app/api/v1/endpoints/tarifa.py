@@ -16,6 +16,10 @@ from app.schemas.tarifa import (
     FeeResponse,
     OneWayRequest,
     OneWayResponse,
+    ProtecaoRequest,
+    ProtecaoResponse,
+    RatePlanRequest,
+    RatePlanResponse,
 )
 from app.services import tarifa_service
 
@@ -35,6 +39,7 @@ async def buscar_tarifas_filial(
     pickup_time: datetime = Query(...),
     dropoff_time: datetime = Query(...),
     customer_age: int = Query(..., ge=18),
+    nationality: str | None = Query(None),
     promo_code: str | None = Query(None),
 ):
     return await tarifa_service.buscar_tarifas(
@@ -45,6 +50,7 @@ async def buscar_tarifas_filial(
         pickup_time=pickup_time,
         dropoff_time=dropoff_time,
         customer_age=customer_age,
+        nationality=nationality,
         promo_code=promo_code,
         db=db,
     )
@@ -92,6 +98,7 @@ async def buscar_tarifas_locadora(
     pickup_time: datetime = Query(...),
     dropoff_time: datetime = Query(...),
     customer_age: int = Query(..., ge=18),
+    nationality: str | None = Query(None),
     promo_code: str | None = Query(None),
 ):
     return await tarifa_service.buscar_tarifas(
@@ -102,6 +109,7 @@ async def buscar_tarifas_locadora(
         pickup_time=pickup_time,
         dropoff_time=dropoff_time,
         customer_age=customer_age,
+        nationality=nationality,
         promo_code=promo_code,
         db=db,
     )
@@ -117,6 +125,43 @@ async def calcular_cotacao_locadora(payload: CotacaoRequest, usuario: LocadoraOr
 @router.get("/locadora/rate_plans")
 async def listar_rate_plans(usuario: LocadoraOrFilial, db: DB):
     return await tarifa_service.listar_rate_plans_empresa(usuario.locadoraId, db)
+
+
+@router.post("/locadora/rate_plans", response_model=RatePlanResponse, status_code=201)
+async def criar_rate_plan(payload: RatePlanRequest, usuario: LocadoraOnly, db: DB):
+    return await tarifa_service.criar_rate_plan(payload, usuario.locadoraId, db)
+
+
+@router.put("/locadora/rate_plans/{plan_id}", response_model=RatePlanResponse)
+async def atualizar_rate_plan(plan_id: str, payload: RatePlanRequest, usuario: LocadoraOnly, db: DB):
+    return await tarifa_service.atualizar_rate_plan(plan_id, payload, usuario.locadoraId, db)
+
+
+@router.delete("/locadora/rate_plans/{plan_id}", status_code=204)
+async def desativar_rate_plan(plan_id: str, usuario: LocadoraOnly, db: DB):
+    await tarifa_service.desativar_rate_plan(plan_id, usuario.locadoraId, db)
+
+
+# ── Locadora: CRUD proteções ──────────────────────────────────────────────────
+
+@router.get("/locadora/protecoes", response_model=list[ProtecaoResponse])
+async def listar_protecoes(usuario: LocadoraOrFilial, db: DB):
+    return await tarifa_service.listar_protecoes_empresa(usuario.locadoraId, db)
+
+
+@router.post("/locadora/protecoes", response_model=ProtecaoResponse, status_code=201)
+async def criar_protecao(payload: ProtecaoRequest, usuario: LocadoraOnly, db: DB):
+    return await tarifa_service.criar_protecao(payload, usuario.locadoraId, db)
+
+
+@router.put("/locadora/protecoes/{prot_id}", response_model=ProtecaoResponse)
+async def atualizar_protecao(prot_id: str, payload: ProtecaoRequest, usuario: LocadoraOnly, db: DB):
+    return await tarifa_service.atualizar_protecao(prot_id, payload, usuario.locadoraId, db)
+
+
+@router.delete("/locadora/protecoes/{prot_id}", status_code=204)
+async def excluir_protecao(prot_id: str, usuario: LocadoraOnly, db: DB):
+    await tarifa_service.excluir_protecao(prot_id, usuario.locadoraId, db)
 
 
 @router.get("/locadora/fees", response_model=list[FeeResponse])

@@ -23,8 +23,9 @@ export const actions: Actions = {
     const dropoffCep     = String(data.get('dropoffCep')     ?? '').trim();
     const pickupStoreName  = String(data.get('pickupStoreName')  ?? '').trim();
     const dropoffStoreName = String(data.get('dropoffStoreName') ?? '').trim();
+    const nationality      = String(data.get('nationality')      ?? '').trim() || null;
 
-    const campos = { pickupStoreId, dropoffStoreId, categoryId, pickupTime, dropoffTime, customerAge: String(customerAge), pickupCep, dropoffCep, pickupStoreName, dropoffStoreName };
+    const campos = { pickupStoreId, dropoffStoreId, categoryId, pickupTime, dropoffTime, customerAge: String(customerAge), pickupCep, dropoffCep, pickupStoreName, dropoffStoreName, nationality: nationality ?? '' };
 
     const erros: Record<string, string> = {};
     if (!pickupStoreId)  erros.pickupStoreId  = 'Selecione a loja de retirada.';
@@ -45,6 +46,7 @@ export const actions: Actions = {
         pickup_time:      new Date(pickupTime).toISOString(),
         dropoff_time:     new Date(dropoffTime).toISOString(),
         customer_age:     customerAge,
+        nationality,
       });
 
       return { etapa: 'confirmar' as const, resultado, campos };

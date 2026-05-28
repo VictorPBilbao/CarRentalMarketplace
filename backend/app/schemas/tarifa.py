@@ -82,6 +82,7 @@ class CotacaoRequest(BaseModel):
     pickup_time: datetime
     dropoff_time: datetime
     customer_age: int
+    nationality: str | None = None
     promo_code: str | None = None
     rate_plan_id: str | None = None
     selected_addons: list[AddonSelecionado] = []
@@ -201,3 +202,70 @@ class OneWayResponse(BaseModel):
     fee_type: str
     amount: float
     active: bool
+
+
+# ── CRUD: Rate Plan ───────────────────────────────────────────────────────────
+
+class RatePlanPriceRequest(BaseModel):
+    daily_rate: float
+    currency: str = 'BRL'
+    mileage_policy: str = 'UNLIMITED'
+    included_km_per_day: int = 0
+    extra_km_price: float = 0.0
+
+
+class RatePlanConditionsRequest(BaseModel):
+    categories: list[str]
+    stores: list[str] = []
+    min_days: int = 1
+    max_days: int | None = None
+    min_age: int = 18
+    max_age: int | None = None
+    advance_booking_days: int = 0
+    allow_one_way: bool = True
+    valid_from: datetime | None = None
+    valid_to: datetime | None = None
+    promo_code: str | None = None
+    allowed_nationalities: list[str] = []
+
+
+class RatePlanRequest(BaseModel):
+    name: str
+    priority: int = 0
+    active: bool = True
+    price: RatePlanPriceRequest
+    conditions: RatePlanConditionsRequest
+    included_protections: list[str] = []
+
+
+class RatePlanResponse(BaseModel):
+    id: str
+    name: str
+    active: bool
+    priority: int
+    price: RatePlanPriceRequest
+    conditions: RatePlanConditionsRequest
+    included_protections: list[str]
+    created_at: str
+    updated_at: str
+
+
+# ── CRUD: Proteção ────────────────────────────────────────────────────────────
+
+class PricingMatrixItem(BaseModel):
+    category: str
+    daily_rate: float
+    deductible_amount: float
+
+
+class ProtecaoRequest(BaseModel):
+    name: str
+    code: str
+    pricing_matrix: list[PricingMatrixItem] = []
+
+
+class ProtecaoResponse(BaseModel):
+    id: str
+    name: str
+    code: str
+    pricing_matrix: list[PricingMatrixItem]

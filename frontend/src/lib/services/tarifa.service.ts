@@ -187,6 +187,7 @@ export interface BuscarTarifasParams {
   pickup_time: string;
   dropoff_time: string;
   customer_age: number;
+  nationality?: string | null;
   promo_code?: string | null;
 }
 
@@ -197,12 +198,60 @@ export interface CotacaoRequest {
   pickup_time: string;
   dropoff_time: string;
   customer_age: number;
+  nationality?: string | null;
   promo_code?: string | null;
   rate_plan_id?: string | null;
   selected_addons?: AddonSelecionado[];
 }
 
 // ── CRUD requests ─────────────────────────────────────────────────────────────
+
+export interface RatePlanRequest {
+  name: string;
+  priority: number;
+  active: boolean;
+  price: {
+    daily_rate: number;
+    currency: string;
+    mileage_policy: string;
+    included_km_per_day: number;
+    extra_km_price: number;
+  };
+  conditions: {
+    categories: string[];
+    stores: string[];
+    min_days: number;
+    max_days: number | null;
+    min_age: number;
+    max_age: number | null;
+    advance_booking_days: number;
+    allow_one_way: boolean;
+    valid_from: string | null;
+    valid_to: string | null;
+    promo_code: string | null;
+    allowed_nationalities: string[];
+  };
+  included_protections: string[];
+}
+
+export interface PricingMatrixItem {
+  category: string;
+  daily_rate: number;
+  deductible_amount: number;
+}
+
+export interface ProtecaoItem {
+  id: string;
+  name: string;
+  code: string;
+  pricing_matrix: PricingMatrixItem[];
+}
+
+export interface ProtecaoRequest {
+  name: string;
+  code: string;
+  pricing_matrix: PricingMatrixItem[];
+}
 
 export interface AddonRequest {
   name: string;
@@ -315,5 +364,35 @@ export const tarifaService = {
 
   async excluirOneWay(id: string, token: string): Promise<void> {
     return api.delete(`/filial/one-way/${id}`, token);
+  },
+
+  // CRUD rate_plans
+  async criarRatePlan(data: RatePlanRequest, token: string): Promise<RatePlanCompleto> {
+    return api.post<RatePlanCompleto>('/locadora/rate_plans', data, token);
+  },
+
+  async atualizarRatePlan(id: string, data: RatePlanRequest, token: string): Promise<RatePlanCompleto> {
+    return api.put<RatePlanCompleto>(`/locadora/rate_plans/${id}`, data, token);
+  },
+
+  async desativarRatePlan(id: string, token: string): Promise<void> {
+    return api.delete(`/locadora/rate_plans/${id}`, token);
+  },
+
+  // CRUD proteções
+  async listarProtecoes(token: string): Promise<ProtecaoItem[]> {
+    return api.get<ProtecaoItem[]>('/locadora/protecoes', token);
+  },
+
+  async criarProtecao(data: ProtecaoRequest, token: string): Promise<ProtecaoItem> {
+    return api.post<ProtecaoItem>('/locadora/protecoes', data, token);
+  },
+
+  async atualizarProtecao(id: string, data: ProtecaoRequest, token: string): Promise<ProtecaoItem> {
+    return api.put<ProtecaoItem>(`/locadora/protecoes/${id}`, data, token);
+  },
+
+  async excluirProtecao(id: string, token: string): Promise<void> {
+    return api.delete(`/locadora/protecoes/${id}`, token);
   },
 };

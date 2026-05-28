@@ -18,7 +18,6 @@
     '/filial/dashboard': 'Dashboard',
     '/filial/frota':     'Frota',
     '/filial/reservas':  'Reservas',
-    '/filial/contratos': 'Contratos',
     '/filial/cotacao':   'Cotação',
     '/filial/one-way':   'One-Way',
   };
@@ -126,14 +125,6 @@
           <path d="M5 1.5v2M10 1.5v2M2 6.5h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
         </svg>
         Reservas
-      </a>
-
-      <a href="/filial/contratos" class="nav-item {ativo('/filial/contratos') ? 'nav-ativo' : ''}">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-          <path d="M4 1.5h5L12 4.5v9H3v-12z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-          <path d="M9 1.5V4.5H12M5.5 7.5h4M5.5 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-        Contratos
       </a>
 
       <a href="/filial/one-way" class="nav-item {ativo('/filial/one-way') ? 'nav-ativo' : ''}">

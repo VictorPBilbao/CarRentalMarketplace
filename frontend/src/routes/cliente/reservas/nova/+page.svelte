@@ -12,7 +12,7 @@
     code: string;
     address: { city: string; state: string; neighborhood: string; street: string };
     location: { latitude: number; longitude: number };
-    distancia_km: number;
+    distancia_km: number | null;
   }
 
   // ── Estado do formulário ───────────────────────────────────────────────
@@ -27,6 +27,7 @@
     dropoffCep:      (form as any)?.campos?.dropoffCep      ?? '',
     pickupStoreName:  (form as any)?.campos?.pickupStoreName  ?? '',
     dropoffStoreName: (form as any)?.campos?.dropoffStoreName ?? '',
+    nationality:     (form as any)?.campos?.nationality     ?? '',
     flightNumber:    '',
     notes:           '',
   });
@@ -94,7 +95,8 @@
     }
   }
 
-  function formatKm(km: number): string {
+  function formatKm(km: number | null): string {
+    if (km === null) return '— km';
     return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
   }
 
@@ -135,15 +137,16 @@
 
       const coordR = dadosR.location?.coordinates;
       const coordD = dadosD.location?.coordinates;
-      if (!coordR?.latitude || !coordR?.longitude) throw new Error(`CEP ${campos.pickupCep} sem localização geográfica. Tente um CEP próximo.`);
-      if (!coordD?.latitude || !coordD?.longitude) throw new Error(`CEP ${campos.dropoffCep} sem localização geográfica. Tente um CEP próximo.`);
 
-      const latR = parseFloat(coordR.latitude);
-      const lonR = parseFloat(coordR.longitude);
-      const latD = parseFloat(coordD.latitude);
-      const lonD = parseFloat(coordD.longitude);
+      const latR = coordR?.latitude  ? parseFloat(String(coordR.latitude))  : null;
+      const lonR = coordR?.longitude ? parseFloat(String(coordR.longitude)) : null;
+      const latD = coordD?.latitude  ? parseFloat(String(coordD.latitude))  : null;
+      const lonD = coordD?.longitude ? parseFloat(String(coordD.longitude)) : null;
 
-      function computar(lista: any[], lat: number, lon: number): LojaProxima[] {
+      function computar(lista: any[], lat: number | null, lon: number | null): LojaProxima[] {
+        if (lat === null || lon === null) {
+          return lista.slice(0, 5).map((l: any) => ({ ...l, distancia_km: null }));
+        }
         return lista
           .filter((l: any) => l.location?.latitude && l.location?.longitude)
           .map((l: any) => ({
@@ -248,6 +251,11 @@
         </div>
 
         <div class="field">
+          <label for="nationality">Nacionalidade</label>
+          <input id="nationality" type="text" placeholder="BR, US, EU..." bind:value={campos.nationality} />
+        </div>
+
+        <div class="field">
           <label for="pickupTime">Data/Hora de Retirada <span class="req">*</span></label>
           <input
             id="pickupTime" type="datetime-local"
@@ -309,6 +317,7 @@
       <input type="hidden" name="dropoffStoreId"  value={campos.dropoffStoreId} />
       <input type="hidden" name="pickupStoreName"  value={campos.pickupStoreName} />
       <input type="hidden" name="dropoffStoreName" value={campos.dropoffStoreName} />
+      <input type="hidden" name="nationality"      value={campos.nationality} />
 
       <div class="card">
         <h3 class="card-title">Lojas Disponíveis — {nomeCategoria(campos.categoryId)}</h3>
