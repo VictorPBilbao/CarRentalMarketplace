@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, TypeAlias
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from surrealdb import AsyncSurreal
 
 from app.core.database import get_db
@@ -52,7 +52,13 @@ async def buscar_todas_categorias(
     promo_code: str | None = Query(None),
 ):
     """Busca tarifas para todas as categorias disponíveis em uma loja (sem autenticação)."""
-    company_id = await _get_company_from_store(pickup_store_id, db)
+    company_id      = await _get_company_from_store(pickup_store_id, db)
+    company_dropoff = await _get_company_from_store(dropoff_store_id, db)
+    if company_id != company_dropoff:
+        raise HTTPException(
+            status_code=400,
+            detail='Retirada e devolução devem ser da mesma locadora.',
+        )
     return await tarifa_service.buscar_tarifas_todas_categorias(
         company_id=company_id,
         pickup_store_id=pickup_store_id,
@@ -79,7 +85,13 @@ async def buscar_tarifas(
     promo_code: str | None = Query(None),
 ):
     """Busca tarifas e disponibilidade sem autenticação."""
-    company_id = await _get_company_from_store(pickup_store_id, db)
+    company_id      = await _get_company_from_store(pickup_store_id, db)
+    company_dropoff = await _get_company_from_store(dropoff_store_id, db)
+    if company_id != company_dropoff:
+        raise HTTPException(
+            status_code=400,
+            detail='Retirada e devolução devem ser da mesma locadora.',
+        )
     return await tarifa_service.buscar_tarifas(
         company_id=company_id,
         pickup_store_id=pickup_store_id,

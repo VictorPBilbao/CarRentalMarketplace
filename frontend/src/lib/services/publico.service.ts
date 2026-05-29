@@ -7,6 +7,7 @@ export interface CidadeStore {
   name: string;
   code: string;
   location_type: string;
+  company_id: string;
 }
 
 export interface CidadeResponse {

@@ -39,13 +39,22 @@
   const lojasRetirada  = $derived<CidadeStore[]>(
     cidades.find(c => c.city === campos.pickupCity)?.stores ?? []
   );
-  const lojasDevolucao = $derived<CidadeStore[]>(
-    cidades.find(c => c.city === campos.dropoffCity)?.stores ?? []
-  );
 
   // IDs efetivos: auto-selecionado se cidade tem 1 loja, senão depende do radio
-  const pickupStoreId   = $derived(lojasRetirada.length === 1  ? lojasRetirada[0].id    : campos.pickupStoreId);
-  const pickupStoreName = $derived(lojasRetirada.length === 1  ? lojasRetirada[0].name  : campos.pickupStoreName);
+  const pickupStoreId   = $derived(lojasRetirada.length === 1  ? lojasRetirada[0].id       : campos.pickupStoreId);
+  const pickupStoreName = $derived(lojasRetirada.length === 1  ? lojasRetirada[0].name     : campos.pickupStoreName);
+  const pickupCompanyId = $derived(lojasRetirada.find(l => l.id === pickupStoreId)?.company_id ?? lojasRetirada[0]?.company_id ?? '');
+
+  // Devolução: somente lojas da mesma locadora que a retirada
+  const lojasDevolucaoTodas = $derived<CidadeStore[]>(
+    cidades.find(c => c.city === campos.dropoffCity)?.stores ?? []
+  );
+  const lojasDevolucao = $derived<CidadeStore[]>(
+    pickupCompanyId
+      ? lojasDevolucaoTodas.filter(l => l.company_id === pickupCompanyId)
+      : lojasDevolucaoTodas
+  );
+
   const dropoffStoreId  = $derived(lojasDevolucao.length === 1 ? lojasDevolucao[0].id   : campos.dropoffStoreId);
   const dropoffStoreName= $derived(lojasDevolucao.length === 1 ? lojasDevolucao[0].name : campos.dropoffStoreName);
 
@@ -91,7 +100,7 @@
   }
 
   function selecionarCategoria(cat: ResultadoCategoriaDisponivel) {
-    if (cat.disponibilidade === 0) return;
+    if (cat.disponibilidade === 0 || cat.rate_plans.length === 0) return;
     categoriaEscolhida = cat;
   }
 
@@ -189,7 +198,11 @@
         <p class="msg-erro">{erro('pickupStoreId')}</p>
       {/if}
 
-      {#if campos.dropoffCity && lojasDevolucao.length > 1}
+      {#if campos.dropoffCity && lojasDevolucao.length === 0 && lojasDevolucaoTodas.length > 0 && pickupCompanyId}
+        <p class="msg-aviso" style="margin-top:14px;">
+          A locadora da cidade de retirada não possui filial em {campos.dropoffCity}. Escolha outra cidade de devolução.
+        </p>
+      {:else if campos.dropoffCity && lojasDevolucao.length > 1}
         <div class="field" style="margin-top:14px;">
           <label>Loja de Devolução <span class="req">*</span></label>
           <div class="lojas-lista">
@@ -315,7 +328,9 @@
 
     <div class="categorias-grid">
       {#each resultado.categorias as cat}
-        {@const disponivel = cat.disponibilidade > 0 && cat.rate_plans.length > 0}
+        {@const semUnidades = cat.disponibilidade === 0}
+        {@const semTarifa   = cat.disponibilidade > 0 && cat.rate_plans.length === 0}
+        {@const disponivel  = !semUnidades && !semTarifa}
         {@const melhorPlano = cat.rate_plans[0]}
         <button
           type="button"
@@ -348,7 +363,12 @@
               <span class="preco-unid">/dia</span>
             </div>
             <div class="cat-total">Total: <strong>{moeda(totalComFees(cat))}</strong></div>
+            {#if cat.store_fees.length > 0}
+              <div class="cat-taxas">+taxas da loja</div>
+            {/if}
             <div class="cat-disp">{cat.disponibilidade} unidade(s)</div>
+          {:else if semTarifa}
+            <div class="cat-indisponivel-label">Sem tarifas para este percurso</div>
           {:else}
             <div class="cat-indisponivel-label">Indisponível</div>
           {/if}
@@ -378,10 +398,17 @@
             <span class="resumo-val">{melhorPlano.name}</span>
             <span class="resumo-sub">{moeda(melhorPlano.daily_rate)}/dia × {melhorPlano.total_days} dia(s)</span>
           </div>
+          {#if categoriaEscolhida.store_fees.length > 0}
+            <div class="resumo-item">
+              <span class="resumo-label">Taxas da loja</span>
+              {#each categoriaEscolhida.store_fees as taxa}
+                <span class="resumo-sub">{taxa.name}: {moeda(taxa.amount)}</span>
+              {/each}
+            </div>
+          {/if}
           <div class="resumo-item">
             <span class="resumo-label">Total estimado</span>
             <span class="resumo-val" style="color:#34d399;">{moeda(total)}</span>
-            {#if feesTotal > 0}<span class="resumo-sub">Inclui taxas da loja</span>{/if}
           </div>
         {/if}
       </div>
@@ -458,7 +485,8 @@
   input:focus, select:focus { outline: none; border-color: #60a5fa; }
   select option { background: #1e293b; }
   .input-erro { border-color: rgba(248,113,113,0.4); }
-  .msg-erro { font-size: 12px; color: #f87171; margin: 2px 0 0; }
+  .msg-erro   { font-size: 12px; color: #f87171; margin: 2px 0 0; }
+  .msg-aviso  { font-size: 12px; color: #fbbf24; margin: 2px 0 0; }
   .banner-erro { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); border-radius: 9px; padding: 10px 14px; font-size: 13px; color: #f87171; margin-bottom: 14px; }
   .banner-aviso { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); border-radius: 9px; padding: 10px 14px; font-size: 13px; color: #fbbf24; }
 
@@ -546,6 +574,7 @@
   .preco-val { font-size: 20px; font-weight: 700; color: #60a5fa; }
   .preco-unid { font-size: 12px; color: #475569; }
   .cat-total { font-size: 12px; color: #94a3b8; }
+  .cat-taxas { font-size: 10px; color: #64748b; margin-top: 1px; }
   .cat-disp { font-size: 11px; color: #334155; margin-top: 2px; }
   .cat-indisponivel-label { font-size: 12px; color: #475569; margin-top: 6px; }
 
