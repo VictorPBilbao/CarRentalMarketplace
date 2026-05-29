@@ -42,6 +42,19 @@ class HorarioFuncionamento(BaseModel):
     is_closed:   bool = False
 
 
+class CidadeStore(BaseModel):
+    id:            str
+    name:          str
+    code:          str
+    location_type: str
+
+
+class CidadeResponse(BaseModel):
+    city:   str
+    state:  str
+    stores: list[CidadeStore]
+
+
 class FilialRequest(BaseModel):
     """Payload para criar ou substituir completamente uma filial (POST / PUT)."""
     name:            str

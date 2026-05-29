@@ -9,6 +9,7 @@ from app.schemas.tarifa import (
     AddonDisponivel,
     AddonSelecionado,
     BuscarTarifasResponse,
+    BuscarTodasCategoriasResponse,
     CotacaoRequest,
     CotacaoResponse,
     FeeCalculado,
@@ -16,6 +17,7 @@ from app.schemas.tarifa import (
     LojaAlternativa,
     ProtecaoIncluida,
     RatePlanDisponivel,
+    ResultadoCategoriaDisponivel,
     TaxaOneWay,
 )
 from app.services import disponibilidade_service
@@ -204,6 +206,7 @@ def _fee_to_response(fee: dict) -> FeeCalculado:
         calculation_type=pricing.get('calculation_type', 'FLAT_FEE'),
         applies_after_time=conds.get('applies_after_time'),
         applies_before_time=conds.get('applies_before_time'),
+        is_tax=bool(fee.get('is_tax', False)),
     )
 
 
@@ -371,12 +374,16 @@ async def calcular_cotacao(
     ]
 
     fees_response = [_fee_to_response(f) for f in fees_raw if isinstance(f, dict)]
-    fees_total = 0.0
+
+    # Passo 1: fees regulares (is_tax=False) calculadas sobre o subtotal base
+    fees_regular_total = 0.0
     for fee in fees_response:
+        if fee.is_tax:
+            continue
         if not _fee_applies(fee, payload.pickup_time):
             continue
         calculated = _calc_fee_amount(fee, subtotal_base)
-        fees_total += calculated
+        fees_regular_total += calculated
         breakdown.append(ItemCotacao(type='FEE', description=fee.name, amount=calculated))
 
     addons_map = {_s(a['id']): a for a in addons_raw if isinstance(a, dict)}
@@ -403,7 +410,20 @@ async def calcular_cotacao(
                 amount=one_way_fee_amount,
             ))
 
-    final_total = round(subtotal_base + fees_total + addons_total + one_way_fee_amount, 2)
+    # Passo 2: impostos/taxas fiscais (is_tax=True) aplicados sobre o subtotal intermediário
+    subtotal_antes_impostos = round(subtotal_base + fees_regular_total + addons_total + one_way_fee_amount, 2)
+    fees_tax_total = 0.0
+    for fee in fees_response:
+        if not fee.is_tax:
+            continue
+        if not _fee_applies(fee, payload.pickup_time):
+            continue
+        calculated = _calc_fee_amount(fee, subtotal_antes_impostos)
+        fees_tax_total += calculated
+        breakdown.append(ItemCotacao(type='TAX', description=fee.name, amount=calculated))
+
+    fees_total = round(fees_regular_total + fees_tax_total, 2)
+    final_total = round(subtotal_antes_impostos + fees_tax_total, 2)
     protecoes = await _buscar_protecoes(company_id, plan.included_protections, payload.category_id, db)
     addons_response = [_addon_to_response(a) for a in addons_raw if isinstance(a, dict)]
 
@@ -420,4 +440,122 @@ async def calcular_cotacao(
         breakdown=breakdown,
         included_protections=protecoes,
         available_addons=addons_response,
+    )
+
+
+# ── Busca de todas as categorias disponíveis ──────────────────────────────────
+
+async def buscar_tarifas_todas_categorias(
+    company_id: str,
+    pickup_store_id: str,
+    dropoff_store_id: str,
+    pickup_time: datetime,
+    dropoff_time: datetime,
+    customer_age: int,
+    promo_code: str | None,
+    db: AsyncSurreal,
+    nationality: str | None = None,
+) -> BuscarTodasCategoriasResponse:
+    total_days = _total_days(pickup_time, dropoff_time)
+    is_one_way = pickup_store_id != dropoff_store_id
+
+    # Passo 1: IDs distintos de categorias com veículos na loja de retirada
+    distinct_result = await db.query(
+        """
+        SELECT category FROM vehicle
+        WHERE current_store = type::record($sid)
+          AND status != 'DECOMMISSIONED'
+        GROUP BY category
+        """,
+        {'sid': pickup_store_id},
+    )
+    distinct_rows = extract_records(distinct_result)
+    category_ids = list({_s(r['category']) for r in distinct_rows if isinstance(r, dict) and r.get('category')})
+
+    if not category_ids:
+        return BuscarTodasCategoriasResponse(
+            total_days=total_days,
+            is_one_way=is_one_way,
+            categorias=[],
+        )
+
+    # Passo 2: detalhes de cada categoria em paralelo
+    cat_detail_tasks = [
+        db.query("SELECT * FROM type::record($id)", {'id': cid})
+        for cid in category_ids
+    ]
+    cat_detail_results = await asyncio.gather(*cat_detail_tasks, return_exceptions=True)
+    categorias_info = []
+    for cid, res in zip(category_ids, cat_detail_results):
+        if isinstance(res, Exception):
+            continue
+        rows = extract_records(res)
+        if not rows or not isinstance(rows[0], dict):
+            continue
+        r = rows[0]
+        categorias_info.append({
+            'cat_id': cid,
+            'cat_name': str(r.get('group_name', '')),
+            'cat_code': str(r.get('code', '')),
+            'image_url': str(r['image_url']) if r.get('image_url') else None,
+        })
+
+    if not categorias_info:
+        return BuscarTodasCategoriasResponse(
+            total_days=total_days,
+            is_one_way=is_one_way,
+            categorias=[],
+        )
+
+    # Executa buscar_tarifas para cada categoria em paralelo
+    tasks = [
+        buscar_tarifas(
+            company_id=company_id,
+            pickup_store_id=pickup_store_id,
+            dropoff_store_id=dropoff_store_id,
+            category_id=info['cat_id'],
+            pickup_time=pickup_time,
+            dropoff_time=dropoff_time,
+            customer_age=customer_age,
+            promo_code=promo_code,
+            db=db,
+            nationality=nationality,
+        )
+        for info in categorias_info
+    ]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    categorias_resultado: list[ResultadoCategoriaDisponivel] = []
+    for info, res in zip(categorias_info, results):
+        if isinstance(res, Exception):
+            categorias_resultado.append(ResultadoCategoriaDisponivel(
+                category_id=info['cat_id'],
+                category_name=info['cat_name'],
+                category_code=info['cat_code'],
+                image_url=info['image_url'],
+                disponibilidade=0,
+                rate_plans=[],
+                store_fees=[],
+                one_way_fee=None,
+            ))
+        else:
+            categorias_resultado.append(ResultadoCategoriaDisponivel(
+                category_id=info['cat_id'],
+                category_name=info['cat_name'],
+                category_code=info['cat_code'],
+                image_url=info['image_url'],
+                disponibilidade=res.disponibilidade,
+                rate_plans=res.rate_plans,
+                store_fees=res.store_fees,
+                one_way_fee=res.one_way_fee,
+                lojas_alternativas=res.lojas_alternativas,
+            ))
+
+    # Ordena: disponíveis primeiro, depois por nome da categoria
+    categorias_resultado.sort(key=lambda c: (c.disponibilidade == 0, c.category_name))
+
+    return BuscarTodasCategoriasResponse(
+        total_days=total_days,
+        is_one_way=is_one_way,
+        categorias=categorias_resultado,
     )

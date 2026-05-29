@@ -2,6 +2,47 @@ import { api } from './api';
 import type { Filial } from './filial.service';
 import type { Categoria } from './categoria.service';
 
+export interface CidadeStore {
+  id: string;
+  name: string;
+  code: string;
+  location_type: string;
+}
+
+export interface CidadeResponse {
+  city: string;
+  state: string;
+  stores: CidadeStore[];
+}
+
+export interface ResultadoCategoriaDisponivel {
+  category_id: string;
+  category_name: string;
+  category_code: string;
+  image_url: string | null;
+  disponibilidade: number;
+  rate_plans: RatePlanDisponivel[];
+  store_fees: { id: string; name: string; amount: number; is_tax: boolean }[];
+  one_way_fee: { fee_type: string; amount: number } | null;
+  lojas_alternativas: { store_id: string; store_name: string; available_units: number }[];
+}
+
+export interface BuscarTodasCategoriasResponse {
+  total_days: number;
+  is_one_way: boolean;
+  categorias: ResultadoCategoriaDisponivel[];
+}
+
+export interface BuscarCategoriasParams {
+  pickup_store_id: string;
+  dropoff_store_id: string;
+  pickup_time: string;
+  dropoff_time: string;
+  customer_age: number;
+  nationality?: string | null;
+  promo_code?: string | null;
+}
+
 export interface BuscarTarifasParams {
   pickup_store_id: string;
   dropoff_store_id: string;
@@ -55,6 +96,23 @@ export const publicoService = {
 
   async listarCategorias(): Promise<Categoria[]> {
     return api.get<Categoria[]>('/publico/categorias');
+  },
+
+  async listarCidades(): Promise<CidadeResponse[]> {
+    return api.get<CidadeResponse[]>('/publico/cidades');
+  },
+
+  async buscarCategorias(params: BuscarCategoriasParams): Promise<BuscarTodasCategoriasResponse> {
+    const q = new URLSearchParams({
+      pickup_store_id:  params.pickup_store_id,
+      dropoff_store_id: params.dropoff_store_id,
+      pickup_time:      params.pickup_time,
+      dropoff_time:     params.dropoff_time,
+      customer_age:     String(params.customer_age),
+      ...(params.nationality ? { nationality: params.nationality } : {}),
+      ...(params.promo_code  ? { promo_code:  params.promo_code  } : {}),
+    });
+    return api.get<BuscarTodasCategoriasResponse>(`/publico/buscar-categorias?${q}`);
   },
 
   async buscar(params: BuscarTarifasParams): Promise<BuscarTarifasResponse> {

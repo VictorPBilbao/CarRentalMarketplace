@@ -97,13 +97,14 @@ export const actions: Actions = {
     const after_time  = String(data.get('after_time') ?? '').trim() || null;
     const before_time = String(data.get('before_time') ?? '').trim() || null;
     const active      = data.get('active') === 'true';
+    const is_tax      = data.get('is_tax') === 'true';
 
     if (!name || !store_id || !calc_type) {
       return fail(400, { feeErro: 'Preencha nome, loja e tipo de cálculo.' });
     }
 
     try {
-      await tarifaService.criarFee({ name, store_id, pricing: { amount, calculation_type: calc_type as any }, conditions: { applies_after_time: after_time, applies_before_time: before_time }, active }, token);
+      await tarifaService.criarFee({ name, store_id, pricing: { amount, calculation_type: calc_type as any }, conditions: { applies_after_time: after_time, applies_before_time: before_time }, active, is_tax }, token);
       return { feeSucesso: true };
     } catch (e: any) {
       return fail(400, { feeErro: e?.message ?? 'Erro ao criar taxa.' });
@@ -122,11 +123,12 @@ export const actions: Actions = {
     const after_time  = String(data.get('after_time') ?? '').trim() || null;
     const before_time = String(data.get('before_time') ?? '').trim() || null;
     const active      = data.get('active') === 'true';
+    const is_tax      = data.get('is_tax') === 'true';
 
     if (!id || !name || !store_id) return fail(400, { feeErro: 'Dados inválidos.' });
 
     try {
-      await tarifaService.atualizarFee(id, { name, store_id, pricing: { amount, calculation_type: calc_type as any }, conditions: { applies_after_time: after_time, applies_before_time: before_time }, active }, token);
+      await tarifaService.atualizarFee(id, { name, store_id, pricing: { amount, calculation_type: calc_type as any }, conditions: { applies_after_time: after_time, applies_before_time: before_time }, active, is_tax }, token);
       return { feeSucesso: true };
     } catch (e: any) {
       return fail(400, { feeErro: e?.message ?? 'Erro ao atualizar taxa.' });

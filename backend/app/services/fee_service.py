@@ -19,6 +19,7 @@ def _fee_row_to_response(row: dict) -> FeeResponse:
         store_name=row.get('store_name'),
         store_code=row.get('store_code'),
         active=bool(row.get('active', True)),
+        is_tax=bool(row.get('is_tax', False)),
         pricing=FeePricingRequest(
             amount=float(pricing.get('amount', 0)),
             calculation_type=pricing.get('calculation_type', 'FLAT_FEE'),
@@ -61,6 +62,7 @@ async def criar_fee(payload: FeeRequest, company_id: str, db: AsyncSurreal) -> F
             store:  type::record($store_id),
             name:   $name,
             active: $active,
+            is_tax: $is_tax,
             pricing: {
                 amount:           $amount,
                 calculation_type: $calc_type
@@ -75,6 +77,7 @@ async def criar_fee(payload: FeeRequest, company_id: str, db: AsyncSurreal) -> F
             'store_id': payload.store_id,
             'name': payload.name,
             'active': payload.active,
+            'is_tax': payload.is_tax,
             'amount': payload.pricing.amount,
             'calc_type': payload.pricing.calculation_type,
             'after_time': payload.conditions.applies_after_time,
@@ -115,6 +118,7 @@ async def atualizar_fee(fee_id: str, payload: FeeRequest, company_id: str, db: A
         UPDATE type::record($id) MERGE {
             name:   $name,
             active: $active,
+            is_tax: $is_tax,
             pricing: {
                 amount:           $amount,
                 calculation_type: $calc_type
@@ -129,6 +133,7 @@ async def atualizar_fee(fee_id: str, payload: FeeRequest, company_id: str, db: A
             'id': fee_id,
             'name': payload.name,
             'active': payload.active,
+            'is_tax': payload.is_tax,
             'amount': payload.pricing.amount,
             'calc_type': payload.pricing.calculation_type,
             'after_time': payload.conditions.applies_after_time,

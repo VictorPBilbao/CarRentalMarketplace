@@ -69,6 +69,28 @@ async def calcular_cotacao_filial(payload: CotacaoRequest, usuario: FilialOnly, 
     return await tarifa_service.calcular_cotacao(payload, usuario.locadoraId, db)
 
 
+# ── Filial: rate plans ───────────────────────────────────────────────────────
+
+@router.get("/filial/rate_plans")
+async def listar_rate_plans_filial(usuario: FilialOnly, db: DB):
+    return await rate_plan_service.listar_rate_plans_empresa(usuario.locadoraId, db)
+
+
+@router.post("/filial/rate_plans", response_model=RatePlanResponse, status_code=201)
+async def criar_rate_plan_filial(payload: RatePlanRequest, usuario: FilialOnly, db: DB):
+    return await rate_plan_service.criar_rate_plan_filial(payload, usuario.locadoraId, usuario.matrizId, db)
+
+
+@router.put("/filial/rate_plans/{plan_id}", response_model=RatePlanResponse)
+async def atualizar_rate_plan_filial(plan_id: str, payload: RatePlanRequest, usuario: FilialOnly, db: DB):
+    return await rate_plan_service.atualizar_rate_plan_filial(plan_id, payload, usuario.locadoraId, usuario.matrizId, db)
+
+
+@router.delete("/filial/rate_plans/{plan_id}", status_code=204)
+async def desativar_rate_plan_filial(plan_id: str, usuario: FilialOnly, db: DB):
+    await rate_plan_service.desativar_rate_plan_filial(plan_id, usuario.locadoraId, usuario.matrizId, db)
+
+
 # ── Filial: one-way config ────────────────────────────────────────────────────
 
 @router.get("/filial/one-way", response_model=list[OneWayResponse])

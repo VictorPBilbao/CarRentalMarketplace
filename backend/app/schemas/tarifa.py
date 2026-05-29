@@ -47,6 +47,7 @@ class FeeCalculado(BaseModel):
     calculation_type: TipoCalculoFee
     applies_after_time: str | None
     applies_before_time: str | None
+    is_tax: bool = False
 
 
 class TaxaOneWay(BaseModel):
@@ -73,6 +74,24 @@ class BuscarTarifasResponse(BaseModel):
     one_way_fee: TaxaOneWay | None
     disponibilidade: int = 0
     lojas_alternativas: list[LojaAlternativa] = []
+
+
+class ResultadoCategoriaDisponivel(BaseModel):
+    category_id: str
+    category_name: str
+    category_code: str
+    image_url: str | None = None
+    disponibilidade: int
+    rate_plans: list[RatePlanDisponivel]
+    store_fees: list[FeeCalculado]
+    one_way_fee: TaxaOneWay | None
+    lojas_alternativas: list[LojaAlternativa] = []
+
+
+class BuscarTodasCategoriasResponse(BaseModel):
+    total_days: int
+    is_one_way: bool
+    categorias: list[ResultadoCategoriaDisponivel]
 
 
 class CotacaoRequest(BaseModel):
@@ -172,6 +191,7 @@ class FeeRequest(BaseModel):
     pricing: FeePricingRequest
     conditions: FeeConditionsRequest = FeeConditionsRequest()
     active: bool = True
+    is_tax: bool = False
 
 
 class FeeResponse(BaseModel):
@@ -183,6 +203,7 @@ class FeeResponse(BaseModel):
     active: bool
     pricing: FeePricingRequest
     conditions: FeeConditionsRequest
+    is_tax: bool = False
 
 
 # ── CRUD: One-Way ─────────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from surrealdb import AsyncSurreal
 
 from app.core.database import extract_records
-from app.schemas.filial import FilialRequest, FilialResponse
+from app.schemas.filial import CidadeResponse, CidadeStore, FilialRequest, FilialResponse
 from app.schemas.usuario import UsuarioPayload
 
 
@@ -58,6 +58,45 @@ async def listar_todos(db: AsyncSurreal) -> list[FilialResponse]:
     result = await db.query("SELECT * FROM store WHERE active = true ORDER BY name ASC")
     records = extract_records(result)
     return [_row_to_response(r) for r in records if isinstance(r, dict)]
+
+
+async def listar_cidades(db: AsyncSurreal) -> list[CidadeResponse]:
+    """Retorna cidades distintas de lojas com frota ativa (uso público)."""
+    from collections import defaultdict
+
+    # Lojas que têm ao menos um veículo não desativado
+    veh_result = await db.query(
+        """
+        SELECT current_store FROM vehicle
+        WHERE status != 'DECOMMISSIONED'
+        GROUP BY current_store
+        """
+    )
+    veh_rows = extract_records(veh_result)
+    store_ids_com_frota = {str(r['current_store']) for r in veh_rows if isinstance(r, dict) and r.get('current_store')}
+
+    if not store_ids_com_frota:
+        return []
+
+    all_stores = await listar_todos(db)
+    agrupado: dict[tuple[str, str], list[CidadeStore]] = defaultdict(list)
+    for s in all_stores:
+        if s.id not in store_ids_com_frota:
+            continue
+        city  = (s.address.city  or '').strip()
+        state = (s.address.state or '').strip()
+        if not city:
+            continue
+        agrupado[(city, state)].append(CidadeStore(
+            id=s.id,
+            name=s.name,
+            code=s.code,
+            location_type=s.location_type,
+        ))
+    return [
+        CidadeResponse(city=city, state=state, stores=stores)
+        for (city, state), stores in sorted(agrupado.items())
+    ]
 
 
 async def listar_com_categoria(category_id: str, db: AsyncSurreal) -> list[FilialResponse]:

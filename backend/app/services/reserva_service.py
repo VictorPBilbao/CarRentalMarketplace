@@ -221,43 +221,49 @@ async def criar(
         for item in breakdown
     ]
 
-    result = await db.query(
-        """
-        CREATE reservation CONTENT {
-            customer:      type::record($customer_id),
-            category:      type::record($category_id),
-            pickup_store:  type::record($pickup_store_id),
-            dropoff_store: type::record($dropoff_store_id),
-            pickup_time:   type::datetime($pickup_time),
-            dropoff_time:  type::datetime($dropoff_time),
-            flight_number: $flight_number,
-            notes:         $notes,
-            status:        'PENDING',
-            pricing: {
-                daily_rate:   $daily_rate,
-                total_days:   $total_days,
-                fees:         $fees,
-                total_amount: $total_amount,
-                breakdown:    $breakdown
+    try:
+        result = await db.query(
+            """
+            CREATE reservation CONTENT {
+                customer:      type::record($customer_id),
+                category:      type::record($category_id),
+                pickup_store:  type::record($pickup_store_id),
+                dropoff_store: type::record($dropoff_store_id),
+                pickup_time:   type::datetime($pickup_time),
+                dropoff_time:  type::datetime($dropoff_time),
+                flight_number: $flight_number,
+                notes:         $notes,
+                status:        'PENDING',
+                pricing: {
+                    daily_rate:   $daily_rate,
+                    total_days:   $total_days,
+                    fees:         $fees,
+                    total_amount: $total_amount,
+                    breakdown:    $breakdown
+                }
             }
-        }
-        """,
-        {
-            'customer_id':      payload.customer_id,
-            'category_id':      payload.category_id,
-            'pickup_store_id':  payload.pickup_store_id,
-            'dropoff_store_id': payload.dropoff_store_id,
-            'pickup_time':      payload.pickup_time.isoformat(),
-            'dropoff_time':     payload.dropoff_time.isoformat(),
-            'flight_number':    payload.flight_number,
-            'notes':            payload.notes,
-            'daily_rate':       Decimal(str(payload.pricing.daily_rate)),
-            'total_days':       payload.pricing.total_days,
-            'fees':             Decimal(str(payload.pricing.fees)),
-            'total_amount':     Decimal(str(total_amount)),
-            'breakdown':        breakdown_db,
-        },
-    )
+            """,
+            {
+                'customer_id':      payload.customer_id,
+                'category_id':      payload.category_id,
+                'pickup_store_id':  payload.pickup_store_id,
+                'dropoff_store_id': payload.dropoff_store_id,
+                'pickup_time':      payload.pickup_time.isoformat(),
+                'dropoff_time':     payload.dropoff_time.isoformat(),
+                'flight_number':    payload.flight_number,
+                'notes':            payload.notes,
+                'daily_rate':       Decimal(str(payload.pricing.daily_rate)),
+                'total_days':       payload.pricing.total_days,
+                'fees':             Decimal(str(payload.pricing.fees)),
+                'total_amount':     Decimal(str(total_amount)),
+                'breakdown':        breakdown_db,
+            },
+        )
+    except Exception as exc:
+        msg = str(exc)
+        if isinstance(exc, dict):
+            msg = exc.get('message', msg)
+        raise HTTPException(status_code=422, detail=f'Erro ao criar reserva: {msg}')
 
     records = extract_records(result)
     if not records:

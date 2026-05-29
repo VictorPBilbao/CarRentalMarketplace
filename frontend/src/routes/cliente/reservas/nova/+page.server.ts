@@ -5,32 +5,30 @@ import { publicoService } from '$lib/services/publico.service';
 import { setFlash } from '$lib/flash';
 
 export const load: PageServerLoad = async () => {
-  const categorias = await publicoService.listarCategorias().catch(() => []);
-  return { categorias };
+  const cidades = await publicoService.listarCidades().catch(() => []);
+  return { cidades };
 };
 
 export const actions: Actions = {
   buscar: async ({ request }) => {
     const data = await request.formData();
 
-    const pickupStoreId  = String(data.get('pickupStoreId')  ?? '').trim();
-    const dropoffStoreId = String(data.get('dropoffStoreId') ?? '').trim();
-    const categoryId     = String(data.get('categoryId')     ?? '').trim();
-    const pickupTime     = String(data.get('pickupTime')     ?? '').trim();
-    const dropoffTime    = String(data.get('dropoffTime')    ?? '').trim();
-    const customerAge    = parseInt(String(data.get('customerAge') ?? '25'));
-    const pickupCep      = String(data.get('pickupCep')      ?? '').trim();
-    const dropoffCep     = String(data.get('dropoffCep')     ?? '').trim();
+    const pickupStoreId   = String(data.get('pickupStoreId')   ?? '').trim();
+    const dropoffStoreId  = String(data.get('dropoffStoreId')  ?? '').trim();
+    const pickupTime      = String(data.get('pickupTime')      ?? '').trim();
+    const dropoffTime     = String(data.get('dropoffTime')     ?? '').trim();
+    const customerAge     = parseInt(String(data.get('customerAge') ?? '25'));
+    const pickupCity      = String(data.get('pickupCity')      ?? '').trim();
+    const dropoffCity     = String(data.get('dropoffCity')     ?? '').trim();
     const pickupStoreName  = String(data.get('pickupStoreName')  ?? '').trim();
     const dropoffStoreName = String(data.get('dropoffStoreName') ?? '').trim();
     const nationality      = String(data.get('nationality')      ?? '').trim() || null;
 
-    const campos = { pickupStoreId, dropoffStoreId, categoryId, pickupTime, dropoffTime, customerAge: String(customerAge), pickupCep, dropoffCep, pickupStoreName, dropoffStoreName, nationality: nationality ?? '' };
+    const campos = { pickupStoreId, dropoffStoreId, pickupTime, dropoffTime, customerAge: String(customerAge), pickupCity, dropoffCity, pickupStoreName, dropoffStoreName, nationality: nationality ?? '' };
 
     const erros: Record<string, string> = {};
     if (!pickupStoreId)  erros.pickupStoreId  = 'Selecione a loja de retirada.';
     if (!dropoffStoreId) erros.dropoffStoreId = 'Selecione a loja de devolução.';
-    if (!categoryId)     erros.categoryId     = 'Selecione uma categoria.';
     if (!pickupTime)     erros.pickupTime     = 'Informe a data de retirada.';
     if (!dropoffTime)    erros.dropoffTime    = 'Informe a data de devolução.';
 
@@ -39,20 +37,19 @@ export const actions: Actions = {
     }
 
     try {
-      const resultado = await publicoService.buscar({
+      const resultado = await publicoService.buscarCategorias({
         pickup_store_id:  pickupStoreId,
         dropoff_store_id: dropoffStoreId,
-        category_id:      categoryId,
         pickup_time:      new Date(pickupTime).toISOString(),
         dropoff_time:     new Date(dropoffTime).toISOString(),
         customer_age:     customerAge,
         nationality,
       });
 
-      return { etapa: 'confirmar' as const, resultado, campos };
+      return { etapa: 'categorias' as const, resultado, campos };
     } catch (e: any) {
       return fail(400, {
-        erro: e?.message ?? 'Erro ao buscar tarifas.',
+        erro: e?.message ?? 'Erro ao buscar veículos.',
         campos,
       });
     }

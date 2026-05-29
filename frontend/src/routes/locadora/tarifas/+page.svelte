@@ -210,7 +210,10 @@
                 {#each grupo.fees as fee}
                   <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                     <td style="padding:11px 20px; font-size:13px; font-weight:500; color:#cbd5e1;">{fee.name}</td>
-                    <td style="padding:11px 16px; font-size:12px; color:#64748b;">{CALC_LABEL[fee.pricing.calculation_type]??fee.pricing.calculation_type}</td>
+                    <td style="padding:11px 16px; font-size:12px; color:#64748b;">
+                      {CALC_LABEL[fee.pricing.calculation_type]??fee.pricing.calculation_type}
+                      {#if fee.is_tax}<span style="margin-left:4px; font-size:10px; font-weight:600; padding:1px 6px; border-radius:12px; background:rgba(245,158,11,0.12); color:#f59e0b;">IVA</span>{/if}
+                    </td>
                     <td style="padding:11px 16px; text-align:right; font-size:13px; font-weight:600; color:#f1f5f9;">
                       {fee.pricing.calculation_type==='PERCENTAGE'?`${fee.pricing.amount}%`:moeda(fee.pricing.amount)}
                     </td>
@@ -579,12 +582,22 @@
             <input class="input" type="time" name="before_time" value={editFee?.conditions?.applies_before_time ?? ''}/>
           </div>
         </div>
-        <div class="campo">
-          <label class="label">Status</label>
-          <select class="input" name="active">
-            <option value="true" selected={editFee?.active !== false}>Ativa</option>
-            <option value="false" selected={editFee?.active === false}>Inativa</option>
-          </select>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="campo">
+            <label class="label">Status</label>
+            <select class="input" name="active">
+              <option value="true" selected={editFee?.active !== false}>Ativa</option>
+              <option value="false" selected={editFee?.active === false}>Inativa</option>
+            </select>
+          </div>
+          <div class="campo" style="justify-content:flex-end; padding-bottom:4px;">
+            <label class="label"> </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#94a3b8; cursor:pointer; margin-top:8px;">
+              <input type="hidden" name="is_tax" value="false"/>
+              <input type="checkbox" name="is_tax" value="true" checked={editFee?.is_tax === true} style="accent-color:#f59e0b;"/>
+              É imposto (IVA/fiscal)
+            </label>
+          </div>
         </div>
         <div style="display:flex; gap:8px; justify-content:flex-end; padding-top:8px;">
           <button type="button" onclick={()=>modalFee=false} style="padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#64748b; font-size:13px; cursor:pointer; font-family:inherit;">Cancelar</button>

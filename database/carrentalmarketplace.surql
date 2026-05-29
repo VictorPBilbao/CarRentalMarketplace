@@ -134,6 +134,7 @@ INSERT [ { active: true, contact: { email: 'contato@localiza.com', phone: '+55 3
 DEFINE TABLE fee TYPE NORMAL SCHEMAFULL PERMISSIONS NONE;
 
 DEFINE FIELD active ON fee TYPE bool DEFAULT true PERMISSIONS FULL;
+DEFINE FIELD is_tax ON fee TYPE bool DEFAULT false PERMISSIONS FULL;
 DEFINE FIELD conditions ON fee TYPE object PERMISSIONS FULL;
 DEFINE FIELD conditions.applies_after_time ON fee TYPE none | string PERMISSIONS FULL;
 DEFINE FIELD conditions.applies_before_time ON fee TYPE none | string PERMISSIONS FULL;
@@ -333,7 +334,7 @@ DEFINE FIELD dropoff_time ON reservation TYPE datetime ASSERT $value > $this.pic
 DEFINE FIELD flight_number ON reservation TYPE none | string PERMISSIONS FULL;
 DEFINE FIELD notes ON reservation TYPE none | string PERMISSIONS FULL;
 DEFINE FIELD pickup_store ON reservation TYPE record<store> PERMISSIONS FULL;
-DEFINE FIELD pickup_time ON reservation TYPE datetime ASSERT $before IS NOT NONE OR $value > time::now() PERMISSIONS FULL;
+DEFINE FIELD pickup_time ON reservation TYPE datetime PERMISSIONS FULL;
 DEFINE FIELD pricing ON reservation TYPE object PERMISSIONS FULL;
 DEFINE FIELD pricing.breakdown ON reservation TYPE array<object> DEFAULT [] PERMISSIONS FULL;
 DEFINE FIELD pricing.breakdown.* ON reservation TYPE object PERMISSIONS FULL;

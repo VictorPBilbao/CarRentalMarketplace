@@ -92,8 +92,8 @@ async def criar_rate_plan(payload: RatePlanRequest, company_id: str, db: AsyncSu
                 max_age:               $max_age,
                 advance_booking_days:  $advance_booking_days,
                 allow_one_way:         $allow_one_way,
-                valid_from:            $valid_from,
-                valid_to:              $valid_to,
+                valid_from:            IF $valid_from IS NOT NULL THEN type::datetime($valid_from) ELSE NONE END,
+                valid_to:              IF $valid_to   IS NOT NULL THEN type::datetime($valid_to)   ELSE NONE END,
                 promo_code:            $promo_code,
                 allowed_nationalities: $allowed_nationalities
             },
@@ -170,8 +170,8 @@ async def atualizar_rate_plan(plan_id: str, payload: RatePlanRequest, company_id
                 max_age:               $max_age,
                 advance_booking_days:  $advance_booking_days,
                 allow_one_way:         $allow_one_way,
-                valid_from:            $valid_from,
-                valid_to:              $valid_to,
+                valid_from:            IF $valid_from IS NOT NULL THEN type::datetime($valid_from) ELSE NONE END,
+                valid_to:              IF $valid_to   IS NOT NULL THEN type::datetime($valid_to)   ELSE NONE END,
                 promo_code:            $promo_code,
                 allowed_nationalities: $allowed_nationalities
             },
@@ -215,4 +215,63 @@ async def desativar_rate_plan(plan_id: str, company_id: str, db: AsyncSurreal) -
     )
     if not extract_records(check):
         raise HTTPException(status_code=404, detail='Plano tarifário não encontrado.')
+    await db.query("UPDATE type::record($id) MERGE { active: false }", {'id': plan_id})
+
+
+# ── Funções específicas para filial ───────────────────────────────────────────
+
+async def criar_rate_plan_filial(
+    payload: RatePlanRequest,
+    company_id: str,
+    store_id: str,
+    db: AsyncSurreal,
+) -> RatePlanResponse:
+    # A filial só pode criar planos para a própria loja
+    payload.conditions.stores = [store_id]
+    return await criar_rate_plan(payload, company_id, db)
+
+
+async def atualizar_rate_plan_filial(
+    plan_id: str,
+    payload: RatePlanRequest,
+    company_id: str,
+    store_id: str,
+    db: AsyncSurreal,
+) -> RatePlanResponse:
+    check = await db.query(
+        """
+        SELECT id FROM type::record($id)
+        WHERE company = type::record($cid)
+          AND type::record($sid) INSIDE conditions.stores
+        LIMIT 1
+        """,
+        {'id': plan_id, 'cid': company_id, 'sid': store_id},
+    )
+    if not extract_records(check):
+        raise HTTPException(status_code=404, detail='Plano tarifário não encontrado para esta loja.')
+
+    # Garante que a loja da filial permanece nos stores do plano
+    if store_id not in payload.conditions.stores:
+        payload.conditions.stores = [store_id]
+
+    return await atualizar_rate_plan(plan_id, payload, company_id, db)
+
+
+async def desativar_rate_plan_filial(
+    plan_id: str,
+    company_id: str,
+    store_id: str,
+    db: AsyncSurreal,
+) -> None:
+    check = await db.query(
+        """
+        SELECT id FROM type::record($id)
+        WHERE company = type::record($cid)
+          AND type::record($sid) INSIDE conditions.stores
+        LIMIT 1
+        """,
+        {'id': plan_id, 'cid': company_id, 'sid': store_id},
+    )
+    if not extract_records(check):
+        raise HTTPException(status_code=404, detail='Plano tarifário não encontrado para esta loja.')
     await db.query("UPDATE type::record($id) MERGE { active: false }", {'id': plan_id})

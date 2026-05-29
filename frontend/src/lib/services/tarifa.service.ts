@@ -165,6 +165,7 @@ export interface TaxaLoja {
   store_name?: string;
   store_code?: string;
   active: boolean;
+  is_tax: boolean;
   pricing: FeePricing;
   conditions: FeeConditions;
 }
@@ -268,6 +269,7 @@ export interface FeeRequest {
   pricing: FeePricing;
   conditions: FeeConditions;
   active: boolean;
+  is_tax: boolean;
 }
 
 export interface OneWayRequest {
@@ -366,7 +368,7 @@ export const tarifaService = {
     return api.delete(`/filial/one-way/${id}`, token);
   },
 
-  // CRUD rate_plans
+  // CRUD rate_plans (locadora)
   async criarRatePlan(data: RatePlanRequest, token: string): Promise<RatePlanCompleto> {
     return api.post<RatePlanCompleto>('/locadora/rate_plans', data, token);
   },
@@ -377,6 +379,23 @@ export const tarifaService = {
 
   async desativarRatePlan(id: string, token: string): Promise<void> {
     return api.delete(`/locadora/rate_plans/${id}`, token);
+  },
+
+  // CRUD rate_plans (filial)
+  async listarRatePlansFilial(token: string): Promise<RatePlanCompleto[]> {
+    return api.get<RatePlanCompleto[]>('/filial/rate_plans', token);
+  },
+
+  async criarRatePlanFilial(data: RatePlanRequest, token: string): Promise<RatePlanCompleto> {
+    return api.post<RatePlanCompleto>('/filial/rate_plans', data, token);
+  },
+
+  async atualizarRatePlanFilial(id: string, data: RatePlanRequest, token: string): Promise<RatePlanCompleto> {
+    return api.put<RatePlanCompleto>(`/filial/rate_plans/${id}`, data, token);
+  },
+
+  async desativarRatePlanFilial(id: string, token: string): Promise<void> {
+    return api.delete(`/filial/rate_plans/${id}`, token);
   },
 
   // CRUD proteções

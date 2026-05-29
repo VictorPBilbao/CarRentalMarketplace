@@ -1,105 +1,59 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import type { ActionData, PageData } from './$types';
+  import type { CidadeResponse, CidadeStore, ResultadoCategoriaDisponivel } from '$lib/services/publico.service';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
-  const API_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8080/api/v1';
+  // ── Dados do servidor ─────────────────────────────────────────────────
+  const cidades: CidadeResponse[] = $derived(data.cidades ?? []);
 
-  interface LojaProxima {
-    id: string;
-    name: string;
-    code: string;
-    address: { city: string; state: string; neighborhood: string; street: string };
-    location: { latitude: number; longitude: number };
-    distancia_km: number | null;
-  }
-
-  // ── Estado do formulário ───────────────────────────────────────────────
-  const campos = $state({
-    pickupStoreId:   (form as any)?.campos?.pickupStoreId   ?? '',
-    dropoffStoreId:  (form as any)?.campos?.dropoffStoreId  ?? '',
-    categoryId:      (form as any)?.campos?.categoryId      ?? '',
-    pickupTime:      (form as any)?.campos?.pickupTime      ?? '',
-    dropoffTime:     (form as any)?.campos?.dropoffTime     ?? '',
-    customerAge:     (form as any)?.campos?.customerAge     ?? '25',
-    pickupCep:       (form as any)?.campos?.pickupCep       ?? '',
-    dropoffCep:      (form as any)?.campos?.dropoffCep      ?? '',
-    pickupStoreName:  (form as any)?.campos?.pickupStoreName  ?? '',
-    dropoffStoreName: (form as any)?.campos?.dropoffStoreName ?? '',
-    nationality:     (form as any)?.campos?.nationality     ?? '',
-    flightNumber:    '',
-    notes:           '',
-  });
-
-  // ── Estado da busca de lojas por CEP ──────────────────────────────────
-  let lojasRetirada:  LojaProxima[] = $state([]);
-  let lojasDevolucao: LojaProxima[] = $state([]);
-  let lojasVisiveis   = $state(false);
-  let buscandoLojas   = $state(false);
-  let erroCep         = $state('');
-  let carregando      = $state(false);
-
-  // ── Etapa vinda do servidor ────────────────────────────────────────────
+  // ── Estado da etapa ───────────────────────────────────────────────────
   const etapa     = $derived((form as any)?.etapa ?? 'buscar');
   const resultado = $derived((form as any)?.resultado ?? null);
-  const melhorPlano = $derived(resultado?.rate_plans?.[0] ?? null);
 
-  function erro(campo: string): string {
-    return (form as any)?.erros?.[campo] ?? '';
-  }
+  // ── Campos do formulário ──────────────────────────────────────────────
+  const campos = $state({
+    pickupStoreId:    (form as any)?.campos?.pickupStoreId    ?? '',
+    dropoffStoreId:   (form as any)?.campos?.dropoffStoreId   ?? '',
+    pickupTime:       (form as any)?.campos?.pickupTime       ?? '',
+    dropoffTime:      (form as any)?.campos?.dropoffTime      ?? '',
+    customerAge:      (form as any)?.campos?.customerAge      ?? '25',
+    pickupCity:       (form as any)?.campos?.pickupCity       ?? '',
+    dropoffCity:      (form as any)?.campos?.dropoffCity      ?? '',
+    pickupStoreName:  (form as any)?.campos?.pickupStoreName  ?? '',
+    dropoffStoreName: (form as any)?.campos?.dropoffStoreName ?? '',
+    nationality:      (form as any)?.campos?.nationality      ?? '',
+    flightNumber:     '',
+    notes:            '',
+  });
 
-  // ── Helpers ────────────────────────────────────────────────────────────
-  function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
+  // ── Categoria escolhida pelo cliente (etapa 'categorias') ─────────────
+  let categoriaEscolhida = $state<ResultadoCategoriaDisponivel | null>(null);
+  let carregando = $state(false);
 
-  function formatarCep(v: string): string {
-    const digits = v.replace(/\D/g, '').slice(0, 8);
-    return digits.length > 5 ? digits.slice(0, 5) + '-' + digits.slice(5) : digits;
-  }
+  // Reseta categoria escolhida sempre que um novo resultado de busca chega
+  $effect(() => { resultado; categoriaEscolhida = null; });
 
-  function onCepInput(e: Event, campo: 'pickupCep' | 'dropoffCep') {
-    campos[campo] = formatarCep((e.target as HTMLInputElement).value);
-    resetarLojas();
-  }
+  // ── Lojas da cidade selecionada ───────────────────────────────────────
+  const lojasRetirada  = $derived<CidadeStore[]>(
+    cidades.find(c => c.city === campos.pickupCity)?.stores ?? []
+  );
+  const lojasDevolucao = $derived<CidadeStore[]>(
+    cidades.find(c => c.city === campos.dropoffCity)?.stores ?? []
+  );
 
-  function onCategoriaChange() {
-    resetarLojas();
-  }
+  // IDs efetivos: auto-selecionado se cidade tem 1 loja, senão depende do radio
+  const pickupStoreId   = $derived(lojasRetirada.length === 1  ? lojasRetirada[0].id    : campos.pickupStoreId);
+  const pickupStoreName = $derived(lojasRetirada.length === 1  ? lojasRetirada[0].name  : campos.pickupStoreName);
+  const dropoffStoreId  = $derived(lojasDevolucao.length === 1 ? lojasDevolucao[0].id   : campos.dropoffStoreId);
+  const dropoffStoreName= $derived(lojasDevolucao.length === 1 ? lojasDevolucao[0].name : campos.dropoffStoreName);
 
-  function resetarLojas() {
-    lojasVisiveis = false;
-    lojasRetirada = [];
-    lojasDevolucao = [];
-    campos.pickupStoreId = '';
-    campos.dropoffStoreId = '';
-    campos.pickupStoreName = '';
-    campos.dropoffStoreName = '';
-    erroCep = '';
-  }
+  // Limpa seleção manual quando a cidade muda
+  $effect(() => { campos.pickupCity;  campos.pickupStoreId  = ''; campos.pickupStoreName  = ''; });
+  $effect(() => { campos.dropoffCity; campos.dropoffStoreId = ''; campos.dropoffStoreName = ''; });
 
-  function selecionarLoja(tipo: 'pickup' | 'dropoff', loja: LojaProxima) {
-    if (tipo === 'pickup') {
-      campos.pickupStoreId = loja.id;
-      campos.pickupStoreName = loja.name;
-    } else {
-      campos.dropoffStoreId = loja.id;
-      campos.dropoffStoreName = loja.name;
-    }
-  }
-
-  function formatKm(km: number | null): string {
-    if (km === null) return '— km';
-    return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
-  }
-
+  // ── Helpers ───────────────────────────────────────────────────────────
   function formatDate(iso: string): string {
     if (!iso) return '—';
     return new Date(iso).toLocaleString('pt-BR', {
@@ -108,76 +62,51 @@
     });
   }
 
-  function nomeCategoria(id: string): string {
-    const c = data.categorias.find((c: any) => c.id === id);
-    return c ? `${c.group_name} (${c.code})` : id;
+  function moeda(v: number): string {
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  // ── Busca lojas por CEP (client-side) ─────────────────────────────────
-  async function buscarLojas(e: Event) {
-    e.preventDefault();
-    erroCep = '';
+  const LOCATION_TYPE_LABEL: Record<string, string> = {
+    AIRPORT:       'Aeroporto',
+    TRAIN_STATION: 'Estação de Trem',
+    CITY_CENTER:   'Centro',
+    HOTEL:         'Hotel',
+    PORT:          'Porto',
+    MALL:          'Shopping',
+    OTHER:         'Outro',
+  };
 
-    if (!campos.categoryId) {
-      erroCep = 'Selecione uma categoria antes de buscar lojas.';
-      return;
-    }
-    const cepR = campos.pickupCep.replace(/\D/g, '');
-    const cepD = campos.dropoffCep.replace(/\D/g, '');
-    if (cepR.length !== 8) { erroCep = 'CEP de retirada inválido.'; return; }
-    if (cepD.length !== 8) { erroCep = 'CEP de devolução inválido.'; return; }
+  function erro(campo: string): string {
+    return (form as any)?.erros?.[campo] ?? '';
+  }
 
-    buscandoLojas = true;
-    try {
-      const [dadosR, dadosD, lojas] = await Promise.all([
-        fetch(`https://brasilapi.com.br/api/cep/v2/${cepR}`).then(r => { if (!r.ok) throw new Error(`CEP ${campos.pickupCep} não encontrado.`); return r.json(); }),
-        fetch(`https://brasilapi.com.br/api/cep/v2/${cepD}`).then(r => { if (!r.ok) throw new Error(`CEP ${campos.dropoffCep} não encontrado.`); return r.json(); }),
-        fetch(`${API_URL}/publico/lojas-com-categoria?category_id=${encodeURIComponent(campos.categoryId)}`).then(r => r.json()),
-      ]);
-
-      const coordR = dadosR.location?.coordinates;
-      const coordD = dadosD.location?.coordinates;
-
-      const latR = coordR?.latitude  ? parseFloat(String(coordR.latitude))  : null;
-      const lonR = coordR?.longitude ? parseFloat(String(coordR.longitude)) : null;
-      const latD = coordD?.latitude  ? parseFloat(String(coordD.latitude))  : null;
-      const lonD = coordD?.longitude ? parseFloat(String(coordD.longitude)) : null;
-
-      function computar(lista: any[], lat: number | null, lon: number | null): LojaProxima[] {
-        if (lat === null || lon === null) {
-          return lista.slice(0, 5).map((l: any) => ({ ...l, distancia_km: null }));
-        }
-        return lista
-          .filter((l: any) => l.location?.latitude && l.location?.longitude)
-          .map((l: any) => ({
-            ...l,
-            distancia_km: haversine(lat, lon, parseFloat(l.location.latitude), parseFloat(l.location.longitude)),
-          }))
-          .sort((a: LojaProxima, b: LojaProxima) => a.distancia_km - b.distancia_km)
-          .slice(0, 5);
-      }
-
-      lojasRetirada  = computar(lojas, latR, lonR);
-      lojasDevolucao = computar(lojas, latD, lonD);
-      lojasVisiveis  = true;
-
-      if (lojasRetirada.length === 1)  selecionarLoja('pickup',  lojasRetirada[0]);
-      if (lojasDevolucao.length === 1) selecionarLoja('dropoff', lojasDevolucao[0]);
-
-    } catch (e: any) {
-      erroCep = e?.message ?? 'Erro ao buscar lojas. Verifique os CEPs e tente novamente.';
-      lojasVisiveis = false;
-    } finally {
-      buscandoLojas = false;
+  function selecionarLoja(tipo: 'pickup' | 'dropoff', loja: CidadeStore) {
+    if (tipo === 'pickup') {
+      campos.pickupStoreId  = loja.id;
+      campos.pickupStoreName = loja.name;
+    } else {
+      campos.dropoffStoreId  = loja.id;
+      campos.dropoffStoreName = loja.name;
     }
   }
+
+  function selecionarCategoria(cat: ResultadoCategoriaDisponivel) {
+    if (cat.disponibilidade === 0) return;
+    categoriaEscolhida = cat;
+  }
+
+  function totalComFees(cat: ResultadoCategoriaDisponivel): number {
+    const melhor = cat.rate_plans[0];
+    if (!melhor) return 0;
+    const feesTotal = cat.store_fees.reduce((s, f) => s + f.amount, 0);
+    return round2(melhor.subtotal + feesTotal);
+  }
+
+  function round2(v: number) { return Math.round(v * 100) / 100; }
 
   const podeVerificar = $derived(
-    lojasVisiveis &&
-    !!campos.pickupStoreId &&
-    !!campos.dropoffStoreId &&
-    !!campos.pickupTime &&
-    !!campos.dropoffTime
+    !!pickupStoreId && !!dropoffStoreId &&
+    !!campos.pickupTime && !!campos.dropoffTime
   );
 </script>
 
@@ -189,79 +118,121 @@
   <a href="/cliente/reservas" class="breadcrumb">Minhas Reservas</a>
   <span class="breadcrumb-sep">›</span>
   <span class="breadcrumb-atual">Nova Reserva</span>
-  <h1>{etapa === 'confirmar' ? 'Confirmar Reserva' : 'Nova Reserva'}</h1>
+  <h1>{etapa === 'categorias' && categoriaEscolhida ? 'Confirmar Reserva' : 'Nova Reserva'}</h1>
 </div>
 
 {#if (form as any)?.erro}
   <div class="banner-erro">{(form as any).erro}</div>
 {/if}
 
-<!-- ── Etapa 1: busca por CEP ─────────────────────────────────────────── -->
+<!-- ══ ETAPA 1: BUSCA ══════════════════════════════════════════════════════ -->
 {#if etapa === 'buscar'}
 
-  <form onsubmit={buscarLojas}>
+  <form
+    method="POST"
+    action="?/buscar"
+    use:enhance={() => { carregando = true; return async ({ update }) => { carregando = false; await update(); }; }}
+  >
     <div class="card">
       <h3 class="card-title">Localização</h3>
       <div class="form-grid">
 
+        <!-- Cidade de Retirada -->
         <div class="field">
-          <label for="pickupCep">CEP de Retirada <span class="req">*</span></label>
-          <input
-            id="pickupCep" type="text" inputmode="numeric" placeholder="00000-000"
-            value={campos.pickupCep}
-            oninput={(e) => onCepInput(e, 'pickupCep')}
-            maxlength={9}
-          />
+          <label for="pickupCity">Cidade de Retirada <span class="req">*</span></label>
+          <select id="pickupCity" bind:value={campos.pickupCity} class:input-erro={!!erro('pickupStoreId')}>
+            <option value="">Selecione...</option>
+            {#each cidades as cidade}
+              <option value={cidade.city}>{cidade.city} — {cidade.state}</option>
+            {/each}
+          </select>
         </div>
 
+        <!-- Cidade de Devolução -->
         <div class="field">
-          <label for="dropoffCep">CEP de Devolução <span class="req">*</span></label>
-          <input
-            id="dropoffCep" type="text" inputmode="numeric" placeholder="00000-000"
-            value={campos.dropoffCep}
-            oninput={(e) => onCepInput(e, 'dropoffCep')}
-            maxlength={9}
-          />
+          <label for="dropoffCity">Cidade de Devolução <span class="req">*</span></label>
+          <select id="dropoffCity" bind:value={campos.dropoffCity} class:input-erro={!!erro('dropoffStoreId')}>
+            <option value="">Selecione...</option>
+            {#each cidades as cidade}
+              <option value={cidade.city}>{cidade.city} — {cidade.state}</option>
+            {/each}
+          </select>
         </div>
 
       </div>
 
-      <h3 class="card-title" style="margin-top:22px">Categoria e Período</h3>
-      <div class="form-grid">
-
-        <div class="field">
-          <label for="categoryId">Categoria <span class="req">*</span></label>
-          <select
-            id="categoryId"
-            bind:value={campos.categoryId}
-            onchange={onCategoriaChange}
-            class:input-erro={!!erro('categoryId')}
-          >
-            <option value="">Selecione...</option>
-            {#each data.categorias as c}
-              <option value={c.id}>{c.group_name} ({c.code})</option>
+      <!-- Seleção de loja (quando há mais de uma na cidade) -->
+      {#if campos.pickupCity && lojasRetirada.length > 1}
+        <div class="field" style="margin-top:14px;">
+          <label>Loja de Retirada <span class="req">*</span></label>
+          <div class="lojas-lista">
+            {#each lojasRetirada as loja}
+              <button
+                type="button"
+                class="loja-card"
+                class:loja-selecionada={pickupStoreId === loja.id}
+                onclick={() => selecionarLoja('pickup', loja)}
+              >
+                <div class="loja-radio">
+                  <div class="radio-dot" class:radio-ativo={pickupStoreId === loja.id}></div>
+                </div>
+                <div class="loja-info">
+                  <p class="loja-nome">{loja.name}</p>
+                  <p class="loja-end">{LOCATION_TYPE_LABEL[loja.location_type] ?? loja.location_type} · {loja.code}</p>
+                </div>
+              </button>
             {/each}
-          </select>
-          {#if erro('categoryId')}<p class="msg-erro">{erro('categoryId')}</p>{/if}
+          </div>
         </div>
+      {/if}
+      {#if erro('pickupStoreId')}
+        <p class="msg-erro">{erro('pickupStoreId')}</p>
+      {/if}
 
-        <div class="field">
-          <label for="customerAge">Sua Idade <span class="req">*</span></label>
-          <input id="customerAge" type="number" min="18" max="99" bind:value={campos.customerAge} />
+      {#if campos.dropoffCity && lojasDevolucao.length > 1}
+        <div class="field" style="margin-top:14px;">
+          <label>Loja de Devolução <span class="req">*</span></label>
+          <div class="lojas-lista">
+            {#each lojasDevolucao as loja}
+              <button
+                type="button"
+                class="loja-card"
+                class:loja-selecionada={dropoffStoreId === loja.id}
+                onclick={() => selecionarLoja('dropoff', loja)}
+              >
+                <div class="loja-radio">
+                  <div class="radio-dot" class:radio-ativo={dropoffStoreId === loja.id}></div>
+                </div>
+                <div class="loja-info">
+                  <p class="loja-nome">{loja.name}</p>
+                  <p class="loja-end">{LOCATION_TYPE_LABEL[loja.location_type] ?? loja.location_type} · {loja.code}</p>
+                </div>
+              </button>
+            {/each}
+          </div>
         </div>
+      {/if}
+      {#if erro('dropoffStoreId')}
+        <p class="msg-erro">{erro('dropoffStoreId')}</p>
+      {/if}
 
-        <div class="field">
-          <label for="nationality">Nacionalidade</label>
-          <input id="nationality" type="text" placeholder="BR, US, EU..." bind:value={campos.nationality} />
-        </div>
+      <!-- Campos ocultos das lojas selecionadas -->
+      <input type="hidden" name="pickupStoreId"    value={pickupStoreId} />
+      <input type="hidden" name="dropoffStoreId"   value={dropoffStoreId} />
+      <input type="hidden" name="pickupCity"        value={campos.pickupCity} />
+      <input type="hidden" name="dropoffCity"       value={campos.dropoffCity} />
+      <input type="hidden" name="pickupStoreName"   value={pickupStoreName} />
+      <input type="hidden" name="dropoffStoreName"  value={dropoffStoreName} />
+
+      <h3 class="card-title" style="margin-top:22px">Período</h3>
+      <div class="form-grid">
 
         <div class="field">
           <label for="pickupTime">Data/Hora de Retirada <span class="req">*</span></label>
           <input
-            id="pickupTime" type="datetime-local"
+            id="pickupTime" name="pickupTime" type="datetime-local"
             bind:value={campos.pickupTime}
             class:input-erro={!!erro('pickupTime')}
-            onchange={resetarLojas}
           />
           {#if erro('pickupTime')}<p class="msg-erro">{erro('pickupTime')}</p>{/if}
         </div>
@@ -269,431 +240,323 @@
         <div class="field">
           <label for="dropoffTime">Data/Hora de Devolução <span class="req">*</span></label>
           <input
-            id="dropoffTime" type="datetime-local"
+            id="dropoffTime" name="dropoffTime" type="datetime-local"
             bind:value={campos.dropoffTime}
             class:input-erro={!!erro('dropoffTime')}
-            onchange={resetarLojas}
           />
           {#if erro('dropoffTime')}<p class="msg-erro">{erro('dropoffTime')}</p>{/if}
         </div>
 
-      </div>
+        <div class="field">
+          <label for="customerAge">Sua Idade <span class="req">*</span></label>
+          <input id="customerAge" name="customerAge" type="number" min="18" max="99" bind:value={campos.customerAge} />
+        </div>
 
-      {#if erroCep}
-        <div class="banner-aviso" style="margin-top:16px">{erroCep}</div>
-      {/if}
+        <div class="field">
+          <label for="nationality">Nacionalidade</label>
+          <input id="nationality" name="nationality" type="text" placeholder="BR, US, EU..." bind:value={campos.nationality} />
+        </div>
+
+      </div>
 
       <div class="form-acoes">
         <a href="/cliente/reservas" class="btn-cancelar">Cancelar</a>
-        <button type="submit" class="btn-buscar" disabled={buscandoLojas}>
-          {#if buscandoLojas}
+        <button type="submit" class="btn-buscar" disabled={!podeVerificar || carregando}>
+          {#if carregando}
             <span class="spinner"></span> Buscando...
           {:else}
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="flex-shrink:0">
               <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.4"/>
               <path d="M9 9l2.5 2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
-            Buscar Lojas Próximas
+            Buscar Veículos
           {/if}
         </button>
       </div>
     </div>
   </form>
 
-  <!-- ── Seleção de lojas ──────────────────────────────────────────────── -->
-  {#if lojasVisiveis}
-    <form
-      method="POST"
-      action="?/buscar"
-      use:enhance={() => { carregando = true; return async ({ update }) => { carregando = false; await update(); }; }}
-    >
-      <input type="hidden" name="categoryId"      value={campos.categoryId} />
-      <input type="hidden" name="pickupTime"      value={campos.pickupTime} />
-      <input type="hidden" name="dropoffTime"     value={campos.dropoffTime} />
-      <input type="hidden" name="customerAge"     value={campos.customerAge} />
-      <input type="hidden" name="pickupCep"       value={campos.pickupCep} />
-      <input type="hidden" name="dropoffCep"      value={campos.dropoffCep} />
-      <input type="hidden" name="pickupStoreId"   value={campos.pickupStoreId} />
-      <input type="hidden" name="dropoffStoreId"  value={campos.dropoffStoreId} />
-      <input type="hidden" name="pickupStoreName"  value={campos.pickupStoreName} />
-      <input type="hidden" name="dropoffStoreName" value={campos.dropoffStoreName} />
-      <input type="hidden" name="nationality"      value={campos.nationality} />
-
-      <div class="card">
-        <h3 class="card-title">Lojas Disponíveis — {nomeCategoria(campos.categoryId)}</h3>
-
-        <div class="lojas-secoes">
-          <!-- Retirada -->
-          <div class="lojas-secao">
-            <p class="secao-label">
-              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="flex-shrink:0">
-                <circle cx="5.5" cy="4" r="3" stroke="currentColor" stroke-width="1.2"/>
-                <path d="M5.5 7v3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-              </svg>
-              Retirada — CEP {campos.pickupCep}
-            </p>
-
-            {#if lojasRetirada.length === 0}
-              <p class="sem-lojas">Nenhuma loja com esta categoria próxima ao CEP informado.</p>
-            {:else}
-              <div class="lojas-lista">
-                {#each lojasRetirada as loja}
-                  <button
-                    type="button"
-                    class="loja-card"
-                    class:loja-selecionada={campos.pickupStoreId === loja.id}
-                    onclick={() => selecionarLoja('pickup', loja)}
-                  >
-                    <div class="loja-radio">
-                      <div class="radio-dot" class:radio-ativo={campos.pickupStoreId === loja.id}></div>
-                    </div>
-                    <div class="loja-info">
-                      <p class="loja-nome">{loja.name}</p>
-                      <p class="loja-end">{loja.address.neighborhood}, {loja.address.city} — {loja.address.state}</p>
-                    </div>
-                    <span class="loja-dist">{formatKm(loja.distancia_km)}</span>
-                  </button>
-                {/each}
-              </div>
-            {/if}
-          </div>
-
-          <!-- Devolução -->
-          <div class="lojas-secao">
-            <p class="secao-label">
-              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="flex-shrink:0">
-                <circle cx="5.5" cy="4" r="3" stroke="currentColor" stroke-width="1.2"/>
-                <path d="M5.5 7v3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-              </svg>
-              Devolução — CEP {campos.dropoffCep}
-            </p>
-
-            {#if lojasDevolucao.length === 0}
-              <p class="sem-lojas">Nenhuma loja com esta categoria próxima ao CEP informado.</p>
-            {:else}
-              <div class="lojas-lista">
-                {#each lojasDevolucao as loja}
-                  <button
-                    type="button"
-                    class="loja-card"
-                    class:loja-selecionada={campos.dropoffStoreId === loja.id}
-                    onclick={() => selecionarLoja('dropoff', loja)}
-                  >
-                    <div class="loja-radio">
-                      <div class="radio-dot" class:radio-ativo={campos.dropoffStoreId === loja.id}></div>
-                    </div>
-                    <div class="loja-info">
-                      <p class="loja-nome">{loja.name}</p>
-                      <p class="loja-end">{loja.address.neighborhood}, {loja.address.city} — {loja.address.state}</p>
-                    </div>
-                    <span class="loja-dist">{formatKm(loja.distancia_km)}</span>
-                  </button>
-                {/each}
-              </div>
-            {/if}
-          </div>
-        </div>
-
-        {#if erro('pickupStoreId') || erro('dropoffStoreId')}
-          <div class="banner-aviso" style="margin-top:12px">
-            {erro('pickupStoreId') || erro('dropoffStoreId')}
-          </div>
-        {/if}
-
-        <div class="form-acoes">
-          <button
-            type="submit"
-            class="btn-buscar"
-            disabled={!podeVerificar || carregando}
-          >
-            {carregando ? 'Verificando...' : 'Verificar Disponibilidade'}
-          </button>
-        </div>
-      </div>
-    </form>
-  {/if}
-
 {/if}
 
-<!-- ── Etapa 2: confirmar ──────────────────────────────────────────────── -->
-{#if etapa === 'confirmar' && resultado}
-  <div class="resumo-card">
-    <h3 class="card-title">Resumo</h3>
+<!-- ══ ETAPA 2: RESULTADOS POR CATEGORIA ══════════════════════════════════ -->
+{#if etapa === 'categorias' && resultado}
+
+  <!-- Resumo da busca — lê do form retornado pelo servidor (campos $state ainda não sincronizado) -->
+  {@const fc = (form as any)?.campos ?? {}}
+  <div class="resumo-card" style="margin-bottom:20px;">
     <div class="resumo-grid">
       <div class="resumo-item">
         <span class="resumo-label">Retirada</span>
-        <span class="resumo-val">{formatDate(campos.pickupTime)}</span>
-        <span class="resumo-sub">{campos.pickupStoreName || campos.pickupStoreId}</span>
+        <span class="resumo-val">{formatDate(fc.pickupTime ?? '')}</span>
+        <span class="resumo-sub">{fc.pickupStoreName || fc.pickupCity || fc.pickupStoreId || '—'}</span>
       </div>
       <div class="resumo-item">
         <span class="resumo-label">Devolução</span>
-        <span class="resumo-val">{formatDate(campos.dropoffTime)}</span>
-        <span class="resumo-sub">{campos.dropoffStoreName || campos.dropoffStoreId}</span>
+        <span class="resumo-val">{formatDate(fc.dropoffTime ?? '')}</span>
+        <span class="resumo-sub">{fc.dropoffStoreName || fc.dropoffCity || fc.dropoffStoreId || '—'}</span>
       </div>
       <div class="resumo-item">
-        <span class="resumo-label">Categoria</span>
-        <span class="resumo-val">{nomeCategoria(campos.categoryId)}</span>
+        <span class="resumo-label">Período</span>
+        <span class="resumo-val">{resultado.total_days} dia(s)</span>
+        {#if resultado.is_one_way}<span class="resumo-sub">One-way</span>{/if}
       </div>
-      <div class="resumo-item">
-        <span class="resumo-label">Disponibilidade</span>
-        {#if resultado.disponibilidade > 0}
-          <span class="disponivel">{resultado.disponibilidade} unidade(s)</span>
-        {:else}
-          <span class="indisponivel">Sem disponibilidade</span>
-        {/if}
-      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <a href="/cliente/reservas/nova" class="btn-cancelar" style="font-size:12px;">← Nova busca</a>
     </div>
   </div>
 
-  {#if resultado.disponibilidade <= 0}
-    <div class="banner-aviso">Sem disponibilidade para a categoria selecionada nas datas informadas.</div>
-    <div class="form-acoes" style="margin-top:16px">
-      <a href="/cliente/reservas/nova" class="btn-cancelar">Nova Busca</a>
-    </div>
+  {#if resultado.categorias.length === 0}
+    <div class="banner-aviso">Nenhum veículo disponível para a loja selecionada.</div>
   {:else}
-    {#if resultado.rate_plans.length > 0}
-      <div class="planos-grid">
-        {#each resultado.rate_plans as plano}
-          <div class="plano-card {melhorPlano?.id === plano.id ? 'plano-destaque' : ''}">
-            <p class="plano-nome">{plano.name}</p>
-            <p class="plano-preco">
-              <span class="preco-val">R$ {plano.daily_rate.toFixed(2)}</span>
+    <h3 style="font-size:15px; font-weight:600; color:#e2e8f0; margin:0 0 14px;">
+      Selecione uma categoria
+    </h3>
+
+    <div class="categorias-grid">
+      {#each resultado.categorias as cat}
+        {@const disponivel = cat.disponibilidade > 0 && cat.rate_plans.length > 0}
+        {@const melhorPlano = cat.rate_plans[0]}
+        <button
+          type="button"
+          class="categoria-card"
+          class:categoria-selecionada={categoriaEscolhida?.category_id === cat.category_id}
+          class:categoria-indisponivel={!disponivel}
+          onclick={() => selecionarCategoria(cat)}
+          disabled={!disponivel}
+        >
+          {#if cat.image_url}
+            <img src={cat.image_url} alt={cat.category_name} class="cat-imagem"/>
+          {:else}
+            <div class="cat-placeholder">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <path d="M4 20L7 12h18l3 8M4 20v4h4v-2h16v2h4v-4M4 20h24" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <circle cx="10" cy="22" r="2" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="22" cy="22" r="2" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </div>
+          {/if}
+
+          <div class="cat-info">
+            <p class="cat-nome">{cat.category_name}</p>
+            <p class="cat-code">{cat.category_code}</p>
+          </div>
+
+          {#if disponivel && melhorPlano}
+            <div class="cat-preco">
+              <span class="preco-val">{moeda(melhorPlano.daily_rate)}</span>
               <span class="preco-unid">/dia</span>
-            </p>
-            <p class="plano-total">Total: <strong>R$ {plano.subtotal.toFixed(2)}</strong></p>
-            <p class="plano-dias">{plano.total_days} dia(s)</p>
-          </div>
-        {/each}
-      </div>
-    {:else}
-      <div class="banner-aviso">Nenhum plano de tarifa disponível. Entre em contato com a loja.</div>
-      <div class="form-acoes" style="margin-top:16px">
-        <a href="/cliente/reservas/nova" class="btn-cancelar">Nova Busca</a>
-      </div>
-    {/if}
-
-    {#if melhorPlano}
-      <form method="POST" action="?/confirmar" use:enhance={() => { carregando = true; return async ({ update }) => { carregando = false; await update(); }; }}>
-        <input type="hidden" name="pickupStoreId"  value={campos.pickupStoreId} />
-        <input type="hidden" name="dropoffStoreId" value={campos.dropoffStoreId} />
-        <input type="hidden" name="categoryId"     value={campos.categoryId} />
-        <input type="hidden" name="pickupTime"     value={new Date(campos.pickupTime).toISOString()} />
-        <input type="hidden" name="dropoffTime"    value={new Date(campos.dropoffTime).toISOString()} />
-        <input type="hidden" name="dailyRate"      value={melhorPlano.daily_rate} />
-        <input type="hidden" name="totalDays"      value={melhorPlano.total_days} />
-        <input type="hidden" name="fees"           value={resultado.store_fees.reduce((acc: number, f: any) => acc + f.amount, 0)} />
-        <input type="hidden" name="ratePlanId"     value={melhorPlano.id} />
-
-        <div class="card" style="margin-top:16px">
-          <h3 class="card-title">Detalhes Opcionais</h3>
-          <div class="form-grid">
-            <div class="field">
-              <label for="flightNumber">Número do Voo</label>
-              <input id="flightNumber" name="flightNumber" type="text" placeholder="LA1234" bind:value={campos.flightNumber} />
             </div>
-            <div class="field">
-              <label for="notes">Observações</label>
-              <input id="notes" name="notes" type="text" bind:value={campos.notes} />
-            </div>
-          </div>
+            <div class="cat-total">Total: <strong>{moeda(totalComFees(cat))}</strong></div>
+            <div class="cat-disp">{cat.disponibilidade} unidade(s)</div>
+          {:else}
+            <div class="cat-indisponivel-label">Indisponível</div>
+          {/if}
+        </button>
+      {/each}
+    </div>
+  {/if}
 
-          <div class="form-acoes">
-            <a href="/cliente/reservas/nova" class="btn-cancelar">Voltar</a>
-            <button type="submit" class="btn-confirmar" disabled={carregando}>
-              {carregando ? 'Reservando...' : `Confirmar Reserva — R$ ${melhorPlano.subtotal.toFixed(2)}`}
-            </button>
+  <!-- ── Confirmação (aparece quando o cliente escolheu uma categoria) ── -->
+  {#if categoriaEscolhida}
+    {@const melhorPlano = categoriaEscolhida.rate_plans[0]}
+    {@const feesTotal   = categoriaEscolhida.store_fees.reduce((s, f) => s + f.amount, 0)}
+    {@const total       = melhorPlano ? round2(melhorPlano.subtotal + feesTotal) : 0}
+
+    <div class="card" style="margin-top:24px; border-color:rgba(96,165,250,0.3);">
+      <h3 class="card-title" style="color:#60a5fa;">Confirmar Reserva</h3>
+
+      <div class="resumo-grid" style="margin-bottom:16px;">
+        <div class="resumo-item">
+          <span class="resumo-label">Categoria</span>
+          <span class="resumo-val">{categoriaEscolhida.category_name}</span>
+          <span class="resumo-sub">{categoriaEscolhida.category_code}</span>
+        </div>
+        {#if melhorPlano}
+          <div class="resumo-item">
+            <span class="resumo-label">Plano</span>
+            <span class="resumo-val">{melhorPlano.name}</span>
+            <span class="resumo-sub">{moeda(melhorPlano.daily_rate)}/dia × {melhorPlano.total_days} dia(s)</span>
+          </div>
+          <div class="resumo-item">
+            <span class="resumo-label">Total estimado</span>
+            <span class="resumo-val" style="color:#34d399;">{moeda(total)}</span>
+            {#if feesTotal > 0}<span class="resumo-sub">Inclui taxas da loja</span>{/if}
+          </div>
+        {/if}
+      </div>
+
+      <form
+        method="POST"
+        action="?/confirmar"
+        use:enhance={() => { carregando = true; return async ({ update }) => { carregando = false; await update(); }; }}
+      >
+        <input type="hidden" name="pickupStoreId"  value={fc.pickupStoreId  || pickupStoreId} />
+        <input type="hidden" name="dropoffStoreId" value={fc.dropoffStoreId || dropoffStoreId} />
+        <input type="hidden" name="categoryId"     value={categoriaEscolhida.category_id} />
+        <input type="hidden" name="pickupTime"     value={new Date(fc.pickupTime  || campos.pickupTime).toISOString()} />
+        <input type="hidden" name="dropoffTime"    value={new Date(fc.dropoffTime || campos.dropoffTime).toISOString()} />
+        <input type="hidden" name="dailyRate"      value={melhorPlano?.daily_rate ?? 0} />
+        <input type="hidden" name="totalDays"      value={melhorPlano?.total_days ?? resultado.total_days} />
+        <input type="hidden" name="fees"           value={feesTotal} />
+        <input type="hidden" name="ratePlanId"     value={melhorPlano?.id ?? ''} />
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="flightNumber">Número do Voo</label>
+            <input id="flightNumber" name="flightNumber" type="text" placeholder="LA1234" bind:value={campos.flightNumber} />
+          </div>
+          <div class="field">
+            <label for="notes">Observações</label>
+            <input id="notes" name="notes" type="text" bind:value={campos.notes} />
           </div>
         </div>
+
+        <div class="form-acoes" style="margin-top:16px;">
+          <button type="button" class="btn-cancelar" onclick={() => categoriaEscolhida = null}>
+            Voltar
+          </button>
+          <button type="submit" class="btn-confirmar" disabled={carregando}>
+            {carregando ? 'Confirmando...' : 'Confirmar Reserva'}
+          </button>
+        </div>
       </form>
-    {/if}
+    </div>
   {/if}
+
 {/if}
 
 <style>
+  /* ── Layout ──────────────────────────────────────────────────────────── */
   .page-header { margin-bottom: 24px; }
-  .breadcrumb      { font-size: 12px; color: #475569; text-decoration: none; }
-  .breadcrumb:hover { color: #64748b; }
-  .breadcrumb-sep  { font-size: 12px; color: #334155; margin: 0 4px; }
+  .breadcrumb { font-size: 12px; color: #475569; text-decoration: none; }
+  .breadcrumb:hover { color: #94a3b8; }
+  .breadcrumb-sep { font-size: 12px; color: #334155; margin: 0 6px; }
   .breadcrumb-atual { font-size: 12px; color: #64748b; }
   h1 { font-size: 22px; font-weight: 700; color: #f1f5f9; margin: 6px 0 0; }
 
-  .banner-erro {
-    margin-bottom: 16px; padding: 12px 16px; border-radius: 10px;
-    border: 1px solid rgba(248,113,113,0.3); background: rgba(248,113,113,0.07);
-    font-size: 13px; color: #f87171;
-  }
-  .banner-aviso {
-    margin-bottom: 16px; padding: 12px 16px; border-radius: 10px;
-    border: 1px solid rgba(251,191,36,0.3); background: rgba(251,191,36,0.07);
-    font-size: 13px; color: #fbbf24;
-  }
-
+  /* ── Cards ───────────────────────────────────────────────────────────── */
   .card {
     background: #0f172a;
     border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px; padding: 24px;
-    max-width: 780px; margin-bottom: 16px;
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
   }
-  .card-title {
-    font-size: 11px; font-weight: 600; color: #475569;
-    text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 18px;
-  }
+  .card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #475569; margin: 0 0 14px; }
 
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-
-  label {
-    font-size: 12px; font-weight: 600;
-    color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;
-  }
+  /* ── Formulário ──────────────────────────────────────────────────────── */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 13px; font-weight: 500; color: #94a3b8; }
   .req { color: #f87171; }
-
   input, select {
-    background: #080c14;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px; padding: 9px 12px;
-    font-size: 13px; color: #e2e8f0;
-    font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.14s;
-    width: 100%; box-sizing: border-box;
+    padding: 9px 12px; border-radius: 9px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    color: #f1f5f9; font-size: 13px; font-family: inherit; width: 100%; box-sizing: border-box;
   }
-  input:focus, select:focus { outline: none; border-color: rgba(167,139,250,0.4); }
-  .input-erro { border-color: rgba(248,113,113,0.5) !important; }
-  .msg-erro { font-size: 11px; color: #f87171; margin: 0; }
-  option { background: #0f172a; }
+  input:focus, select:focus { outline: none; border-color: #60a5fa; }
+  select option { background: #1e293b; }
+  .input-erro { border-color: rgba(248,113,113,0.4); }
+  .msg-erro { font-size: 12px; color: #f87171; margin: 2px 0 0; }
+  .banner-erro { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); border-radius: 9px; padding: 10px 14px; font-size: 13px; color: #f87171; margin-bottom: 14px; }
+  .banner-aviso { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); border-radius: 9px; padding: 10px 14px; font-size: 13px; color: #fbbf24; }
 
-  .form-acoes {
-    display: flex; gap: 10px; justify-content: flex-end;
-    margin-top: 24px; padding-top: 20px;
-    border-top: 1px solid rgba(255,255,255,0.07);
-  }
-
+  /* ── Botões ──────────────────────────────────────────────────────────── */
+  .form-acoes { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
   .btn-cancelar {
-    padding: 9px 20px; border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: transparent; color: #64748b;
-    font-size: 13px; font-weight: 500; text-decoration: none;
+    padding: 9px 18px; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.1); background: transparent;
+    color: #64748b; font-size: 13px; cursor: pointer; font-family: inherit; text-decoration: none;
     display: inline-flex; align-items: center;
-    transition: all 0.14s;
   }
   .btn-cancelar:hover { color: #94a3b8; }
-
   .btn-buscar {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 9px 24px; border-radius: 8px; border: none;
-    background: linear-gradient(135deg, #7c3aed, #6d28d9);
-    color: #fff; font-size: 13px; font-weight: 600;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer; transition: opacity 0.14s;
+    padding: 9px 20px; border-radius: 9px; border: none;
+    background: #3b82f6; color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 7px;
   }
-  .btn-buscar:hover:not(:disabled) { opacity: 0.88; }
-  .btn-buscar:disabled { opacity: 0.5; cursor: not-allowed; }
-
+  .btn-buscar:disabled { opacity: .5; cursor: not-allowed; }
   .btn-confirmar {
-    padding: 9px 24px; border-radius: 8px; border: none;
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: #fff; font-size: 13px; font-weight: 600;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer; transition: opacity 0.14s;
+    padding: 9px 20px; border-radius: 9px; border: none;
+    background: #10b981; color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
   }
-  .btn-confirmar:hover:not(:disabled) { opacity: 0.88; }
-  .btn-confirmar:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-confirmar:disabled { opacity: .5; cursor: not-allowed; }
 
-  /* Spinner */
+  /* ── Spinner ─────────────────────────────────────────────────────────── */
   .spinner {
-    width: 12px; height: 12px; border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.6s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Lojas ── */
-  .lojas-secoes {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-  }
-  .lojas-secao { display: flex; flex-direction: column; gap: 8px; }
-
-  .secao-label {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 11px; font-weight: 600; color: #475569;
-    text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 4px;
-  }
-
-  .sem-lojas {
-    font-size: 12px; color: #334155; padding: 16px;
-    background: rgba(255,255,255,0.02); border-radius: 8px;
-    border: 1px dashed rgba(255,255,255,0.06); text-align: center;
-  }
-
-  .lojas-lista { display: flex; flex-direction: column; gap: 6px; }
-
+  /* ── Seleção de loja ─────────────────────────────────────────────────── */
+  .lojas-lista { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
   .loja-card {
     display: flex; align-items: center; gap: 12px;
-    padding: 10px 14px; border-radius: 9px; cursor: pointer;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.06);
-    text-align: left; width: 100%;
-    transition: border-color 0.14s, background 0.14s;
-    font-family: 'DM Sans', sans-serif;
+    padding: 11px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+    cursor: pointer; text-align: left; width: 100%; font-family: inherit;
+    transition: border-color .14s, background .14s;
   }
-  .loja-card:hover { border-color: rgba(167,139,250,0.25); background: rgba(167,139,250,0.04); }
-  .loja-selecionada {
-    border-color: rgba(167,139,250,0.5) !important;
-    background: rgba(167,139,250,0.08) !important;
-  }
-
+  .loja-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); }
+  .loja-selecionada { border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.06); }
   .loja-radio { flex-shrink: 0; }
   .radio-dot {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.15);
-    background: transparent; transition: all 0.14s;
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .14s;
   }
-  .radio-ativo {
-    border-color: #a78bfa;
-    background: #a78bfa;
-    box-shadow: 0 0 0 3px rgba(167,139,250,0.2);
+  .radio-ativo { border-color: #60a5fa; background: rgba(96,165,250,0.15); }
+  .radio-ativo::after { content:''; width: 7px; height: 7px; border-radius: 50%; background: #60a5fa; }
+  .loja-info { flex: 1; }
+  .loja-nome { font-size: 13px; font-weight: 500; color: #e2e8f0; margin: 0; }
+  .loja-end  { font-size: 12px; color: #475569; margin: 2px 0 0; }
+
+  /* ── Categorias grid ─────────────────────────────────────────────────── */
+  .categorias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
   }
-
-  .loja-info { flex: 1; min-width: 0; }
-  .loja-nome { font-size: 13px; font-weight: 600; color: #e2e8f0; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .loja-end  { font-size: 11px; color: #475569; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  .loja-dist {
-    font-size: 11px; font-weight: 600; color: #64748b;
-    background: rgba(255,255,255,0.04); border-radius: 5px;
-    padding: 3px 8px; flex-shrink: 0; white-space: nowrap;
+  .categoria-card {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 18px 14px; border-radius: 14px;
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.07);
+    cursor: pointer; font-family: inherit; text-align: center;
+    transition: border-color .14s, background .14s;
   }
-  .loja-selecionada .loja-dist { color: #a78bfa; background: rgba(167,139,250,0.1); }
+  .categoria-card:hover:not(:disabled) { border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.04); }
+  .categoria-selecionada { border-color: rgba(96,165,250,0.5); background: rgba(96,165,250,0.08); }
+  .categoria-indisponivel { opacity: .4; cursor: not-allowed; }
+  .cat-imagem { width: 100%; max-width: 160px; height: 90px; object-fit: cover; border-radius: 8px; }
+  .cat-placeholder {
+    width: 100%; max-width: 160px; height: 90px;
+    background: rgba(255,255,255,0.03); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; color: #334155;
+  }
+  .cat-info { width: 100%; }
+  .cat-nome { font-size: 13px; font-weight: 600; color: #e2e8f0; margin: 0; }
+  .cat-code { font-size: 11px; color: #475569; margin: 2px 0 0; }
+  .cat-preco { margin-top: 6px; }
+  .preco-val { font-size: 20px; font-weight: 700; color: #60a5fa; }
+  .preco-unid { font-size: 12px; color: #475569; }
+  .cat-total { font-size: 12px; color: #94a3b8; }
+  .cat-disp { font-size: 11px; color: #334155; margin-top: 2px; }
+  .cat-indisponivel-label { font-size: 12px; color: #475569; margin-top: 6px; }
 
-  /* Resumo */
+  /* ── Resumo ──────────────────────────────────────────────────────────── */
   .resumo-card {
-    background: #0f172a; border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px; padding: 20px 24px; max-width: 780px; margin-bottom: 16px;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 16px 20px;
   }
-  .resumo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-  .resumo-item { display: flex; flex-direction: column; gap: 3px; }
-  .resumo-label { font-size: 10px; font-weight: 600; color: #334155; text-transform: uppercase; letter-spacing: 0.07em; }
-  .resumo-val   { font-size: 13px; font-weight: 600; color: #e2e8f0; }
-  .resumo-sub   { font-size: 11px; color: #475569; }
-  .disponivel   { font-size: 13px; font-weight: 600; color: #34d399; }
-  .indisponivel { font-size: 13px; font-weight: 600; color: #f87171; }
-
-  /* Planos */
-  .planos-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px; max-width: 780px; margin-bottom: 16px;
-  }
-  .plano-card {
-    background: #0f172a; border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 10px; padding: 16px; transition: border-color 0.14s;
-  }
-  .plano-destaque { border-color: rgba(167,139,250,0.4); }
-  .plano-nome  { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 8px; }
-  .plano-preco { display: flex; align-items: baseline; gap: 3px; margin: 0 0 4px; }
-  .preco-val   { font-size: 22px; font-weight: 700; color: #a78bfa; }
-  .preco-unid  { font-size: 11px; color: #475569; }
-  .plano-total { font-size: 12px; color: #94a3b8; margin: 0 0 3px; }
-  .plano-dias  { font-size: 11px; color: #475569; margin: 0; }
+  .resumo-grid { display: flex; gap: 24px; flex-wrap: wrap; }
+  .resumo-item { display: flex; flex-direction: column; gap: 2px; }
+  .resumo-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #334155; }
+  .resumo-val { font-size: 14px; font-weight: 600; color: #e2e8f0; }
+  .resumo-sub { font-size: 12px; color: #475569; }
 </style>
