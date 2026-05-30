@@ -84,20 +84,20 @@ async def criar_rate_plan(payload: RatePlanRequest, company_id: str, db: AsyncSu
                 extra_km_price:       $extra_km_price
             },
             conditions: {
-                categories:            $categories,
-                stores:                $stores,
+                categories:            array::map($categories, |$c| type::record($c)),
+                stores:                array::map($stores,     |$c| type::record($c)),
                 min_days:              $min_days,
                 max_days:              $max_days,
                 min_age:               $min_age,
                 max_age:               $max_age,
                 advance_booking_days:  $advance_booking_days,
                 allow_one_way:         $allow_one_way,
-                valid_from:            IF $valid_from IS NOT NULL THEN type::datetime($valid_from) ELSE NONE END,
-                valid_to:              IF $valid_to   IS NOT NULL THEN type::datetime($valid_to)   ELSE NONE END,
+                valid_from:            IF $valid_from IS NOT NONE THEN type::datetime($valid_from) ELSE NONE END,
+                valid_to:              IF $valid_to   IS NOT NONE THEN type::datetime($valid_to)   ELSE NONE END,
                 promo_code:            $promo_code,
                 allowed_nationalities: $allowed_nationalities
             },
-            included_protections: $included_protections
+            included_protections: array::map($included_protections, |$c| type::record($c))
         }
         """,
         {
@@ -125,9 +125,18 @@ async def criar_rate_plan(payload: RatePlanRequest, company_id: str, db: AsyncSu
             'included_protections': protections,
         },
     )
+    # Propagar erro real do SurrealDB em vez de 500 genérico
+    if isinstance(result, str):
+        raise HTTPException(status_code=500, detail=f'Erro ao criar plano tarifário: {result}')
+    if isinstance(result, list) and result and isinstance(result[0], dict):
+        status = result[0].get('status')
+        if status != 'OK':
+            surreal_err = result[0].get('result', 'Erro desconhecido no banco de dados.')
+            raise HTTPException(status_code=500, detail=str(surreal_err))
+
     rows = extract_records(result)
     if not rows:
-        raise HTTPException(status_code=500, detail='Erro ao criar plano tarifário.')
+        raise HTTPException(status_code=500, detail='Erro ao criar plano tarifário: resultado vazio.')
     row = rows[0]
     if not isinstance(row, dict):
         result2 = await db.query("SELECT * FROM type::record($id)", {'id': str(row)})
@@ -162,20 +171,20 @@ async def atualizar_rate_plan(plan_id: str, payload: RatePlanRequest, company_id
                 extra_km_price:       $extra_km_price
             },
             conditions: {
-                categories:            $categories,
-                stores:                $stores,
+                categories:            array::map($categories, |$c| type::record($c)),
+                stores:                array::map($stores,     |$c| type::record($c)),
                 min_days:              $min_days,
                 max_days:              $max_days,
                 min_age:               $min_age,
                 max_age:               $max_age,
                 advance_booking_days:  $advance_booking_days,
                 allow_one_way:         $allow_one_way,
-                valid_from:            IF $valid_from IS NOT NULL THEN type::datetime($valid_from) ELSE NONE END,
-                valid_to:              IF $valid_to   IS NOT NULL THEN type::datetime($valid_to)   ELSE NONE END,
+                valid_from:            IF $valid_from IS NOT NONE THEN type::datetime($valid_from) ELSE NONE END,
+                valid_to:              IF $valid_to   IS NOT NONE THEN type::datetime($valid_to)   ELSE NONE END,
                 promo_code:            $promo_code,
                 allowed_nationalities: $allowed_nationalities
             },
-            included_protections: $included_protections
+            included_protections: array::map($included_protections, |$c| type::record($c))
         }
         """,
         {

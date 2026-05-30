@@ -58,14 +58,14 @@ async def _buscar_rate_plans(
           AND type::record($category) INSIDE conditions.categories
           AND (array::len(conditions.stores) = 0 OR type::record($pickup_store) INSIDE conditions.stores)
           AND $total_days >= conditions.min_days
-          AND (conditions.max_days IS NONE OR $total_days <= conditions.max_days)
+          AND (conditions.max_days IS NONE OR conditions.max_days IS NULL OR $total_days <= conditions.max_days)
           AND $customer_age >= conditions.min_age
-          AND (conditions.max_age IS NONE OR $customer_age <= conditions.max_age)
-          AND (conditions.valid_from IS NONE OR conditions.valid_from <= type::datetime($pickup_time))
-          AND (conditions.valid_to IS NONE OR conditions.valid_to >= type::datetime($dropoff_time))
+          AND (conditions.max_age IS NONE OR conditions.max_age IS NULL OR $customer_age <= conditions.max_age)
+          AND (conditions.valid_from IS NONE OR conditions.valid_from IS NULL OR conditions.valid_from <= type::datetime($pickup_time))
+          AND (conditions.valid_to IS NONE OR conditions.valid_to IS NULL OR conditions.valid_to >= type::datetime($dropoff_time))
           AND $advance_days >= conditions.advance_booking_days
           AND ($is_one_way = false OR conditions.allow_one_way = true)
-          AND (conditions.promo_code IS NONE OR ($promo_code IS NOT NONE AND conditions.promo_code = $promo_code))
+          AND (conditions.promo_code IS NONE OR conditions.promo_code IS NULL OR ($promo_code IS NOT NONE AND $promo_code IS NOT NULL AND conditions.promo_code = $promo_code))
           AND (array::len(conditions.allowed_nationalities) = 0 OR $nationality INSIDE conditions.allowed_nationalities)
         ORDER BY priority DESC, price.daily_rate ASC
         """,
@@ -314,12 +314,30 @@ async def buscar_tarifas(
                     available_units=alt_disp,
                 ))
 
+    # Calcular valores reais das taxas (PERCENTAGE usa o subtotal do melhor plano)
+    fees_calculadas: list[FeeCalculado] = []
+    if plans_raw:
+        daily_rate_best = float(plans_raw[0].get('price', {}).get('daily_rate', 0))
+        subtotal_base   = round(daily_rate_best * total_days, 2)
+        for fee in [_fee_to_response(f) for f in fees_raw if isinstance(f, dict)]:
+            if not _fee_applies(fee, pickup_time):
+                continue
+            fees_calculadas.append(FeeCalculado(
+                id=fee.id,
+                name=fee.name,
+                amount=_calc_fee_amount(fee, subtotal_base),
+                calculation_type=fee.calculation_type,
+                applies_after_time=fee.applies_after_time,
+                applies_before_time=fee.applies_before_time,
+                is_tax=fee.is_tax,
+            ))
+
     return BuscarTarifasResponse(
         total_days=total_days,
         is_one_way=is_one_way,
         rate_plans=[_plan_to_response(p, total_days) for p in plans_raw if isinstance(p, dict)],
         available_addons=[_addon_to_response(a) for a in addons_raw if isinstance(a, dict)],
-        store_fees=[_fee_to_response(f) for f in fees_raw if isinstance(f, dict)],
+        store_fees=fees_calculadas,
         one_way_fee=one_way,
         disponibilidade=disponibilidade,
         lojas_alternativas=lojas_alternativas,
@@ -549,6 +567,7 @@ async def buscar_tarifas_todas_categorias(
                 store_fees=res.store_fees,
                 one_way_fee=res.one_way_fee,
                 lojas_alternativas=res.lojas_alternativas,
+                available_addons=res.available_addons,
             ))
 
     # Ordena: disponíveis primeiro, depois por nome da categoria

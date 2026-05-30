@@ -3,8 +3,6 @@
 
   let { data }: { data: PageData } = $props();
 
-  const catMap = $derived(Object.fromEntries(data.categorias.map((c: any) => [c.id, c])));
-
   const STATUS_CONFIG: Record<string, { label: string; cor: string; bg: string }> = {
     PENDING:   { label: 'Pendente',       cor: '#fbbf24', bg: 'rgba(251,191,36,0.1)'  },
     CONFIRMED: { label: 'Confirmada',     cor: '#60a5fa', bg: 'rgba(96,165,250,0.1)'  },
@@ -27,8 +25,7 @@
     });
   }
 
-  const sc  = $derived(STATUS_CONFIG[data.reserva.status] ?? STATUS_CONFIG['PENDING']);
-  const cat = $derived(catMap[data.reserva.category]);
+  const sc = $derived(STATUS_CONFIG[data.reserva.status] ?? STATUS_CONFIG['PENDING']);
 </script>
 
 <svelte:head>
@@ -58,10 +55,9 @@
         <div class="info-item">
           <dt>Categoria</dt>
           <dd>
-            {#if cat}
-              {cat.group_name} <span class="cat-code">{cat.code}</span>
-            {:else}
-              <span class="mono">{data.reserva.category}</span>
+            {data.reserva.category_name || data.reserva.category}
+            {#if data.reserva.category_code}
+              <span class="cat-code">{data.reserva.category_code}</span>
             {/if}
           </dd>
         </div>
@@ -70,7 +66,7 @@
           <dt>Retirada</dt>
           <dd>
             <span class="bold">{formatDate(data.reserva.pickup_time)}</span>
-            <span class="loja-tag">Loja #{shortId(data.reserva.pickup_store)}</span>
+            <span class="loja-tag">{data.reserva.pickup_store_name || shortId(data.reserva.pickup_store)}</span>
           </dd>
         </div>
 
@@ -78,7 +74,7 @@
           <dt>Devolução</dt>
           <dd>
             <span class="bold">{formatDate(data.reserva.dropoff_time)}</span>
-            <span class="loja-tag">Loja #{shortId(data.reserva.dropoff_store)}</span>
+            <span class="loja-tag">{data.reserva.dropoff_store_name || shortId(data.reserva.dropoff_store)}</span>
           </dd>
         </div>
 

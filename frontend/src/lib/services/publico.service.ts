@@ -16,6 +16,16 @@ export interface CidadeResponse {
   stores: CidadeStore[];
 }
 
+export interface AddonDisponivel {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  pricing_amount: number;
+  pricing_type: 'PER_DAY' | 'PER_TRIP' | 'PERCENTAGE';
+  max_amount_per_trip: number | null;
+}
+
 export interface ResultadoCategoriaDisponivel {
   category_id: string;
   category_name: string;
@@ -26,6 +36,7 @@ export interface ResultadoCategoriaDisponivel {
   store_fees: { id: string; name: string; amount: number; is_tax: boolean }[];
   one_way_fee: { fee_type: string; amount: number } | null;
   lojas_alternativas: { store_id: string; store_name: string; available_units: number }[];
+  available_addons: AddonDisponivel[];
 }
 
 export interface BuscarTodasCategoriasResponse {

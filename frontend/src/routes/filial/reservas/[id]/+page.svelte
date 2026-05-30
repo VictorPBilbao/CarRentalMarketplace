@@ -1,10 +1,14 @@
 <script lang="ts">
   import type { ActionData, PageData } from './$types';
   import { page } from '$app/state';
+  import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   const flash  = $derived((page.data as any)?.flash ?? null);
+
+  $effect(() => { const m = (form as any)?.erro; if (m) notificacoes.erro(m); });
+  $effect(() => { if (flash?.tipo === 'sucesso') notificacoes.sucesso(flash.mensagem); });
   const catMap = $derived(Object.fromEntries(data.categorias.map((c: any) => [c.id, c])));
 
   const STATUS_CONFIG: Record<string, { label: string; cor: string; bg: string }> = {
@@ -56,20 +60,6 @@
 <svelte:head>
   <title>Reserva {shortId(data.reserva.id)} — Filial</title>
 </svelte:head>
-
-{#if flash?.tipo === 'sucesso'}
-  <div class="banner-sucesso">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0">
-      <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/>
-      <path d="M4.5 7l2 2 3.5-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    {flash.mensagem}
-  </div>
-{/if}
-
-{#if (form as any)?.erro}
-  <div class="banner-erro">{(form as any).erro}</div>
-{/if}
 
 <div class="page-header">
   <div>
@@ -279,15 +269,4 @@
   .total-row span { font-size: 14px; font-weight: 600; color: #94a3b8; }
   .total-val { font-size: 18px; font-weight: 700; color: #34d399 !important; }
 
-  .banner-sucesso {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 20px; padding: 12px 16px; border-radius: 10px;
-    border: 1px solid rgba(74,222,128,0.2); background: rgba(74,222,128,0.07);
-    font-size: 13px; color: #4ade80;
-  }
-  .banner-erro {
-    margin-bottom: 20px; padding: 12px 16px; border-radius: 10px;
-    border: 1px solid rgba(248,113,113,0.3); background: rgba(248,113,113,0.07);
-    font-size: 13px; color: #f87171;
-  }
 </style>

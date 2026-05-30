@@ -1,12 +1,16 @@
 <script lang="ts">
   import { page } from '$app/state';
   import type { ActionData, PageData } from './$types';
+  import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   const filial     = $derived((page.data as any)?.filial ?? null);
   const cotacao    = $derived((form as any)?.cotacao ?? null);
   const erroCotar  = $derived((form as any)?.erro ?? null);
+
+  $effect(() => { const m = (data as any)?.buscarErro; if (m) notificacoes.erro(m); });
+  $effect(() => { if (erroCotar) notificacoes.erro(erroCotar); });
 
   // Controle de abas de resultado
   let planSelecionado = $state('');
@@ -157,11 +161,6 @@
     </button>
   </div>
 </form>
-
-<!-- ── Erro de busca ─────────────────────────────────────────────────────── -->
-{#if data.buscarErro}
-  <div class="banner-erro">{data.buscarErro}</div>
-{/if}
 
 <!-- ── Resultados ────────────────────────────────────────────────────────── -->
 {#if data.tarifas}
@@ -397,10 +396,6 @@
 {/if}
 
 <!-- ── Resultado da Cotação ──────────────────────────────────────────────── -->
-{#if erroCotar}
-  <div class="banner-erro" style="margin-top:16px">{erroCotar}</div>
-{/if}
-
 {#if cotacao}
   <div class="cotacao-resultado">
     <div class="cotacao-header">
@@ -690,10 +685,5 @@
   }
   .empty-small p  { font-size: 13px; color: #475569; margin: 0 0 4px; }
   .empty-sub      { font-size: 12px; color: #334155 !important; }
-  .banner-erro {
-    padding: 12px 16px; border-radius: 10px; font-size: 13px;
-    border: 1px solid rgba(248,113,113,0.3); background: rgba(248,113,113,0.07);
-    color: #f87171; margin-bottom: 16px;
-  }
   .col-titulo { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #475569; margin: 0 0 10px; }
 </style>

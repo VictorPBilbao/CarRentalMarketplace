@@ -1,8 +1,11 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import type { ActionData, PageData } from './$types';
+  import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+
+  $effect(() => { const m = (form as any)?.erro; if (m) notificacoes.erro(m); });
 
   const etapa     = $derived((form as any)?.etapa ?? 'cotar');
   const cotacao   = $derived((form as any)?.cotacao ?? null);
@@ -61,10 +64,6 @@
     <h1>{etapa === 'confirmar' ? 'Confirmar Reserva' : 'Nova Reserva'}</h1>
   </div>
 </div>
-
-{#if (form as any)?.erro}
-  <div class="banner-erro">{(form as any).erro}</div>
-{/if}
 
 <!-- ── Etapa 1: Parâmetros + Calcular Cotação ─────────────────────────── -->
 {#if etapa === 'cotar'}
@@ -281,12 +280,6 @@
   .breadcrumb-sep { font-size: 12px; color: #334155; margin: 0 4px; }
   .breadcrumb-atual { font-size: 12px; color: #64748b; }
   h1 { font-size: 22px; font-weight: 700; color: #f1f5f9; margin: 6px 0 0; }
-
-  .banner-erro {
-    margin-bottom: 20px; padding: 12px 16px; border-radius: 10px;
-    border: 1px solid rgba(248,113,113,0.3); background: rgba(248,113,113,0.07);
-    font-size: 13px; color: #f87171;
-  }
 
   .card {
     background: #0f172a;

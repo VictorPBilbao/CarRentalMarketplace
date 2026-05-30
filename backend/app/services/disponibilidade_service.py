@@ -38,35 +38,34 @@ async def verificar_disponibilidade(
     dropoff_time: datetime,
     db: AsyncSurreal,
 ) -> int:
-    """Retorna o mínimo de unidades disponíveis no período. 0 = sem disponibilidade."""
+    """Retorna unidades disponíveis no período com base em reservas ativas."""
     total_fleet = await _total_frota(store_id, category_id, db)
     if total_fleet == 0:
         return 0
 
-    datas = _datas_no_periodo(pickup_time, dropoff_time)
-    min_disponivel = total_fleet
-
-    for d in datas:
-        result = await db.query(
-            """
-            SELECT total_booked, total_maintenance FROM availability_ledger
-            WHERE store = type::record($store)
-              AND category = type::record($category)
-              AND time::floor(block_date, 1d) = time::floor(type::datetime($date_iso), 1d)
-            LIMIT 1
-            """,
-            {'store': store_id, 'category': category_id, 'date_iso': d.isoformat() + 'T00:00:00Z'},
-        )
-        rows = extract_records(result)
-        if rows and isinstance(rows[0], dict):
-            booked = int(rows[0].get('total_booked', 0))
-            manut = int(rows[0].get('total_maintenance', 0))
-            disponivel = total_fleet - booked - manut
-        else:
-            disponivel = total_fleet
-        min_disponivel = min(min_disponivel, disponivel)
-
-    return max(min_disponivel, 0)
+    # Conta reservas ativas (PENDING/CONFIRMED/ACTIVE) que se sobrepõem ao período.
+    # Usar query direta em vez do ledger garante que reservas COMPLETED ou CANCELLED
+    # nunca bloqueiem novas buscas, independente do estado do ledger.
+    result = await db.query(
+        """
+        SELECT count() AS total FROM reservation
+        WHERE pickup_store = type::record($store)
+          AND category = type::record($category)
+          AND status INSIDE ['PENDING', 'CONFIRMED', 'ACTIVE']
+          AND pickup_time < type::datetime($dropoff)
+          AND dropoff_time > type::datetime($pickup)
+        GROUP ALL
+        """,
+        {
+            'store':   store_id,
+            'category': category_id,
+            'pickup':  pickup_time.isoformat(),
+            'dropoff': dropoff_time.isoformat(),
+        },
+    )
+    rows = extract_records(result)
+    booked = int(rows[0].get('total', 0)) if rows and isinstance(rows[0], dict) else 0
+    return max(total_fleet - booked, 0)
 
 
 async def ocupar_disponibilidade(

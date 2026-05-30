@@ -63,7 +63,9 @@ def _row_to_response(row: dict) -> ReservaResponse:
         category_name=str(row.get('_cat_name') or ''),
         category_code=str(row.get('_cat_code') or ''),
         pickup_store=str(row['pickup_store']),
+        pickup_store_name=str(row.get('_pickup_name') or ''),
         dropoff_store=str(row['dropoff_store']),
+        dropoff_store_name=str(row.get('_dropoff_name') or ''),
         pickup_time=_dt(row.get('pickup_time')),
         dropoff_time=_dt(row.get('dropoff_time')),
         flight_number=row.get('flight_number'),
@@ -137,7 +139,9 @@ async def listar(
             customer.first_name AS _cust_fn,
             customer.last_name  AS _cust_ln,
             category.group_name AS _cat_name,
-            category.code       AS _cat_code
+            category.code       AS _cat_code,
+            pickup_store.name   AS _pickup_name,
+            dropoff_store.name  AS _dropoff_name
         FROM reservation
         WHERE pickup_store.company = type::record($cid){store_clause}{status_clause}
         ORDER BY created_at DESC
@@ -167,7 +171,9 @@ async def buscar_por_id(
             customer.first_name AS _cust_fn,
             customer.last_name  AS _cust_ln,
             category.group_name AS _cat_name,
-            category.code       AS _cat_code
+            category.code       AS _cat_code,
+            pickup_store.name   AS _pickup_name,
+            dropoff_store.name  AS _dropoff_name
         FROM reservation
         WHERE id = type::record($id)
           AND pickup_store.company = type::record($cid){store_clause}
@@ -212,8 +218,42 @@ async def criar(
             'amount': base,
         })
 
-    # total_amount = fees + soma dos itens do breakdown (sem double-counting)
-    total_amount = payload.pricing.fees + sum(item['amount'] for item in breakdown)
+    # Processar adicionais selecionados
+    for sel in (payload.selected_addons or []):
+        addon_rows = extract_records(await db.query(
+            "SELECT name, pricing FROM addon WHERE id = type::record($id) AND active = true LIMIT 1",
+            {'id': sel.addon_id},
+        ))
+        if not addon_rows:
+            continue
+        addon = addon_rows[0]
+        pricing_cfg = addon.get('pricing', {})
+        amount_cfg  = float(pricing_cfg.get('amount', 0))
+        calc_type   = pricing_cfg.get('calculation_type', 'PER_TRIP')
+        max_amt     = pricing_cfg.get('max_amount_per_trip')
+
+        qty = max(sel.quantity, 1)
+        if calc_type == 'PER_DAY':
+            raw = amount_cfg * payload.pricing.total_days * qty
+            if max_amt is not None:
+                raw = min(raw, float(max_amt) * qty)
+        elif calc_type == 'PERCENTAGE':
+            raw = base * amount_cfg / 100 * qty
+            if max_amt is not None:
+                raw = min(raw, float(max_amt) * qty)
+        else:  # PER_TRIP
+            raw = amount_cfg * qty
+
+        breakdown.append({
+            'type': 'ADDON',
+            'description': f'{addon.get("name", sel.addon_id)} × {qty}',
+            'amount': round(raw, 2),
+        })
+
+    # total_amount = fees + itens não-taxa do breakdown (FEE/TAX já estão em pricing.fees)
+    total_amount = payload.pricing.fees + sum(
+        item['amount'] for item in breakdown if item['type'] not in ('FEE', 'TAX')
+    )
 
     # Converte para Decimal — campos decimal no SurrealDB rejeitam float CBOR
     breakdown_db = [
@@ -295,7 +335,9 @@ async def listar_cliente(
         f"""
         SELECT *,
             category.group_name AS _cat_name,
-            category.code       AS _cat_code
+            category.code       AS _cat_code,
+            pickup_store.name   AS _pickup_name,
+            dropoff_store.name  AS _dropoff_name
         FROM reservation
         WHERE customer = type::record($uid){status_clause}
         ORDER BY pickup_time ASC
@@ -315,7 +357,9 @@ async def buscar_por_id_cliente(
         """
         SELECT *,
             category.group_name AS _cat_name,
-            category.code       AS _cat_code
+            category.code       AS _cat_code,
+            pickup_store.name   AS _pickup_name,
+            dropoff_store.name  AS _dropoff_name
         FROM reservation
         WHERE id = type::record($id)
           AND customer = type::record($uid)
@@ -350,7 +394,7 @@ async def atualizar_status(
         {'id': reserva_id, 'status': payload.status},
     )
 
-    if payload.status in ('CANCELLED', 'NO_SHOW'):
+    if payload.status in ('CANCELLED', 'NO_SHOW', 'COMPLETED'):
         try:
             pickup = datetime.fromisoformat(reserva.pickup_time)
             dropoff = datetime.fromisoformat(reserva.dropoff_time)
@@ -387,5 +431,6 @@ async def criar_cliente(
         flight_number=payload.flight_number,
         notes=payload.notes,
         pricing=payload.pricing,
+        selected_addons=payload.selected_addons,
     )
     return await criar(full, company_id, db)

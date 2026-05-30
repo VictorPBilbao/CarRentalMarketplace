@@ -86,6 +86,7 @@ class ResultadoCategoriaDisponivel(BaseModel):
     store_fees: list[FeeCalculado]
     one_way_fee: TaxaOneWay | None
     lojas_alternativas: list[LojaAlternativa] = []
+    available_addons: list[AddonDisponivel] = []
 
 
 class BuscarTodasCategoriasResponse(BaseModel):

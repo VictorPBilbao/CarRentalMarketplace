@@ -168,7 +168,7 @@ export const actions: Actions = {
     const max_age_raw          = String(data.get('max_age')              ?? '').trim();
     const max_age              = max_age_raw ? parseInt(max_age_raw)     : null;
     const advance_booking_days = parseInt(String(data.get('advance_booking_days')  ?? '0'));
-    const allow_one_way        = data.get('allow_one_way') === 'true';
+    const allow_one_way        = data.getAll('allow_one_way').includes('true');
     const valid_from_raw       = String(data.get('valid_from')           ?? '').trim();
     const valid_to_raw         = String(data.get('valid_to')             ?? '').trim();
     const valid_from           = valid_from_raw || null;
@@ -219,7 +219,7 @@ export const actions: Actions = {
     const max_age_raw          = String(data.get('max_age')              ?? '').trim();
     const max_age              = max_age_raw ? parseInt(max_age_raw)     : null;
     const advance_booking_days = parseInt(String(data.get('advance_booking_days')  ?? '0'));
-    const allow_one_way        = data.get('allow_one_way') === 'true';
+    const allow_one_way        = data.getAll('allow_one_way').includes('true');
     const valid_from_raw       = String(data.get('valid_from')           ?? '').trim();
     const valid_to_raw         = String(data.get('valid_to')             ?? '').trim();
     const valid_from           = valid_from_raw || null;

@@ -17,6 +17,7 @@ def extract_records(result: object) -> list[dict]:
             if isinstance(result[0], dict):
                 if 'status' in result[0] and 'result' in result[0]:
                     if result[0].get('status') != 'OK':
+                        logger.error(f"SurrealDB error: {result[0].get('result')}")
                         return []
                     res = result[0].get('result')
                     return res if isinstance(res, list) else [res] if res else []

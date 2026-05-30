@@ -1,6 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import type { Categoria } from '$lib/services/categoria.service';
+  import { notificacoes } from '$lib/stores/notificacoes.store';
 
   interface Props {
     form?:        Record<string, any> | null;
@@ -63,6 +64,8 @@
   }
 
   let enviando = $state(false);
+
+  $effect(() => { const m = erroGlobal; if (m) notificacoes.erro(m); });
 
   const COMBUSTIVEIS = [
     { value: 'FLEX',     label: 'Flex'      },
@@ -152,16 +155,6 @@
       : ''
   );
 </script>
-
-{#if erroGlobal}
-  <div class="banner-erro">
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-      <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M7.5 4.5V8M7.5 10.5h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    {erroGlobal}
-  </div>
-{/if}
 
 <form method="POST" {action}
   use:enhance={() => {
@@ -578,16 +571,6 @@
   }
   .btn-salvar:hover { background: #2563eb; }
   .btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* ── banner de erro ── */
-  .banner-erro {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 20px; padding: 12px 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(248,113,113,0.2);
-    background: rgba(248,113,113,0.07);
-    font-size: 13px; color: #f87171;
-  }
 
   /* ── ACRISS builder ── */
   .acriss-builder {

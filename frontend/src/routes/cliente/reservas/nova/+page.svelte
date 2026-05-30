@@ -1,9 +1,16 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import type { ActionData, PageData } from './$types';
-  import type { CidadeResponse, CidadeStore, ResultadoCategoriaDisponivel } from '$lib/services/publico.service';
+  import type { AddonDisponivel, CidadeResponse, CidadeStore, ResultadoCategoriaDisponivel } from '$lib/services/publico.service';
+  import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+
+  $effect(() => { const m = (form as any)?.erro; if (m) notificacoes.erro(m); });
+  $effect(() => {
+    const r = (form as any)?.resultado;
+    if (r && r.categorias?.length === 0) notificacoes.aviso('Nenhum veículo disponível para a loja selecionada.');
+  });
 
   // ── Dados do servidor ─────────────────────────────────────────────────
   const cidades: CidadeResponse[] = $derived(data.cidades ?? []);
@@ -33,7 +40,31 @@
   let carregando = $state(false);
 
   // Reseta categoria escolhida sempre que um novo resultado de busca chega
-  $effect(() => { resultado; categoriaEscolhida = null; });
+  $effect(() => { resultado; categoriaEscolhida = null; addonsSelecionados = new Map(); });
+
+  // ── Adicionais ────────────────────────────────────────────────────────────
+  let addonsSelecionados = $state<Map<string, number>>(new Map());
+
+  function toggleAddon(addon: AddonDisponivel) {
+    const m = new Map(addonsSelecionados);
+    if (m.has(addon.id)) m.delete(addon.id);
+    else m.set(addon.id, 1);
+    addonsSelecionados = m;
+  }
+
+  function calcAddonTotal(addon: AddonDisponivel, subtotal: number, totalDays: number, qty: number): number {
+    let raw = 0;
+    if (addon.pricing_type === 'PER_DAY') {
+      raw = addon.pricing_amount * totalDays * qty;
+      if (addon.max_amount_per_trip !== null) raw = Math.min(raw, addon.max_amount_per_trip * qty);
+    } else if (addon.pricing_type === 'PERCENTAGE') {
+      raw = subtotal * addon.pricing_amount / 100 * qty;
+      if (addon.max_amount_per_trip !== null) raw = Math.min(raw, addon.max_amount_per_trip * qty);
+    } else {
+      raw = addon.pricing_amount * qty;
+    }
+    return round2(raw);
+  }
 
   // ── Lojas da cidade selecionada ───────────────────────────────────────
   const lojasRetirada  = $derived<CidadeStore[]>(
@@ -129,10 +160,6 @@
   <span class="breadcrumb-atual">Nova Reserva</span>
   <h1>{etapa === 'categorias' && categoriaEscolhida ? 'Confirmar Reserva' : 'Nova Reserva'}</h1>
 </div>
-
-{#if (form as any)?.erro}
-  <div class="banner-erro">{(form as any).erro}</div>
-{/if}
 
 <!-- ══ ETAPA 1: BUSCA ══════════════════════════════════════════════════════ -->
 {#if etapa === 'buscar'}
@@ -320,7 +347,7 @@
   </div>
 
   {#if resultado.categorias.length === 0}
-    <div class="banner-aviso">Nenhum veículo disponível para a loja selecionada.</div>
+    <!-- aviso disparado via $effect no script -->
   {:else}
     <h3 style="font-size:15px; font-weight:600; color:#e2e8f0; margin:0 0 14px;">
       Selecione uma categoria
@@ -379,9 +406,14 @@
 
   <!-- ── Confirmação (aparece quando o cliente escolheu uma categoria) ── -->
   {#if categoriaEscolhida}
-    {@const melhorPlano = categoriaEscolhida.rate_plans[0]}
-    {@const feesTotal   = categoriaEscolhida.store_fees.reduce((s, f) => s + f.amount, 0)}
-    {@const total       = melhorPlano ? round2(melhorPlano.subtotal + feesTotal) : 0}
+    {@const melhorPlano  = categoriaEscolhida.rate_plans[0]}
+    {@const feesTotal    = categoriaEscolhida.store_fees.reduce((s, f) => s + f.amount, 0)}
+    {@const subtotalBase = melhorPlano ? melhorPlano.subtotal : 0}
+    {@const addonsTotal  = categoriaEscolhida.available_addons.reduce((s, a) => {
+      const qty = addonsSelecionados.get(a.id) ?? 0;
+      return qty > 0 ? s + calcAddonTotal(a, subtotalBase, melhorPlano?.total_days ?? 0, qty) : s;
+    }, 0)}
+    {@const total = round2(subtotalBase + feesTotal + addonsTotal)}
 
     <div class="card" style="margin-top:24px; border-color:rgba(96,165,250,0.3);">
       <h3 class="card-title" style="color:#60a5fa;">Confirmar Reserva</h3>
@@ -413,6 +445,55 @@
         {/if}
       </div>
 
+      <!-- ── Adicionais ── -->
+      {#if categoriaEscolhida.available_addons.length > 0}
+        <div style="border-top:1px solid rgba(255,255,255,0.07); padding-top:16px; margin-bottom:16px;">
+          <p style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#475569; margin:0 0 12px;">Adicionais</p>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            {#each categoriaEscolhida.available_addons as addon}
+              {@const selecionado = addonsSelecionados.has(addon.id)}
+              {@const previewAmt  = calcAddonTotal(addon, subtotalBase, melhorPlano?.total_days ?? 0, 1)}
+              <button
+                type="button"
+                onclick={() => toggleAddon(addon)}
+                style="
+                  display:flex; align-items:center; gap:12px;
+                  padding:10px 12px; border-radius:10px; text-align:left;
+                  border:1px solid {selecionado ? 'rgba(96,165,250,0.4)' : 'rgba(255,255,255,0.07)'};
+                  background:{selecionado ? 'rgba(96,165,250,0.06)' : 'transparent'};
+                  cursor:pointer; width:100%; transition:all .14s;
+                "
+              >
+                <div style="
+                  width:20px; height:20px; border-radius:4px; flex-shrink:0;
+                  border:1.5px solid {selecionado ? '#60a5fa' : '#334155'};
+                  background:{selecionado ? '#60a5fa' : 'transparent'};
+                  display:flex; align-items:center; justify-content:center;
+                ">
+                  {#if selecionado}
+                    <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                      <path d="M1 4l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  {/if}
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <p style="font-size:13px; font-weight:500; color:#e2e8f0; margin:0;">{addon.name}</p>
+                  {#if addon.description}
+                    <p style="font-size:11px; color:#475569; margin:2px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{addon.description}</p>
+                  {/if}
+                </div>
+                <span style="font-size:13px; font-weight:600; color:{selecionado ? '#60a5fa' : '#64748b'}; white-space:nowrap;">
+                  {moeda(previewAmt)}
+                  <span style="font-size:10px; font-weight:400; color:#475569;">
+                    /{addon.pricing_type === 'PER_DAY' ? 'dia' : addon.pricing_type === 'PERCENTAGE' ? '%' : 'viagem'}
+                  </span>
+                </span>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
       <form
         method="POST"
         action="?/confirmar"
@@ -426,7 +507,11 @@
         <input type="hidden" name="dailyRate"      value={melhorPlano?.daily_rate ?? 0} />
         <input type="hidden" name="totalDays"      value={melhorPlano?.total_days ?? resultado.total_days} />
         <input type="hidden" name="fees"           value={feesTotal} />
+        <input type="hidden" name="feesJson"       value={JSON.stringify(categoriaEscolhida.store_fees.map(f => ({ name: f.name, amount: f.amount, is_tax: f.is_tax })))} />
         <input type="hidden" name="ratePlanId"     value={melhorPlano?.id ?? ''} />
+        {#each addonsSelecionados as [addonId, qty]}
+          <input type="hidden" name="addon_{addonId}" value={qty} />
+        {/each}
 
         <div class="form-grid">
           <div class="field">
@@ -487,8 +572,6 @@
   .input-erro { border-color: rgba(248,113,113,0.4); }
   .msg-erro   { font-size: 12px; color: #f87171; margin: 2px 0 0; }
   .msg-aviso  { font-size: 12px; color: #fbbf24; margin: 2px 0 0; }
-  .banner-erro { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); border-radius: 9px; padding: 10px 14px; font-size: 13px; color: #f87171; margin-bottom: 14px; }
-  .banner-aviso { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); border-radius: 9px; padding: 10px 14px; font-size: 13px; color: #fbbf24; }
 
   /* ── Botões ──────────────────────────────────────────────────────────── */
   .form-acoes { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }

@@ -24,7 +24,9 @@ export interface Reserva {
   category_name: string;
   category_code: string;
   pickup_store: string;
+  pickup_store_name: string;
   dropoff_store: string;
+  dropoff_store_name: string;
   pickup_time: string;
   dropoff_time: string;
   flight_number: string | null;
@@ -104,6 +106,7 @@ export interface CriarReservaClienteDTO {
     fees: number;
     breakdown: ItemPricing[];
   };
+  selected_addons?: { addon_id: string; quantity: number }[];
 }
 
 export const clienteReservaService = {

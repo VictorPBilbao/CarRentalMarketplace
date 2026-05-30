@@ -1,6 +1,8 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import type { Filial } from '$lib/services/filial.service';
+  import { notificacoes } from '$lib/stores/notificacoes.store';
+  import MapPicker from '$lib/components/ui/MapPicker.svelte';
 
   interface Props {
     form?:         Record<string, any> | null;
@@ -26,6 +28,10 @@
   function v(key: string, filialVal?: string | null): string {
     return campos[key] ?? filialVal ?? '';
   }
+
+  // Estado do mapa — inicializa com valor do formulário/filial ou São Paulo como padrão
+  let mapLat = $state(parseFloat(v('latitudeRaw',  filial?.location?.latitude?.toString())  || '-23.5505'));
+  let mapLng = $state(parseFloat(v('longitudeRaw', filial?.location?.longitude?.toString()) || '-46.6333'));
 
   // ── horários ──
   type DiaSemana = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY' | 'HOLIDAY';
@@ -109,6 +115,8 @@
 
   let enviando = $state(false);
 
+  $effect(() => { const m = erroGlobal; if (m) notificacoes.erro(m); });
+
   // ── endereço reativo (busca por CEP) ──────────────────────────────────────
   let cepVal        = $state(v('cep',        filial?.address?.postal_code));
   let logradouroVal = $state(v('logradouro', filial?.address?.street));
@@ -158,16 +166,6 @@
     { value: 'DELIVERY',       label: 'Entrega no Local'   },
   ];
 </script>
-
-{#if erroGlobal}
-  <div class="banner-erro">
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-      <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M7.5 4.5V8M7.5 10.5h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    {erroGlobal}
-  </div>
-{/if}
 
 <form method="POST" {action}
   use:enhance={() => {
@@ -325,27 +323,15 @@
   <!-- ── 4. Localização Geográfica ── -->
   <div class="secao">
     <p class="secao-titulo">Localização Geográfica</p>
-    <div class="grid-2">
-
-      <div class="campo">
-        <label for="latitude">Latitude <span class="obrigatorio">*</span></label>
-        <input id="latitude" name="latitude" type="number" placeholder="-23.4322"
-          step="any" min="-90" max="90"
-          value={v('latitudeRaw', filial?.location?.latitude?.toString())}
-          class={erros.latitude ? 'erro' : ''} />
-        {#if erros.latitude}<span class="erro-msg">{erros.latitude}</span>{/if}
-      </div>
-
-      <div class="campo">
-        <label for="longitude">Longitude <span class="obrigatorio">*</span></label>
-        <input id="longitude" name="longitude" type="number" placeholder="-46.9297"
-          step="any" min="-180" max="180"
-          value={v('longitudeRaw', filial?.location?.longitude?.toString())}
-          class={erros.longitude ? 'erro' : ''} />
-        {#if erros.longitude}<span class="erro-msg">{erros.longitude}</span>{/if}
-      </div>
-
-    </div>
+    <MapPicker
+      lat={mapLat}
+      lng={mapLng}
+      onchange={(a, b) => { mapLat = a; mapLng = b; }}
+    />
+    <input type="hidden" name="latitude"  value={mapLat} />
+    <input type="hidden" name="longitude" value={mapLng} />
+    {#if erros.latitude}<span class="erro-msg">{erros.latitude}</span>{/if}
+    {#if erros.longitude}<span class="erro-msg">{erros.longitude}</span>{/if}
   </div>
 
   <!-- ── 5. Horários de Funcionamento ── -->
@@ -572,16 +558,6 @@
   }
   .btn-salvar:hover { background: #2563eb; }
   .btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* ── banner de erro global ── */
-  .banner-erro {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 20px; padding: 12px 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(248,113,113,0.2);
-    background: rgba(248,113,113,0.07);
-    font-size: 13px; color: #f87171;
-  }
 
   .cep-hint {
     font-size: 11px; color: #60a5fa;

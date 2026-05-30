@@ -30,17 +30,31 @@ def _fmt_dt(value: object) -> str:
 
 async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardResponse:
     company_id = usuario.locadoraId
+    store_id   = usuario.matrizId  # None para locadora, preenchido para filial
+
+    is_filial  = store_id is not None
 
     # ── 1. Frota ──────────────────────────────────────────────────────────────
-    frota_rows = await db.query(
-        """
-        SELECT status, count() AS total
-        FROM vehicle
-        WHERE company = type::record($company_id)
-        GROUP BY status
-        """,
-        {"company_id": company_id},
-    )
+    if is_filial:
+        frota_rows = await db.query(
+            """
+            SELECT status, count() AS total
+            FROM vehicle
+            WHERE current_store = type::record($store_id)
+            GROUP BY status
+            """,
+            {"store_id": store_id},
+        )
+    else:
+        frota_rows = await db.query(
+            """
+            SELECT status, count() AS total
+            FROM vehicle
+            WHERE company = type::record($company_id)
+            GROUP BY status
+            """,
+            {"company_id": company_id},
+        )
 
     frota_records = extract_records(frota_rows)
     frota_map: dict[str, int] = {r.get("status"): r.get("total") for r in frota_records if isinstance(r, dict)}
@@ -53,14 +67,17 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
     )
 
     # ── 2. Reservas por status ────────────────────────────────────────────────
+    reserva_filter = "pickup_store = type::record($store_id)" if is_filial else "pickup_store.company = type::record($company_id)"
+    reserva_params = {"store_id": store_id} if is_filial else {"company_id": company_id}
+
     reserva_rows = await db.query(
-        """
+        f"""
         SELECT status, count() AS total
         FROM reservation
-        WHERE pickup_store.company = type::record($company_id)
+        WHERE {reserva_filter}
         GROUP BY status
         """,
-        {"company_id": company_id},
+        reserva_params,
     )
 
     res_records = extract_records(reserva_rows)
@@ -68,32 +85,32 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
 
     # ── 3. Retiradas e devoluções de hoje ─────────────────────────────────────
     hoje_retirada_rows = await db.query(
-        """
+        f"""
         SELECT count() AS total
         FROM reservation
-        WHERE pickup_store.company = type::record($company_id)
+        WHERE {reserva_filter}
           AND time::floor(pickup_time, 1d) = time::floor(time::now(), 1d)
           AND status INSIDE ['CONFIRMED', 'ACTIVE']
         GROUP ALL
         """,
-        {"company_id": company_id},
+        reserva_params,
     )
 
     hoje_devolucao_rows = await db.query(
-        """
+        f"""
         SELECT count() AS total
         FROM reservation
-        WHERE pickup_store.company = type::record($company_id)
+        WHERE {reserva_filter}
           AND time::floor(dropoff_time, 1d) = time::floor(time::now(), 1d)
           AND status = 'ACTIVE'
         GROUP ALL
         """,
-        {"company_id": company_id},
+        reserva_params,
     )
 
     hoje_r_records = extract_records(hoje_retirada_rows)
     hoje_retirada = (hoje_r_records[0].get("total", 0) if hoje_r_records and isinstance(hoje_r_records[0], dict) else 0)
-    
+
     hoje_d_records = extract_records(hoje_devolucao_rows)
     hoje_devolucao = (hoje_d_records[0].get("total", 0) if hoje_d_records and isinstance(hoje_d_records[0], dict) else 0)
 
@@ -106,16 +123,28 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
     )
 
     # ── 4. Contratos em aberto ────────────────────────────────────────────────
-    contratos_rows = await db.query(
-        """
-        SELECT count() AS total
-        FROM rental_agreement
-        WHERE vehicle.company = type::record($company_id)
-          AND status = 'OPEN'
-        GROUP ALL
-        """,
-        {"company_id": company_id},
-    )
+    if is_filial:
+        contratos_rows = await db.query(
+            """
+            SELECT count() AS total
+            FROM rental_agreement
+            WHERE vehicle.current_store = type::record($store_id)
+              AND status = 'OPEN'
+            GROUP ALL
+            """,
+            {"store_id": store_id},
+        )
+    else:
+        contratos_rows = await db.query(
+            """
+            SELECT count() AS total
+            FROM rental_agreement
+            WHERE vehicle.company = type::record($company_id)
+              AND status = 'OPEN'
+            GROUP ALL
+            """,
+            {"company_id": company_id},
+        )
 
     cont_records = extract_records(contratos_rows)
     contratos = ContratosStats(
@@ -135,7 +164,7 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
 
     fil_records = extract_records(filiais_rows)
     filiais_data = fil_records[0] if fil_records and isinstance(fil_records[0], dict) else {}
-    
+
     filiais = FiliaisStats(
         total=filiais_data.get("total", 0),
         ativas=filiais_data.get("ativas", 0),
@@ -143,7 +172,7 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
 
     # ── 6. Reservas recentes ──────────────────────────────────────────────────
     recentes_rows = await db.query(
-        """
+        f"""
         SELECT
             id,
             created_at,
@@ -156,12 +185,12 @@ async def get_dashboard(usuario: UsuarioPayload, db: AsyncSurreal) -> DashboardR
             status,
             pricing.total_amount AS valor
         FROM reservation
-        WHERE pickup_store.company = type::record($company_id)
+        WHERE {reserva_filter}
         ORDER BY created_at DESC
         LIMIT 10
         FETCH customer, category, pickup_store
         """,
-        {"company_id": company_id},
+        reserva_params,
     )
 
     rec_records = extract_records(recentes_rows)

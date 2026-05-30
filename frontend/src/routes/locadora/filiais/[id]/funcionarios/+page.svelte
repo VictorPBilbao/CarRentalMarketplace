@@ -1,8 +1,13 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import type { PageData, ActionData } from './$types';
+  import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+
+  $effect(() => { const m = (data as any)?.erro; if (m) notificacoes.erro(m); });
+  $effect(() => { const m = (form as any)?.erro; if (m) notificacoes.erro(m); });
+  $effect(() => { if ((form as any)?.sucesso) notificacoes.sucesso('Funcionário cadastrado com sucesso.'); });
 
   const filial        = $derived(data.filial);
   const funcionarios  = $derived(data.funcionarios ?? []);
@@ -58,26 +63,6 @@
   </a>
 </div>
 
-{#if data.erro}
-  <div class="banner-erro">
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-      <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M7.5 4.5V8M7.5 10.5h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    {data.erro}
-  </div>
-{/if}
-
-{#if (form as any)?.sucesso}
-  <div class="banner-sucesso">
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-      <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M4.5 7.5l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Funcionário cadastrado com sucesso.
-  </div>
-{/if}
-
 <!-- ── formulário de novo funcionário ── -->
 <div class="secao">
   <div class="secao-header">
@@ -98,12 +83,6 @@
   </div>
 
   {#if mostrarForm}
-    {#if erroGlobal}
-      <div class="banner-erro" style="margin-bottom:16px">
-        {erroGlobal}
-      </div>
-    {/if}
-
     <form method="POST" action="?/criar"
       use:enhance={() => {
         enviando = true;
@@ -302,24 +281,6 @@
     white-space: nowrap;
   }
   .btn-sec:hover { border-color: rgba(255,255,255,0.2); color: #cbd5e1; }
-
-  /* ── banners ── */
-  .banner-erro {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 20px; padding: 12px 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(248,113,113,0.2);
-    background: rgba(248,113,113,0.07);
-    font-size: 13px; color: #f87171;
-  }
-  .banner-sucesso {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 20px; padding: 12px 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(52,211,153,0.2);
-    background: rgba(52,211,153,0.07);
-    font-size: 13px; color: #34d399;
-  }
 
   /* ── seção do formulário ── */
   .secao {

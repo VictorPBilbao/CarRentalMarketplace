@@ -68,8 +68,17 @@ export const actions: Actions = {
     const totalDays      = parseInt(String(data.get('totalDays')    ?? '1'));
     const fees           = parseFloat(String(data.get('fees')       ?? '0'));
     const ratePlanId     = String(data.get('ratePlanId')    ?? '').trim() || null;
+    const feesJson       = String(data.get('feesJson')      ?? '[]');
     const flightNumber   = String(data.get('flightNumber')  ?? '').trim() || null;
     const notes          = String(data.get('notes')         ?? '').trim() || null;
+
+    const selected_addons: { addon_id: string; quantity: number }[] = [];
+    for (const [key, val] of data.entries()) {
+      if (key.startsWith('addon_')) {
+        const qty = parseInt(String(val));
+        if (qty > 0) selected_addons.push({ addon_id: key.slice(6), quantity: qty });
+      }
+    }
 
     let reserva;
     try {
@@ -82,11 +91,15 @@ export const actions: Actions = {
           dropoff_time:     dropoffTime,
           flight_number:    flightNumber,
           notes:            notes,
+          selected_addons,
           pricing: {
             daily_rate: dailyRate,
             total_days: totalDays,
             fees,
-            breakdown: ratePlanId ? [{ type: 'BASE_RATE', description: `${totalDays} dia(s) × R$ ${dailyRate.toFixed(2)}`, amount: dailyRate * totalDays }] : [],
+            breakdown: [
+              ...(ratePlanId ? [{ type: 'BASE_RATE', description: `${totalDays} dia(s) × R$ ${dailyRate.toFixed(2)}`, amount: dailyRate * totalDays }] : []),
+              ...(() => { try { return (JSON.parse(feesJson) as { name: string; amount: number; is_tax: boolean }[]).map(f => ({ type: f.is_tax ? 'TAX' : 'FEE', description: f.name, amount: f.amount })); } catch { return []; } })(),
+            ],
           },
         },
         token,

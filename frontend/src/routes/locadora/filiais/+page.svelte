@@ -2,8 +2,11 @@
   import type { PageData } from './$types';
   import type { TipoLocalizacao } from '$lib/services/filial.service';
   import './filiais.css';
+  import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data }: { data: PageData } = $props();
+
+  $effect(() => { const m = (data as any)?.erro; if (m) notificacoes.erro(m); });
 
   const filiais = $derived(data.filiais);
 
@@ -63,16 +66,6 @@
     <p class="stat-valor text-slate">{filiais.length - totalAtivas}</p>
   </div>
 </div>
-
-{#if data.erro}
-  <div class="banner-erro">
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0">
-      <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M7.5 4.5V8M7.5 10.5h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    {data.erro}
-  </div>
-{/if}
 
 <!-- ── tabela ── -->
 <div class="tabela-container">

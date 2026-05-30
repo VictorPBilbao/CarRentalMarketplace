@@ -20,6 +20,11 @@ class PricingRequest(BaseModel):
     breakdown: list[ItemPricingRequest] = []
 
 
+class AddonSelecionadoRequest(BaseModel):
+    addon_id: str
+    quantity: int = 1
+
+
 class CriarReservaRequest(BaseModel):
     customer_id: str
     category_id: str
@@ -30,6 +35,7 @@ class CriarReservaRequest(BaseModel):
     flight_number: str | None = None
     notes: str | None = None
     pricing: PricingRequest
+    selected_addons: list[AddonSelecionadoRequest] = []
 
     @field_validator('dropoff_time')
     @classmethod
@@ -50,6 +56,7 @@ class CriarReservaClienteRequest(BaseModel):
     flight_number: str | None = None
     notes: str | None = None
     pricing: PricingRequest
+    selected_addons: list[AddonSelecionadoRequest] = []
 
     @field_validator('dropoff_time')
     @classmethod
@@ -86,7 +93,9 @@ class ReservaResponse(BaseModel):
     category_name: str
     category_code: str
     pickup_store: str
+    pickup_store_name: str = ''
     dropoff_store: str
+    dropoff_store_name: str = ''
     pickup_time: str
     dropoff_time: str
     flight_number: str | None
