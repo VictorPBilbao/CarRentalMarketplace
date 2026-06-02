@@ -65,31 +65,35 @@ export const actions: Actions = {
       });
     }
 
-    // Para cada empresa, busca categorias disponíveis
+    // Para cada empresa e cada filial de retirada, busca categorias disponíveis
     const empresas: ResultadoPorLocadora[] = [];
     for (const companyId of empresasComuns) {
-      const pStore = pickupByCompany.get(companyId)![0];
-      const dStore = dropoffByCompany.get(companyId)![0];
-      try {
-        const resultado = await publicoService.buscarCategorias({
-          pickup_store_id:  pStore.id,
-          dropoff_store_id: dStore.id,
-          pickup_time:      new Date(pickupTime).toISOString(),
-          dropoff_time:     new Date(dropoffTime).toISOString(),
-          customer_age:     customerAge,
-          nationality,
-        });
-        empresas.push({
-          company_id:    companyId,
-          company_name:  pStore.company_name || companyId,
-          pickup_store:  pStore,
-          dropoff_store: dStore,
-          total_days:    resultado.total_days,
-          is_one_way:    resultado.is_one_way,
-          categorias:    resultado.categorias,
-        });
-      } catch {
-        // Empresa sem tarifas configuradas — pula silenciosamente
+      const pStores = pickupByCompany.get(companyId)!;
+      const dStore  = dropoffByCompany.get(companyId)![0];
+      for (const pStore of pStores) {
+        try {
+          const resultado = await publicoService.buscarCategorias({
+            pickup_store_id:  pStore.id,
+            dropoff_store_id: dStore.id,
+            pickup_time:      new Date(pickupTime).toISOString(),
+            dropoff_time:     new Date(dropoffTime).toISOString(),
+            customer_age:     customerAge,
+            nationality,
+          });
+          if (resultado.categorias.length > 0) {
+            empresas.push({
+              company_id:    companyId,
+              company_name:  pStore.company_name || companyId,
+              pickup_store:  pStore,
+              dropoff_store: dStore,
+              total_days:    resultado.total_days,
+              is_one_way:    resultado.is_one_way,
+              categorias:    resultado.categorias,
+            });
+          }
+        } catch {
+          // Filial sem tarifas configuradas — pula silenciosamente
+        }
       }
     }
 

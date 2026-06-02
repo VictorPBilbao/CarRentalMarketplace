@@ -405,6 +405,53 @@ async def atualizar_status(
         except Exception as exc:
             logger.warning(f"Falha ao liberar disponibilidade na reserva {reserva_id}: {exc}")
 
+    # Atualiza status do veículo conforme transição
+    try:
+        if payload.status == 'ACTIVE':
+            await db.query(
+                """
+                LET $v = (SELECT id FROM vehicle
+                          WHERE current_store = type::record($store)
+                            AND category = type::record($cat)
+                            AND status = 'AVAILABLE'
+                          LIMIT 1)[0].id;
+                IF $v IS NOT NONE THEN
+                    UPDATE type::record($v) MERGE { status: 'RENTED' }
+                END
+                """,
+                {'store': reserva.pickup_store, 'cat': reserva.category},
+            )
+        elif payload.status == 'COMPLETED' and reserva.status == 'ACTIVE':
+            await db.query(
+                """
+                LET $v = (SELECT id FROM vehicle
+                          WHERE current_store = type::record($store)
+                            AND category = type::record($cat)
+                            AND status = 'RENTED'
+                          LIMIT 1)[0].id;
+                IF $v IS NOT NONE THEN
+                    UPDATE type::record($v) MERGE { status: 'AVAILABLE', current_store: type::record($dropoff) }
+                END
+                """,
+                {'store': reserva.pickup_store, 'cat': reserva.category, 'dropoff': reserva.dropoff_store},
+            )
+        elif payload.status == 'CANCELLED' and reserva.status == 'ACTIVE':
+            await db.query(
+                """
+                LET $v = (SELECT id FROM vehicle
+                          WHERE current_store = type::record($store)
+                            AND category = type::record($cat)
+                            AND status = 'RENTED'
+                          LIMIT 1)[0].id;
+                IF $v IS NOT NONE THEN
+                    UPDATE type::record($v) MERGE { status: 'AVAILABLE' }
+                END
+                """,
+                {'store': reserva.pickup_store, 'cat': reserva.category},
+            )
+    except Exception as exc:
+        logger.warning(f"Falha ao atualizar status do veículo na reserva {reserva_id}: {exc}")
+
     records = extract_records(result)
     if not records:
         raise HTTPException(status_code=500, detail='Erro ao atualizar status da reserva.')

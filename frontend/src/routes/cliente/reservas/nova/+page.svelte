@@ -106,6 +106,81 @@
 
   function round2(v: number) { return Math.round(v * 100) / 100; }
 
+  function _makeSvg(body: string, bg1 = '#0f2744', bg2 = '#071220'): string {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${bg1}"/><stop offset="100%" stop-color="${bg2}"/></linearGradient></defs><rect width="200" height="80" fill="url(#bg)"/>${body}</svg>`;
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  }
+
+  function defaultCarImg(name: string): string {
+    const n = name.toLowerCase();
+
+    if (/suv|4x4|caminhon|off.road/.test(n)) return _makeSvg(
+      `<path d="M15 55 L22 22 Q30 10 55 10 L145 10 Q170 10 178 22 L185 55Z" fill="#1e3a5f"/>
+       <rect x="28" y="11" width="62" height="30" rx="2" fill="#172a45"/>
+       <rect x="96" y="11" width="62" height="30" rx="2" fill="#172a45"/>
+       <line x1="93" y1="10" x2="93" y2="42" stroke="#60a5fa" stroke-width="0.8"/>
+       <path d="M15 55 L22 22 Q30 10 55 10 L145 10 Q170 10 178 22 L185 55Z" fill="none" stroke="#60a5fa" stroke-width="1.2"/>
+       <circle cx="48" cy="59" r="10" fill="#0a0a0a" stroke="#60a5fa" stroke-width="1.5"/><circle cx="48" cy="59" r="4" fill="#1e3a5f"/>
+       <circle cx="152" cy="59" r="10" fill="#0a0a0a" stroke="#60a5fa" stroke-width="1.5"/><circle cx="152" cy="59" r="4" fill="#1e3a5f"/>
+       <rect x="168" y="32" width="14" height="10" rx="2" fill="#fbbf24" opacity="0.75"/>
+       <rect x="14" y="34" width="12" height="10" rx="2" fill="#f87171" opacity="0.5"/>`
+    );
+
+    if (/van|minivan|familia/.test(n)) return _makeSvg(
+      `<path d="M18 55 L18 18 Q18 9 30 9 L162 9 Q180 9 180 18 L180 55Z" fill="#1e3a5f"/>
+       <rect x="22" y="11" width="48" height="30" rx="2" fill="#172a45"/>
+       <rect x="74" y="11" width="56" height="30" rx="2" fill="#172a45"/>
+       <rect x="134" y="13" width="42" height="26" rx="2" fill="#172a45"/>
+       <line x1="72" y1="10" x2="72" y2="42" stroke="#60a5fa" stroke-width="0.8"/>
+       <line x1="132" y1="10" x2="132" y2="42" stroke="#60a5fa" stroke-width="0.8"/>
+       <path d="M18 55 L18 18 Q18 9 30 9 L162 9 Q180 9 180 18 L180 55Z" fill="none" stroke="#60a5fa" stroke-width="1.2"/>
+       <circle cx="46" cy="59" r="10" fill="#0a0a0a" stroke="#60a5fa" stroke-width="1.5"/><circle cx="46" cy="59" r="4" fill="#1e3a5f"/>
+       <circle cx="152" cy="59" r="10" fill="#0a0a0a" stroke="#60a5fa" stroke-width="1.5"/><circle cx="152" cy="59" r="4" fill="#1e3a5f"/>
+       <rect x="163" y="28" width="14" height="12" rx="2" fill="#fbbf24" opacity="0.75"/>`
+    );
+
+    if (/lux|premium|execut|sport/.test(n)) return _makeSvg(
+      `<path d="M12 54 L24 28 Q34 14 60 13 L130 12 Q158 12 170 22 L182 38 L185 54Z" fill="#1a0f3a"/>
+       <path d="M44 53 L52 28 Q58 18 76 17 L128 16 Q144 17 152 26 L164 40 L168 53Z" fill="#0e0920"/>
+       <rect x="50" y="17" width="54" height="28" rx="2" fill="#0e0920"/>
+       <rect x="108" y="19" width="50" height="26" rx="2" fill="#0e0920"/>
+       <line x1="105" y1="16" x2="105" y2="45" stroke="#a78bfa" stroke-width="0.8"/>
+       <path d="M12 54 L24 28 Q34 14 60 13 L130 12 Q158 12 170 22 L182 38 L185 54Z" fill="none" stroke="#a78bfa" stroke-width="1.3"/>
+       <circle cx="50" cy="58" r="10" fill="#0a0a0a" stroke="#a78bfa" stroke-width="1.8"/><circle cx="50" cy="58" r="4" fill="#1a0f3a"/>
+       <circle cx="156" cy="58" r="10" fill="#0a0a0a" stroke="#a78bfa" stroke-width="1.8"/><circle cx="156" cy="58" r="4" fill="#1a0f3a"/>
+       <rect x="170" y="34" width="14" height="8" rx="2" fill="#fbbf24" opacity="0.8"/>
+       <rect x="12" y="36" width="11" height="8" rx="2" fill="#f87171" opacity="0.5"/>`,
+      '#1a0f2e', '#0a0714'
+    );
+
+    if (/sed|intermed|full|large/.test(n)) return _makeSvg(
+      `<path d="M14 53 L28 30 Q40 18 64 16 L122 15 Q148 15 162 24 L176 38 L182 53Z" fill="#1e3a5f"/>
+       <path d="M46 52 L54 28 Q60 20 78 18 L120 17 Q136 18 146 28 L158 40 L162 52Z" fill="#0d1f35"/>
+       <rect x="52" y="19" width="54" height="26" rx="2" fill="#172a45"/>
+       <rect x="110" y="21" width="46" height="24" rx="2" fill="#172a45"/>
+       <line x1="107" y1="18" x2="107" y2="46" stroke="#4ade80" stroke-width="0.8"/>
+       <path d="M14 53 L28 30 Q40 18 64 16 L122 15 Q148 15 162 24 L176 38 L182 53Z" fill="none" stroke="#4ade80" stroke-width="1.2"/>
+       <circle cx="52" cy="57" r="10" fill="#0a0a0a" stroke="#4ade80" stroke-width="1.5"/><circle cx="52" cy="57" r="4" fill="#1e3a5f"/>
+       <circle cx="156" cy="57" r="10" fill="#0a0a0a" stroke="#4ade80" stroke-width="1.5"/><circle cx="156" cy="57" r="4" fill="#1e3a5f"/>
+       <rect x="166" y="35" width="14" height="8" rx="2" fill="#fbbf24" opacity="0.75"/>
+       <rect x="14" y="37" width="11" height="8" rx="2" fill="#f87171" opacity="0.5"/>`
+    );
+
+    // hatch / econômico / compacto / default
+    return _makeSvg(
+      `<path d="M20 54 L36 28 Q46 16 68 14 L118 13 Q138 13 150 20 L170 36 L178 54Z" fill="#1e3a5f"/>
+       <path d="M44 53 L52 28 Q58 20 74 18 L114 17 Q128 18 138 26 L152 38 L156 53Z" fill="#0d1f35"/>
+       <rect x="50" y="19" width="58" height="27" rx="2" fill="#172a45"/>
+       <rect x="112" y="21" width="40" height="24" rx="2" fill="#172a45"/>
+       <line x1="108" y1="18" x2="108" y2="47" stroke="#60a5fa" stroke-width="0.8"/>
+       <path d="M20 54 L36 28 Q46 16 68 14 L118 13 Q138 13 150 20 L170 36 L178 54Z" fill="none" stroke="#60a5fa" stroke-width="1.2"/>
+       <circle cx="56" cy="58" r="10" fill="#0a0a0a" stroke="#60a5fa" stroke-width="1.5"/><circle cx="56" cy="58" r="4" fill="#1e3a5f"/>
+       <circle cx="150" cy="58" r="10" fill="#0a0a0a" stroke="#60a5fa" stroke-width="1.5"/><circle cx="150" cy="58" r="4" fill="#1e3a5f"/>
+       <rect x="162" y="38" width="14" height="8" rx="2" fill="#fbbf24" opacity="0.75"/>
+       <rect x="20" y="40" width="11" height="8" rx="2" fill="#f87171" opacity="0.5"/>`
+    );
+  }
+
   const podeVerificar = $derived(
     !!campos.pickupCity && !!campos.dropoffCity &&
     !!campos.pickupTime && !!campos.dropoffTime
@@ -293,22 +368,16 @@
               <button
                 type="button"
                 class="categoria-card"
-                class:categoria-selecionada={escolha?.cat.category_id === cat.category_id && escolha?.empresa.company_id === empresa.company_id}
+                class:categoria-selecionada={escolha?.cat.category_id === cat.category_id && escolha?.empresa.pickup_store.id === empresa.pickup_store.id}
                 class:categoria-indisponivel={!disponivel}
                 onclick={() => selecionarCategoria(cat, empresa)}
                 disabled={!disponivel}
               >
-                {#if cat.image_url}
-                  <img src={cat.image_url} alt={cat.category_name} class="cat-imagem"/>
-                {:else}
-                  <div class="cat-placeholder">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                      <path d="M4 20L7 12h18l3 8M4 20v4h4v-2h16v2h4v-4M4 20h24" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                      <circle cx="10" cy="22" r="2" stroke="currentColor" stroke-width="1.5"/>
-                      <circle cx="22" cy="22" r="2" stroke="currentColor" stroke-width="1.5"/>
-                    </svg>
-                  </div>
-                {/if}
+                <img
+                  src={cat.image_url || defaultCarImg(cat.category_name)}
+                  alt={cat.category_name}
+                  class="cat-imagem"
+                />
 
                 <div class="cat-info">
                   <p class="cat-nome">{cat.category_name}</p>
@@ -616,12 +685,7 @@
   .categoria-card:hover:not(:disabled) { border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.04); }
   .categoria-selecionada { border-color: rgba(96,165,250,0.5); background: rgba(96,165,250,0.08); }
   .categoria-indisponivel { opacity: .4; cursor: not-allowed; }
-  .cat-imagem { width: 100%; max-width: 160px; height: 90px; object-fit: cover; border-radius: 8px; }
-  .cat-placeholder {
-    width: 100%; max-width: 160px; height: 90px;
-    background: rgba(255,255,255,0.03); border-radius: 8px;
-    display: flex; align-items: center; justify-content: center; color: #334155;
-  }
+  .cat-imagem { width: 100%; max-width: 160px; height: 90px; object-fit: cover; border-radius: 8px; background: #0a1628; }
   .cat-info { width: 100%; }
   .cat-nome { font-size: 13px; font-weight: 600; color: #e2e8f0; margin: 0; }
   .cat-code { font-size: 11px; color: #475569; margin: 2px 0 0; }
