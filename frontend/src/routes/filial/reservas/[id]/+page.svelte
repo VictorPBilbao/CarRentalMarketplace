@@ -1,14 +1,10 @@
 <script lang="ts">
   import type { ActionData, PageData } from './$types';
-  import { page } from '$app/state';
   import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
-  const flash  = $derived((page.data as any)?.flash ?? null);
-
   $effect(() => { const m = (form as any)?.erro; if (m) notificacoes.erro(m); });
-  $effect(() => { if (flash?.tipo === 'sucesso') notificacoes.sucesso(flash.mensagem); });
   const catMap = $derived(Object.fromEntries(data.categorias.map((c: any) => [c.id, c])));
 
   const STATUS_CONFIG: Record<string, { label: string; cor: string; bg: string }> = {

@@ -1,13 +1,9 @@
 <script lang="ts">
   import type { PageData } from './$types';
   import { page } from '$app/state';
-  import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data }: { data: PageData } = $props();
 
-  const flash   = $derived((page.data as any)?.flash ?? null);
-
-  $effect(() => { if (flash?.tipo === 'sucesso') notificacoes.sucesso(flash.mensagem); });
   const filial  = $derived((page.data as any)?.filial ?? null);
   const catMap  = $derived(Object.fromEntries(data.categorias.map((c: any) => [c.id, c])));
 
