@@ -18,7 +18,7 @@ from app.schemas.usuario import UsuarioPayload
 async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     resultado = await db.query(
         """
-        SELECT id, first_name, last_name, email, password_hash,
+        SELECT id, first_name, last_name, email, password_hash, is_admin,
                ->manages.out.id   AS locadora_ids,
                ->manages.role     AS manage_roles,
                ->works_at.out.id   AS filial_ids,
@@ -48,14 +48,12 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     # ── usuário gerencia uma empresa (OWNER ou ADMIN) ─────────────────────────
     if locadora_ids:
         locadora_id = str(locadora_ids[0])
-        manage_role = (manage_roles[0] if manage_roles else "ADMIN").upper()
-        role = "locadora" if manage_role in ("OWNER", "ADMIN") else "admin"
 
         token_payload = UsuarioPayload(
             id=str(user["id"]),
             nome=nome,
             email=user["email"],
-            role=role,
+            role="locadora",
             locadoraId=locadora_id,
         )
 
@@ -93,12 +91,13 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
         )
 
     else:
-        # Sem vínculo empresarial → cliente final
+        # Sem vínculo empresarial → admin do sistema (is_admin=true) ou cliente final
+        role = "admin" if bool(user.get("is_admin", False)) else "customer"
         token_payload = UsuarioPayload(
             id=str(user["id"]),
             nome=nome,
             email=user["email"],
-            role="customer",
+            role=role,
             locadoraId="",
         )
 

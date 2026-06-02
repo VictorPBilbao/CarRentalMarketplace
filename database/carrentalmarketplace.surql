@@ -423,6 +423,7 @@ DEFINE FIELD created_at ON user TYPE datetime DEFAULT time::now() READONLY PERMI
 DEFINE FIELD document_id ON user TYPE none | string PERMISSIONS FULL;
 DEFINE FIELD email ON user TYPE string ASSERT string::is_email($value) PERMISSIONS FULL;
 DEFINE FIELD first_name ON user TYPE string ASSERT string::len($value) > 1 PERMISSIONS FULL;
+DEFINE FIELD is_admin ON user TYPE bool DEFAULT false PERMISSIONS FULL;
 DEFINE FIELD last_name ON user TYPE string ASSERT string::len($value) > 1 PERMISSIONS FULL;
 DEFINE FIELD password_hash ON user TYPE string PERMISSIONS FULL;
 DEFINE FIELD phone ON user TYPE none | string PERMISSIONS FULL;
@@ -434,7 +435,7 @@ DEFINE FIELD updated_at ON user TYPE datetime VALUE time::now() PERMISSIONS FULL
 -- TABLE DATA: user
 -- ------------------------------
 
-INSERT [ { active: true, created_at: d'2026-04-27T22:29:24.794477063Z', document_id: '111.222.333-44', email: 'roberto.costa@localiza.com', first_name: 'Roberto', id: user:admin_localiza, last_name: 'Costa', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 31 97777-3333', updated_at: d'2026-04-27T23:49:01.948272607Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794942716Z', document_id: '444.555.666-77', email: 'fernanda.lima@movida.com.br', first_name: 'Fernanda', id: user:admin_movida, last_name: 'Lima', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 11 94444-6666', updated_at: d'2026-04-27T23:49:01.949165641Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794792993Z', email: 'carlos.pereira@localiza.com', first_name: 'Carlos', id: user:atendente_sp_localiza, last_name: 'Pereira', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 11 95555-5555', updated_at: d'2026-04-27T23:49:01.949251364Z' }, { active: true, birth_date: d'1985-05-15T00:00:00Z', created_at: d'2026-04-27T22:29:24.794170812Z', document_id: '123.456.789-00', email: 'joao.silva@email.com', first_name: 'João', id: user:cliente1, last_name: 'Silva', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 11 99999-1111', updated_at: d'2026-04-27T23:49:01.949355493Z' }, { active: true, birth_date: d'1990-10-20T00:00:00Z', created_at: d'2026-04-27T22:29:24.794339042Z', document_id: '987.654.321-11', email: 'maria.oliveira@email.com', first_name: 'Maria', id: user:cliente2, last_name: 'Oliveira', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 21 98888-2222', updated_at: d'2026-04-27T23:49:01.949426167Z' }, { active: true, created_at: d'2026-04-27T22:29:24.795076900Z', email: 'pedro.alves@movida.com.br', first_name: 'Pedro', id: user:gerente_rj_movida, last_name: 'Alves', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 21 93333-7777', updated_at: d'2026-04-27T23:49:01.949488275Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794616566Z', email: 'ana.santos@localiza.com', first_name: 'Ana', id: user:gerente_sp_localiza, last_name: 'Santos', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 11 96666-4444', updated_at: d'2026-04-27T23:49:01.949546566Z' } ];
+INSERT [ { active: true, created_at: d'2026-06-02T00:00:00Z', email: 'admin@carrental.com', first_name: 'Admin', id: user:superadmin, is_admin: true, last_name: 'Sistema', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', updated_at: d'2026-06-02T00:00:00Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794477063Z', document_id: '111.222.333-44', email: 'roberto.costa@localiza.com', first_name: 'Roberto', id: user:admin_localiza, last_name: 'Costa', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 31 97777-3333', updated_at: d'2026-04-27T23:49:01.948272607Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794942716Z', document_id: '444.555.666-77', email: 'fernanda.lima@movida.com.br', first_name: 'Fernanda', id: user:admin_movida, last_name: 'Lima', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 11 94444-6666', updated_at: d'2026-04-27T23:49:01.949165641Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794792993Z', email: 'carlos.pereira@localiza.com', first_name: 'Carlos', id: user:atendente_sp_localiza, last_name: 'Pereira', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 11 95555-5555', updated_at: d'2026-04-27T23:49:01.949251364Z' }, { active: true, birth_date: d'1985-05-15T00:00:00Z', created_at: d'2026-04-27T22:29:24.794170812Z', document_id: '123.456.789-00', email: 'joao.silva@email.com', first_name: 'João', id: user:cliente1, last_name: 'Silva', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 11 99999-1111', updated_at: d'2026-04-27T23:49:01.949355493Z' }, { active: true, birth_date: d'1990-10-20T00:00:00Z', created_at: d'2026-04-27T22:29:24.794339042Z', document_id: '987.654.321-11', email: 'maria.oliveira@email.com', first_name: 'Maria', id: user:cliente2, last_name: 'Oliveira', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 21 98888-2222', updated_at: d'2026-04-27T23:49:01.949426167Z' }, { active: true, created_at: d'2026-04-27T22:29:24.795076900Z', email: 'pedro.alves@movida.com.br', first_name: 'Pedro', id: user:gerente_rj_movida, last_name: 'Alves', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 21 93333-7777', updated_at: d'2026-04-27T23:49:01.949488275Z' }, { active: true, created_at: d'2026-04-27T22:29:24.794616566Z', email: 'ana.santos@localiza.com', first_name: 'Ana', id: user:gerente_sp_localiza, last_name: 'Santos', password_hash: '$argon2id$v=19$m=16,t=2,p=1$dXl1d3dQd1ZQS2RFU1c5dw$JVT+I0bJypeMwLRBkp+Gag', phone: '+55 11 96666-4444', updated_at: d'2026-04-27T23:49:01.949546566Z' } ];
 
 -- ------------------------------
 -- TABLE: vehicle
@@ -517,4 +518,22 @@ DEFINE FIELD role ON works_at TYPE string DEFAULT 'CLERK' ASSERT $value INSIDE [
 -- ------------------------------
 
 INSERT RELATION [ { created_at: d'2026-04-27T22:30:47.324686755Z', id: works_at:7uhk6m9zkrtgipwwb27b, in: user:gerente_sp_localiza, out: store:cgh_localiza, role: 'MANAGER' }, { created_at: d'2026-04-27T22:30:47.324912193Z', id: works_at:ichgcu8su4fktghzltge, in: user:gerente_rj_movida, out: store:sdumont_movida, role: 'MANAGER' }, { created_at: d'2026-04-27T22:30:47.324796348Z', id: works_at:n6x1ohk5f5z0vfks60ca, in: user:atendente_sp_localiza, out: store:cgh_localiza, role: 'CLERK' } ];
+
+-- ------------------------------
+-- TABLE: ota_key
+-- ------------------------------
+
+DEFINE TABLE ota_key TYPE NORMAL SCHEMAFULL PERMISSIONS NONE;
+
+DEFINE FIELD active ON ota_key TYPE bool DEFAULT true PERMISSIONS FULL;
+DEFINE FIELD company ON ota_key TYPE none | record<company> PERMISSIONS FULL;
+DEFINE FIELD created_at ON ota_key TYPE datetime DEFAULT time::now() READONLY PERMISSIONS FULL;
+DEFINE FIELD key ON ota_key TYPE string ASSERT string::len($value) > 10 PERMISSIONS FULL;
+DEFINE FIELD name ON ota_key TYPE string ASSERT string::len($value) > 2 PERMISSIONS FULL;
+
+
+
+-- ------------------------------
+-- TABLE DATA: ota_key
+-- ------------------------------
 
