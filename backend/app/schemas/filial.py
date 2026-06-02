@@ -48,6 +48,7 @@ class CidadeStore(BaseModel):
     code:          str
     location_type: str
     company_id:    str
+    company_name:  str = ''
 
 
 class CidadeResponse(BaseModel):

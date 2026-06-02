@@ -61,25 +61,16 @@ async def listar_todos(db: AsyncSurreal) -> list[FilialResponse]:
 
 
 async def listar_cidades(db: AsyncSurreal) -> list[CidadeResponse]:
-    """Retorna cidades distintas de lojas com frota ativa (uso público)."""
+    """Retorna cidades distintas de todas as lojas ativas (uso público).
+
+    Inclui lojas sem frota própria para que possam ser usadas como ponto de devolução
+    em aluguéis one-way. A verificação de disponibilidade de veículos ocorre em
+    buscar_tarifas_todas_categorias() no momento da busca.
+    """
     from collections import defaultdict
 
-    # Lojas que têm ao menos um veículo não desativado
-    veh_result = await db.query(
-        """
-        SELECT current_store FROM vehicle
-        WHERE status != 'DECOMMISSIONED'
-        GROUP BY current_store
-        """
-    )
-    veh_rows = extract_records(veh_result)
-    store_ids_com_frota = {str(r['current_store']) for r in veh_rows if isinstance(r, dict) and r.get('current_store')}
-
-    if not store_ids_com_frota:
-        return []
-
     stores_result = await db.query(
-        "SELECT id, name, code, location_type, address, company FROM store WHERE active = true ORDER BY name ASC"
+        "SELECT id, name, code, location_type, address, company FROM store WHERE active = true ORDER BY name ASC FETCH company"
     )
     store_rows = extract_records(stores_result)
     agrupado: dict[tuple[str, str], list[CidadeStore]] = defaultdict(list)
@@ -87,19 +78,25 @@ async def listar_cidades(db: AsyncSurreal) -> list[CidadeResponse]:
         if not isinstance(r, dict):
             continue
         sid = str(r.get('id', ''))
-        if sid not in store_ids_com_frota:
-            continue
         addr  = r.get('address') or {}
         city  = (addr.get('city')  or '').strip()
         state = (addr.get('state') or '').strip()
         if not city:
             continue
+        company_raw = r.get('company') or {}
+        if isinstance(company_raw, dict):
+            company_id   = str(company_raw.get('id', ''))
+            company_name = str(company_raw.get('name', ''))
+        else:
+            company_id   = str(company_raw)
+            company_name = ''
         agrupado[(city, state)].append(CidadeStore(
             id=sid,
             name=str(r.get('name', '')),
             code=str(r.get('code', '')),
             location_type=str(r.get('location_type', '')),
-            company_id=str(r.get('company', '')),
+            company_id=company_id,
+            company_name=company_name,
         ))
     return [
         CidadeResponse(city=city, state=state, stores=stores)

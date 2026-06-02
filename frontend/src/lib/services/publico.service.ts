@@ -8,6 +8,7 @@ export interface CidadeStore {
   code: string;
   location_type: string;
   company_id: string;
+  company_name: string;
 }
 
 export interface CidadeResponse {
@@ -43,6 +44,16 @@ export interface BuscarTodasCategoriasResponse {
   total_days: number;
   is_one_way: boolean;
   categorias: ResultadoCategoriaDisponivel[];
+}
+
+export interface ResultadoPorLocadora {
+  company_id:    string;
+  company_name:  string;
+  pickup_store:  CidadeStore;
+  dropoff_store: CidadeStore;
+  total_days:    number;
+  is_one_way:    boolean;
+  categorias:    ResultadoCategoriaDisponivel[];
 }
 
 export interface BuscarCategoriasParams {

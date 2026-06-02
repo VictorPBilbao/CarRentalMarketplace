@@ -125,12 +125,9 @@ async def criar_rate_plan(payload: RatePlanRequest, company_id: str, db: AsyncSu
             'included_protections': protections,
         },
     )
-    # Propagar erro real do SurrealDB em vez de 500 genérico
-    if isinstance(result, str):
-        raise HTTPException(status_code=500, detail=f'Erro ao criar plano tarifário: {result}')
     if isinstance(result, list) and result and isinstance(result[0], dict):
         status = result[0].get('status')
-        if status != 'OK':
+        if status is not None and status != 'OK':
             surreal_err = result[0].get('result', 'Erro desconhecido no banco de dados.')
             raise HTTPException(status_code=500, detail=str(surreal_err))
 

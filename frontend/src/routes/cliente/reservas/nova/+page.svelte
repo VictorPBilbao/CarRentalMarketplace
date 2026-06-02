@@ -1,46 +1,44 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import type { ActionData, PageData } from './$types';
-  import type { AddonDisponivel, CidadeResponse, CidadeStore, ResultadoCategoriaDisponivel } from '$lib/services/publico.service';
+  import type { AddonDisponivel, CidadeResponse, ResultadoCategoriaDisponivel, ResultadoPorLocadora } from '$lib/services/publico.service';
   import { notificacoes } from '$lib/stores/notificacoes.store';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   $effect(() => { const m = (form as any)?.erro; if (m) notificacoes.erro(m); });
   $effect(() => {
-    const r = (form as any)?.resultado;
-    if (r && r.categorias?.length === 0) notificacoes.aviso('Nenhum veículo disponível para a loja selecionada.');
+    const empresas: ResultadoPorLocadora[] = (form as any)?.empresas ?? [];
+    if ((form as any)?.etapa === 'categorias' && empresas.length === 0) {
+      notificacoes.aviso('Nenhuma locadora disponível para este percurso.');
+    }
   });
 
   // ── Dados do servidor ─────────────────────────────────────────────────
   const cidades: CidadeResponse[] = $derived(data.cidades ?? []);
 
   // ── Estado da etapa ───────────────────────────────────────────────────
-  const etapa     = $derived((form as any)?.etapa ?? 'buscar');
-  const resultado = $derived((form as any)?.resultado ?? null);
+  const etapa    = $derived((form as any)?.etapa ?? 'buscar');
+  const empresas = $derived<ResultadoPorLocadora[]>((form as any)?.empresas ?? []);
 
   // ── Campos do formulário ──────────────────────────────────────────────
   const campos = $state({
-    pickupStoreId:    (form as any)?.campos?.pickupStoreId    ?? '',
-    dropoffStoreId:   (form as any)?.campos?.dropoffStoreId   ?? '',
-    pickupTime:       (form as any)?.campos?.pickupTime       ?? '',
-    dropoffTime:      (form as any)?.campos?.dropoffTime      ?? '',
-    customerAge:      (form as any)?.campos?.customerAge      ?? '25',
-    pickupCity:       (form as any)?.campos?.pickupCity       ?? '',
-    dropoffCity:      (form as any)?.campos?.dropoffCity      ?? '',
-    pickupStoreName:  (form as any)?.campos?.pickupStoreName  ?? '',
-    dropoffStoreName: (form as any)?.campos?.dropoffStoreName ?? '',
-    nationality:      (form as any)?.campos?.nationality      ?? '',
-    flightNumber:     '',
-    notes:            '',
+    pickupCity:  (form as any)?.campos?.pickupCity  ?? '',
+    dropoffCity: (form as any)?.campos?.dropoffCity ?? '',
+    pickupTime:  (form as any)?.campos?.pickupTime  ?? '',
+    dropoffTime: (form as any)?.campos?.dropoffTime ?? '',
+    customerAge: (form as any)?.campos?.customerAge ?? '25',
+    nationality: (form as any)?.campos?.nationality ?? '',
+    flightNumber: '',
+    notes:        '',
   });
 
-  // ── Categoria escolhida pelo cliente (etapa 'categorias') ─────────────
-  let categoriaEscolhida = $state<ResultadoCategoriaDisponivel | null>(null);
+  // ── Categoria e empresa escolhidas ────────────────────────────────────
+  let escolha = $state<{ cat: ResultadoCategoriaDisponivel; empresa: ResultadoPorLocadora } | null>(null);
   let carregando = $state(false);
 
-  // Reseta categoria escolhida sempre que um novo resultado de busca chega
-  $effect(() => { resultado; categoriaEscolhida = null; addonsSelecionados = new Map(); });
+  // Reseta escolha quando novo resultado de busca chega
+  $effect(() => { empresas; escolha = null; addonsSelecionados = new Map(); });
 
   // ── Adicionais ────────────────────────────────────────────────────────────
   let addonsSelecionados = $state<Map<string, number>>(new Map());
@@ -65,33 +63,6 @@
     }
     return round2(raw);
   }
-
-  // ── Lojas da cidade selecionada ───────────────────────────────────────
-  const lojasRetirada  = $derived<CidadeStore[]>(
-    cidades.find(c => c.city === campos.pickupCity)?.stores ?? []
-  );
-
-  // IDs efetivos: auto-selecionado se cidade tem 1 loja, senão depende do radio
-  const pickupStoreId   = $derived(lojasRetirada.length === 1  ? lojasRetirada[0].id       : campos.pickupStoreId);
-  const pickupStoreName = $derived(lojasRetirada.length === 1  ? lojasRetirada[0].name     : campos.pickupStoreName);
-  const pickupCompanyId = $derived(lojasRetirada.find(l => l.id === pickupStoreId)?.company_id ?? lojasRetirada[0]?.company_id ?? '');
-
-  // Devolução: somente lojas da mesma locadora que a retirada
-  const lojasDevolucaoTodas = $derived<CidadeStore[]>(
-    cidades.find(c => c.city === campos.dropoffCity)?.stores ?? []
-  );
-  const lojasDevolucao = $derived<CidadeStore[]>(
-    pickupCompanyId
-      ? lojasDevolucaoTodas.filter(l => l.company_id === pickupCompanyId)
-      : lojasDevolucaoTodas
-  );
-
-  const dropoffStoreId  = $derived(lojasDevolucao.length === 1 ? lojasDevolucao[0].id   : campos.dropoffStoreId);
-  const dropoffStoreName= $derived(lojasDevolucao.length === 1 ? lojasDevolucao[0].name : campos.dropoffStoreName);
-
-  // Limpa seleção manual quando a cidade muda
-  $effect(() => { campos.pickupCity;  campos.pickupStoreId  = ''; campos.pickupStoreName  = ''; });
-  $effect(() => { campos.dropoffCity; campos.dropoffStoreId = ''; campos.dropoffStoreName = ''; });
 
   // ── Helpers ───────────────────────────────────────────────────────────
   function formatDate(iso: string): string {
@@ -120,19 +91,10 @@
     return (form as any)?.erros?.[campo] ?? '';
   }
 
-  function selecionarLoja(tipo: 'pickup' | 'dropoff', loja: CidadeStore) {
-    if (tipo === 'pickup') {
-      campos.pickupStoreId  = loja.id;
-      campos.pickupStoreName = loja.name;
-    } else {
-      campos.dropoffStoreId  = loja.id;
-      campos.dropoffStoreName = loja.name;
-    }
-  }
-
-  function selecionarCategoria(cat: ResultadoCategoriaDisponivel) {
+  function selecionarCategoria(cat: ResultadoCategoriaDisponivel, empresa: ResultadoPorLocadora) {
     if (cat.disponibilidade === 0 || cat.rate_plans.length === 0) return;
-    categoriaEscolhida = cat;
+    escolha = { cat, empresa };
+    addonsSelecionados = new Map();
   }
 
   function totalComFees(cat: ResultadoCategoriaDisponivel): number {
@@ -145,7 +107,7 @@
   function round2(v: number) { return Math.round(v * 100) / 100; }
 
   const podeVerificar = $derived(
-    !!pickupStoreId && !!dropoffStoreId &&
+    !!campos.pickupCity && !!campos.dropoffCity &&
     !!campos.pickupTime && !!campos.dropoffTime
   );
 </script>
@@ -158,7 +120,7 @@
   <a href="/cliente/reservas" class="breadcrumb">Minhas Reservas</a>
   <span class="breadcrumb-sep">›</span>
   <span class="breadcrumb-atual">Nova Reserva</span>
-  <h1>{etapa === 'categorias' && categoriaEscolhida ? 'Confirmar Reserva' : 'Nova Reserva'}</h1>
+  <h1>{etapa === 'categorias' && escolha ? 'Confirmar Reserva' : 'Nova Reserva'}</h1>
 </div>
 
 <!-- ══ ETAPA 1: BUSCA ══════════════════════════════════════════════════════ -->
@@ -176,93 +138,28 @@
         <!-- Cidade de Retirada -->
         <div class="field">
           <label for="pickupCity">Cidade de Retirada <span class="req">*</span></label>
-          <select id="pickupCity" bind:value={campos.pickupCity} class:input-erro={!!erro('pickupStoreId')}>
+          <select id="pickupCity" name="pickupCity" bind:value={campos.pickupCity} class:input-erro={!!erro('pickupCity')}>
             <option value="">Selecione...</option>
             {#each cidades as cidade}
               <option value={cidade.city}>{cidade.city} — {cidade.state}</option>
             {/each}
           </select>
+          {#if erro('pickupCity')}<p class="msg-erro">{erro('pickupCity')}</p>{/if}
         </div>
 
         <!-- Cidade de Devolução -->
         <div class="field">
           <label for="dropoffCity">Cidade de Devolução <span class="req">*</span></label>
-          <select id="dropoffCity" bind:value={campos.dropoffCity} class:input-erro={!!erro('dropoffStoreId')}>
+          <select id="dropoffCity" name="dropoffCity" bind:value={campos.dropoffCity} class:input-erro={!!erro('dropoffCity')}>
             <option value="">Selecione...</option>
             {#each cidades as cidade}
               <option value={cidade.city}>{cidade.city} — {cidade.state}</option>
             {/each}
           </select>
+          {#if erro('dropoffCity')}<p class="msg-erro">{erro('dropoffCity')}</p>{/if}
         </div>
 
       </div>
-
-      <!-- Seleção de loja (quando há mais de uma na cidade) -->
-      {#if campos.pickupCity && lojasRetirada.length > 1}
-        <div class="field" style="margin-top:14px;">
-          <label>Loja de Retirada <span class="req">*</span></label>
-          <div class="lojas-lista">
-            {#each lojasRetirada as loja}
-              <button
-                type="button"
-                class="loja-card"
-                class:loja-selecionada={pickupStoreId === loja.id}
-                onclick={() => selecionarLoja('pickup', loja)}
-              >
-                <div class="loja-radio">
-                  <div class="radio-dot" class:radio-ativo={pickupStoreId === loja.id}></div>
-                </div>
-                <div class="loja-info">
-                  <p class="loja-nome">{loja.name}</p>
-                  <p class="loja-end">{LOCATION_TYPE_LABEL[loja.location_type] ?? loja.location_type} · {loja.code}</p>
-                </div>
-              </button>
-            {/each}
-          </div>
-        </div>
-      {/if}
-      {#if erro('pickupStoreId')}
-        <p class="msg-erro">{erro('pickupStoreId')}</p>
-      {/if}
-
-      {#if campos.dropoffCity && lojasDevolucao.length === 0 && lojasDevolucaoTodas.length > 0 && pickupCompanyId}
-        <p class="msg-aviso" style="margin-top:14px;">
-          A locadora da cidade de retirada não possui filial em {campos.dropoffCity}. Escolha outra cidade de devolução.
-        </p>
-      {:else if campos.dropoffCity && lojasDevolucao.length > 1}
-        <div class="field" style="margin-top:14px;">
-          <label>Loja de Devolução <span class="req">*</span></label>
-          <div class="lojas-lista">
-            {#each lojasDevolucao as loja}
-              <button
-                type="button"
-                class="loja-card"
-                class:loja-selecionada={dropoffStoreId === loja.id}
-                onclick={() => selecionarLoja('dropoff', loja)}
-              >
-                <div class="loja-radio">
-                  <div class="radio-dot" class:radio-ativo={dropoffStoreId === loja.id}></div>
-                </div>
-                <div class="loja-info">
-                  <p class="loja-nome">{loja.name}</p>
-                  <p class="loja-end">{LOCATION_TYPE_LABEL[loja.location_type] ?? loja.location_type} · {loja.code}</p>
-                </div>
-              </button>
-            {/each}
-          </div>
-        </div>
-      {/if}
-      {#if erro('dropoffStoreId')}
-        <p class="msg-erro">{erro('dropoffStoreId')}</p>
-      {/if}
-
-      <!-- Campos ocultos das lojas selecionadas -->
-      <input type="hidden" name="pickupStoreId"    value={pickupStoreId} />
-      <input type="hidden" name="dropoffStoreId"   value={dropoffStoreId} />
-      <input type="hidden" name="pickupCity"        value={campos.pickupCity} />
-      <input type="hidden" name="dropoffCity"       value={campos.dropoffCity} />
-      <input type="hidden" name="pickupStoreName"   value={pickupStoreName} />
-      <input type="hidden" name="dropoffStoreName"  value={dropoffStoreName} />
 
       <h3 class="card-title" style="margin-top:22px">Período</h3>
       <div class="form-grid">
@@ -318,111 +215,166 @@
 
 {/if}
 
-<!-- ══ ETAPA 2: RESULTADOS POR CATEGORIA ══════════════════════════════════ -->
-{#if etapa === 'categorias' && resultado}
+<!-- ══ ETAPA 2: RESULTADOS AGRUPADOS POR LOCADORA ══════════════════════════ -->
+{#if etapa === 'categorias'}
 
-  <!-- Resumo da busca — lê do form retornado pelo servidor (campos $state ainda não sincronizado) -->
   {@const fc = (form as any)?.campos ?? {}}
+
+  <!-- Resumo da busca -->
   <div class="resumo-card" style="margin-bottom:20px;">
     <div class="resumo-grid">
       <div class="resumo-item">
         <span class="resumo-label">Retirada</span>
         <span class="resumo-val">{formatDate(fc.pickupTime ?? '')}</span>
-        <span class="resumo-sub">{fc.pickupStoreName || fc.pickupCity || fc.pickupStoreId || '—'}</span>
+        <span class="resumo-sub">{fc.pickupCity || '—'}</span>
       </div>
       <div class="resumo-item">
         <span class="resumo-label">Devolução</span>
         <span class="resumo-val">{formatDate(fc.dropoffTime ?? '')}</span>
-        <span class="resumo-sub">{fc.dropoffStoreName || fc.dropoffCity || fc.dropoffStoreId || '—'}</span>
+        <span class="resumo-sub">{fc.dropoffCity || '—'}</span>
       </div>
-      <div class="resumo-item">
-        <span class="resumo-label">Período</span>
-        <span class="resumo-val">{resultado.total_days} dia(s)</span>
-        {#if resultado.is_one_way}<span class="resumo-sub">One-way</span>{/if}
-      </div>
+      {#if empresas.length > 0}
+        <div class="resumo-item">
+          <span class="resumo-label">Período</span>
+          <span class="resumo-val">{empresas[0].total_days} dia(s)</span>
+          {#if empresas[0].is_one_way}<span class="resumo-sub">One-way</span>{/if}
+        </div>
+      {/if}
     </div>
     <div style="margin-top:10px;">
       <a href="/cliente/reservas/nova" class="btn-cancelar" style="font-size:12px;">← Nova busca</a>
     </div>
   </div>
 
-  {#if resultado.categorias.length === 0}
-    <!-- aviso disparado via $effect no script -->
-  {:else}
-    <h3 style="font-size:15px; font-weight:600; color:#e2e8f0; margin:0 0 14px;">
-      Selecione uma categoria
-    </h3>
-
-    <div class="categorias-grid">
-      {#each resultado.categorias as cat}
-        {@const semUnidades = cat.disponibilidade === 0}
-        {@const semTarifa   = cat.disponibilidade > 0 && cat.rate_plans.length === 0}
-        {@const disponivel  = !semUnidades && !semTarifa}
-        {@const melhorPlano = cat.rate_plans[0]}
-        <button
-          type="button"
-          class="categoria-card"
-          class:categoria-selecionada={categoriaEscolhida?.category_id === cat.category_id}
-          class:categoria-indisponivel={!disponivel}
-          onclick={() => selecionarCategoria(cat)}
-          disabled={!disponivel}
-        >
-          {#if cat.image_url}
-            <img src={cat.image_url} alt={cat.category_name} class="cat-imagem"/>
-          {:else}
-            <div class="cat-placeholder">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <path d="M4 20L7 12h18l3 8M4 20v4h4v-2h16v2h4v-4M4 20h24" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                <circle cx="10" cy="22" r="2" stroke="currentColor" stroke-width="1.5"/>
-                <circle cx="22" cy="22" r="2" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-            </div>
-          {/if}
-
-          <div class="cat-info">
-            <p class="cat-nome">{cat.category_name}</p>
-            <p class="cat-code">{cat.category_code}</p>
-          </div>
-
-          {#if disponivel && melhorPlano}
-            <div class="cat-preco">
-              <span class="preco-val">{moeda(melhorPlano.daily_rate)}</span>
-              <span class="preco-unid">/dia</span>
-            </div>
-            <div class="cat-total">Total: <strong>{moeda(totalComFees(cat))}</strong></div>
-            {#if cat.store_fees.length > 0}
-              <div class="cat-taxas">+taxas da loja</div>
-            {/if}
-            <div class="cat-disp">{cat.disponibilidade} unidade(s)</div>
-          {:else if semTarifa}
-            <div class="cat-indisponivel-label">Sem tarifas para este percurso</div>
-          {:else}
-            <div class="cat-indisponivel-label">Indisponível</div>
-          {/if}
-        </button>
-      {/each}
+  {#if empresas.length === 0}
+    <div class="empty-state">
+      <p style="font-size:14px; color:#475569; margin:0;">Nenhuma locadora disponível para este percurso.</p>
     </div>
+  {:else}
+
+    {#each empresas as empresa}
+      <div class="empresa-secao">
+        <!-- Cabeçalho da locadora -->
+        <div class="empresa-header">
+          <div>
+            <p class="empresa-nome">{empresa.company_name}</p>
+            <div class="empresa-lojas">
+              <span class="loja-tag">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="color:#4ade80">
+                  <circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M3.5 5.5l1.5 1.5 2.5-2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Retirada: {empresa.pickup_store.name}
+                <span class="loja-tipo">{LOCATION_TYPE_LABEL[empresa.pickup_store.location_type] ?? empresa.pickup_store.location_type} · {empresa.pickup_store.code}</span>
+              </span>
+              <span class="loja-sep">→</span>
+              <span class="loja-tag">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="color:#60a5fa">
+                  <circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M3.5 5.5l1.5 1.5 2.5-2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Devolução: {empresa.dropoff_store.name}
+                <span class="loja-tipo">{LOCATION_TYPE_LABEL[empresa.dropoff_store.location_type] ?? empresa.dropoff_store.location_type} · {empresa.dropoff_store.code}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categorias desta locadora -->
+        {#if empresa.categorias.length === 0}
+          <p class="sem-categorias">Nenhuma categoria disponível para este percurso nesta locadora.</p>
+        {:else}
+          <div class="categorias-grid">
+            {#each empresa.categorias as cat}
+              {@const semUnidades = cat.disponibilidade === 0}
+              {@const semTarifa   = cat.disponibilidade > 0 && cat.rate_plans.length === 0}
+              {@const disponivel  = !semUnidades && !semTarifa}
+              {@const melhorPlano = cat.rate_plans[0]}
+              <button
+                type="button"
+                class="categoria-card"
+                class:categoria-selecionada={escolha?.cat.category_id === cat.category_id && escolha?.empresa.company_id === empresa.company_id}
+                class:categoria-indisponivel={!disponivel}
+                onclick={() => selecionarCategoria(cat, empresa)}
+                disabled={!disponivel}
+              >
+                {#if cat.image_url}
+                  <img src={cat.image_url} alt={cat.category_name} class="cat-imagem"/>
+                {:else}
+                  <div class="cat-placeholder">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                      <path d="M4 20L7 12h18l3 8M4 20v4h4v-2h16v2h4v-4M4 20h24" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                      <circle cx="10" cy="22" r="2" stroke="currentColor" stroke-width="1.5"/>
+                      <circle cx="22" cy="22" r="2" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                  </div>
+                {/if}
+
+                <div class="cat-info">
+                  <p class="cat-nome">{cat.category_name}</p>
+                  <p class="cat-code">{cat.category_code}</p>
+                </div>
+
+                {#if disponivel && melhorPlano}
+                  <div class="cat-preco">
+                    <span class="preco-val">{moeda(melhorPlano.daily_rate)}</span>
+                    <span class="preco-unid">/dia</span>
+                  </div>
+                  <div class="cat-total">Total: <strong>{moeda(totalComFees(cat))}</strong></div>
+                  {#if cat.store_fees.length > 0}
+                    <div class="cat-taxas">+taxas da loja</div>
+                  {/if}
+                  <div class="cat-disp">{cat.disponibilidade} unidade(s)</div>
+                {:else if semTarifa}
+                  <div class="cat-indisponivel-label">Sem tarifas para este percurso</div>
+                {:else}
+                  <div class="cat-indisponivel-label">Indisponível</div>
+                {/if}
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/each}
+
   {/if}
 
   <!-- ── Confirmação (aparece quando o cliente escolheu uma categoria) ── -->
-  {#if categoriaEscolhida}
-    {@const melhorPlano  = categoriaEscolhida.rate_plans[0]}
-    {@const feesTotal    = categoriaEscolhida.store_fees.reduce((s, f) => s + f.amount, 0)}
-    {@const subtotalBase = melhorPlano ? melhorPlano.subtotal : 0}
-    {@const addonsTotal  = categoriaEscolhida.available_addons.reduce((s, a) => {
+  {#if escolha}
+    {@const melhorPlano      = escolha.cat.rate_plans[0]}
+    {@const feesTotal        = escolha.cat.store_fees.reduce((s, f) => s + f.amount, 0)}
+    {@const oneWayFee        = escolha.cat.one_way_fee}
+    {@const oneWayFeeAmount  = oneWayFee ? oneWayFee.amount : 0}
+    {@const subtotalBase     = melhorPlano ? melhorPlano.subtotal : 0}
+    {@const addonsTotal      = escolha.cat.available_addons.reduce((s, a) => {
       const qty = addonsSelecionados.get(a.id) ?? 0;
       return qty > 0 ? s + calcAddonTotal(a, subtotalBase, melhorPlano?.total_days ?? 0, qty) : s;
     }, 0)}
-    {@const total = round2(subtotalBase + feesTotal + addonsTotal)}
+    {@const total = round2(subtotalBase + feesTotal + oneWayFeeAmount + addonsTotal)}
+    {@const fc2   = (form as any)?.campos ?? {}}
 
     <div class="card" style="margin-top:24px; border-color:rgba(96,165,250,0.3);">
       <h3 class="card-title" style="color:#60a5fa;">Confirmar Reserva</h3>
 
       <div class="resumo-grid" style="margin-bottom:16px;">
         <div class="resumo-item">
+          <span class="resumo-label">Locadora</span>
+          <span class="resumo-val">{escolha.empresa.company_name}</span>
+        </div>
+        <div class="resumo-item">
           <span class="resumo-label">Categoria</span>
-          <span class="resumo-val">{categoriaEscolhida.category_name}</span>
-          <span class="resumo-sub">{categoriaEscolhida.category_code}</span>
+          <span class="resumo-val">{escolha.cat.category_name}</span>
+          <span class="resumo-sub">{escolha.cat.category_code}</span>
+        </div>
+        <div class="resumo-item">
+          <span class="resumo-label">Retirada</span>
+          <span class="resumo-val">{formatDate(fc2.pickupTime ?? '')}</span>
+          <span class="resumo-sub">{escolha.empresa.pickup_store.name}</span>
+        </div>
+        <div class="resumo-item">
+          <span class="resumo-label">Devolução</span>
+          <span class="resumo-val">{formatDate(fc2.dropoffTime ?? '')}</span>
+          <span class="resumo-sub">{escolha.empresa.dropoff_store.name}</span>
         </div>
         {#if melhorPlano}
           <div class="resumo-item">
@@ -430,12 +382,34 @@
             <span class="resumo-val">{melhorPlano.name}</span>
             <span class="resumo-sub">{moeda(melhorPlano.daily_rate)}/dia × {melhorPlano.total_days} dia(s)</span>
           </div>
-          {#if categoriaEscolhida.store_fees.length > 0}
+          {#if escolha.cat.store_fees.length > 0}
             <div class="resumo-item">
               <span class="resumo-label">Taxas da loja</span>
-              {#each categoriaEscolhida.store_fees as taxa}
+              {#each escolha.cat.store_fees as taxa}
                 <span class="resumo-sub">{taxa.name}: {moeda(taxa.amount)}</span>
               {/each}
+            </div>
+          {/if}
+          {#if oneWayFee}
+            {@const owTipo = oneWayFee.fee_type === 'FREE'
+              ? 'Gratuito neste percurso'
+              : oneWayFee.fee_type === 'PER_KM'
+                ? `${moeda(oneWayFee.amount)}/km percorrido`
+                : `Valor fixo: ${moeda(oneWayFee.amount)}`}
+            <div class="resumo-item">
+              <span class="resumo-label" style="display:flex; align-items:center; gap:4px;">
+                Taxa de devolução
+                <span class="dica-wrap">
+                  <span class="dica-icone">?</span>
+                  <span class="dica-balao">
+                    Cobrada quando o veículo é devolvido em uma loja diferente da retirada.<br/>
+                    Cálculo: {owTipo}.
+                  </span>
+                </span>
+              </span>
+              <span class="resumo-sub" style="color:#fbbf24;">
+                {oneWayFee.fee_type === 'FREE' ? 'Gratuito' : moeda(oneWayFee.amount)}
+              </span>
             </div>
           {/if}
           <div class="resumo-item">
@@ -446,11 +420,11 @@
       </div>
 
       <!-- ── Adicionais ── -->
-      {#if categoriaEscolhida.available_addons.length > 0}
+      {#if escolha.cat.available_addons.length > 0}
         <div style="border-top:1px solid rgba(255,255,255,0.07); padding-top:16px; margin-bottom:16px;">
           <p style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#475569; margin:0 0 12px;">Adicionais</p>
           <div style="display:flex; flex-direction:column; gap:8px;">
-            {#each categoriaEscolhida.available_addons as addon}
+            {#each escolha.cat.available_addons as addon}
               {@const selecionado = addonsSelecionados.has(addon.id)}
               {@const previewAmt  = calcAddonTotal(addon, subtotalBase, melhorPlano?.total_days ?? 0, 1)}
               <button
@@ -499,15 +473,20 @@
         action="?/confirmar"
         use:enhance={() => { carregando = true; return async ({ update }) => { carregando = false; await update(); }; }}
       >
-        <input type="hidden" name="pickupStoreId"  value={fc.pickupStoreId  || pickupStoreId} />
-        <input type="hidden" name="dropoffStoreId" value={fc.dropoffStoreId || dropoffStoreId} />
-        <input type="hidden" name="categoryId"     value={categoriaEscolhida.category_id} />
-        <input type="hidden" name="pickupTime"     value={new Date(fc.pickupTime  || campos.pickupTime).toISOString()} />
-        <input type="hidden" name="dropoffTime"    value={new Date(fc.dropoffTime || campos.dropoffTime).toISOString()} />
+        <input type="hidden" name="pickupStoreId"  value={escolha.empresa.pickup_store.id} />
+        <input type="hidden" name="dropoffStoreId" value={escolha.empresa.dropoff_store.id} />
+        <input type="hidden" name="categoryId"     value={escolha.cat.category_id} />
+        <input type="hidden" name="pickupTime"     value={new Date(fc2.pickupTime  || campos.pickupTime).toISOString()} />
+        <input type="hidden" name="dropoffTime"    value={new Date(fc2.dropoffTime || campos.dropoffTime).toISOString()} />
         <input type="hidden" name="dailyRate"      value={melhorPlano?.daily_rate ?? 0} />
-        <input type="hidden" name="totalDays"      value={melhorPlano?.total_days ?? resultado.total_days} />
-        <input type="hidden" name="fees"           value={feesTotal} />
-        <input type="hidden" name="feesJson"       value={JSON.stringify(categoriaEscolhida.store_fees.map(f => ({ name: f.name, amount: f.amount, is_tax: f.is_tax })))} />
+        <input type="hidden" name="totalDays"      value={melhorPlano?.total_days ?? escolha.empresa.total_days} />
+        <input type="hidden" name="fees"           value={round2(feesTotal + oneWayFeeAmount)} />
+        <input type="hidden" name="feesJson"       value={JSON.stringify([
+          ...escolha.cat.store_fees.map(f => ({ name: f.name, amount: f.amount, is_tax: f.is_tax })),
+          ...(oneWayFee && oneWayFee.fee_type !== 'FREE' && oneWayFee.amount > 0
+            ? [{ name: 'Taxa de devolução', amount: oneWayFee.amount, is_tax: false }]
+            : [])
+        ])} />
         <input type="hidden" name="ratePlanId"     value={melhorPlano?.id ?? ''} />
         {#each addonsSelecionados as [addonId, qty]}
           <input type="hidden" name="addon_{addonId}" value={qty} />
@@ -525,7 +504,7 @@
         </div>
 
         <div class="form-acoes" style="margin-top:16px;">
-          <button type="button" class="btn-cancelar" onclick={() => categoriaEscolhida = null}>
+          <button type="button" class="btn-cancelar" onclick={() => escolha = null}>
             Voltar
           </button>
           <button type="submit" class="btn-confirmar" disabled={carregando}>
@@ -571,7 +550,6 @@
   select option { background: #1e293b; }
   .input-erro { border-color: rgba(248,113,113,0.4); }
   .msg-erro   { font-size: 12px; color: #f87171; margin: 2px 0 0; }
-  .msg-aviso  { font-size: 12px; color: #fbbf24; margin: 2px 0 0; }
 
   /* ── Botões ──────────────────────────────────────────────────────────── */
   .form-acoes { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
@@ -603,41 +581,35 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Seleção de loja ─────────────────────────────────────────────────── */
-  .lojas-lista { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
-  .loja-card {
-    display: flex; align-items: center; gap: 12px;
-    padding: 11px 14px; border-radius: 10px;
-    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
-    cursor: pointer; text-align: left; width: 100%; font-family: inherit;
-    transition: border-color .14s, background .14s;
+  /* ── Seção por empresa ───────────────────────────────────────────────── */
+  .empresa-secao {
+    background: #0f172a;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 18px 20px 20px;
+    margin-bottom: 16px;
   }
-  .loja-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); }
-  .loja-selecionada { border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.06); }
-  .loja-radio { flex-shrink: 0; }
-  .radio-dot {
-    width: 16px; height: 16px; border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.2);
-    display: flex; align-items: center; justify-content: center;
-    transition: border-color .14s;
+  .empresa-header { margin-bottom: 16px; }
+  .empresa-nome { font-size: 16px; font-weight: 700; color: #e2e8f0; margin: 0 0 8px; }
+  .empresa-lojas { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .loja-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: #94a3b8;
   }
-  .radio-ativo { border-color: #60a5fa; background: rgba(96,165,250,0.15); }
-  .radio-ativo::after { content:''; width: 7px; height: 7px; border-radius: 50%; background: #60a5fa; }
-  .loja-info { flex: 1; }
-  .loja-nome { font-size: 13px; font-weight: 500; color: #e2e8f0; margin: 0; }
-  .loja-end  { font-size: 12px; color: #475569; margin: 2px 0 0; }
+  .loja-tipo { color: #475569; margin-left: 2px; }
+  .loja-sep { font-size: 14px; color: #334155; }
+  .sem-categorias { font-size: 13px; color: #475569; margin: 0; }
 
   /* ── Categorias grid ─────────────────────────────────────────────────── */
   .categorias-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 14px;
-    margin-bottom: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
   }
   .categoria-card {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
-    padding: 18px 14px; border-radius: 14px;
-    background: #0f172a; border: 1px solid rgba(255,255,255,0.07);
+    padding: 18px 14px; border-radius: 12px;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
     cursor: pointer; font-family: inherit; text-align: center;
     transition: border-color .14s, background .14s;
   }
@@ -661,6 +633,12 @@
   .cat-disp { font-size: 11px; color: #334155; margin-top: 2px; }
   .cat-indisponivel-label { font-size: 12px; color: #475569; margin-top: 6px; }
 
+  /* ── Empty state ─────────────────────────────────────────────────────── */
+  .empty-state {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 40px 24px; text-align: center;
+  }
+
   /* ── Resumo ──────────────────────────────────────────────────────────── */
   .resumo-card {
     background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
@@ -671,4 +649,30 @@
   .resumo-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #334155; }
   .resumo-val { font-size: 14px; font-weight: 600; color: #e2e8f0; }
   .resumo-sub { font-size: 12px; color: #475569; }
+
+  /* ── Tooltip de dica ─────────────────────────────────────────────────── */
+  .dica-wrap { position: relative; display: inline-flex; align-items: center; }
+  .dica-icone {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    font-size: 9px; font-weight: 700; color: #64748b; cursor: default;
+    line-height: 1; font-style: normal;
+  }
+  .dica-icone:hover { background: rgba(96,165,250,0.15); border-color: rgba(96,165,250,0.4); color: #60a5fa; }
+  .dica-balao {
+    display: none;
+    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.12);
+    color: #94a3b8; font-size: 11px; font-weight: 400; line-height: 1.5;
+    text-transform: none; letter-spacing: 0;
+    padding: 8px 10px; border-radius: 8px; white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4); z-index: 10; pointer-events: none;
+    min-width: 220px; white-space: normal; text-align: left;
+  }
+  .dica-balao::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.12);
+  }
+  .dica-wrap:hover .dica-balao { display: block; }
 </style>
