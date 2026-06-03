@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import admin_ota, auth, categoria_veiculo, dashboard, filial, funcionario, ota, publico, reserva, tarifa, veiculo
+from app.api.v1.endpoints import admin_dashboard, admin_ota, auth, categoria_veiculo, dashboard, filial, funcionario, ota, publico, reserva, tarifa, veiculo
 
 router = APIRouter(prefix="/api/v1")
 
@@ -14,4 +14,5 @@ router.include_router(veiculo.router)
 router.include_router(reserva.router)
 router.include_router(tarifa.router)
 router.include_router(admin_ota.router)
+router.include_router(admin_dashboard.router)
 router.include_router(ota.router)

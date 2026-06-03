@@ -1,5 +1,23 @@
 import { api } from './api';
 
+export interface StatusCount {
+  status: string;
+  qty: number;
+}
+
+export interface OtaKeyEmpresa {
+  empresa: string;
+  total: number;
+}
+
+export interface AdminDashboardStats {
+  empresas: { total: number };
+  lojas: { total: number; ativas: number };
+  veiculos: { total: number; por_status: StatusCount[] };
+  reservas: { total: number; por_status: StatusCount[] };
+  ota_keys: { total: number; ativas: number; por_empresa: OtaKeyEmpresa[] };
+}
+
 export interface OtaKeyListItem {
   id: string;
   name: string;
@@ -26,6 +44,9 @@ export interface OtaKeyRequest {
 }
 
 export const adminService = {
+  getDashboard: (token: string) =>
+    api.get<AdminDashboardStats>('/admin/dashboard', token),
+
   listarChavesOta: (token: string) =>
     api.get<OtaKeyListItem[]>('/admin/ota-keys', token),
 
