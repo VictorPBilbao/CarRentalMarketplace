@@ -12,6 +12,7 @@ class UsuarioPayload(BaseModel):
     email: str
     role: RoleEnum
     locadoraId: str = ""
-    matrizId: str | None = None      # preenchido apenas para role == "filial"
+    locadoraNome: str | None = None   # nome da empresa, preenchido para role == "locadora"
+    matrizId: str | None = None       # preenchido apenas para role == "filial"
     filialIds: list[str] | None = None    # todas as filiais em que o funcionário trabalha
     filialNames: list[str] | None = None  # nomes correspondentes

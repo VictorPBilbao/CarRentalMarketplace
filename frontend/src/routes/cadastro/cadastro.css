@@ -5,7 +5,7 @@
 .cadastro-page *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 .cadastro-page {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Saira', sans-serif;
   background: #080c14;
   color: #e8eaf0;
   min-height: 100vh;
@@ -39,7 +39,7 @@
   display: flex; align-items: center; justify-content: space-between;
 }
 .cadastro-page .logo {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Saira', sans-serif;
   font-size: 1.4rem; color: #e8eaf0;
   text-decoration: none;
   display: inline-flex; align-items: center; gap: 8px;
@@ -74,7 +74,7 @@
   margin-bottom: 12px; font-weight: 500;
 }
 .cadastro-header h1 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Saira', sans-serif;
   font-size: 2.1rem; letter-spacing: -0.025em;
   color: #f0f2f8; margin-bottom: 10px; line-height: 1.1;
 }
@@ -184,7 +184,7 @@
   width: 100%; padding: 14px;
   background: #4f8ef7; color: #fff;
   border: none; border-radius: 10px;
-  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500;
+  font-family: 'Saira', sans-serif; font-size: 0.95rem; font-weight: 500;
   cursor: pointer; margin-top: 4px;
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 }
@@ -201,7 +201,7 @@
   background: transparent;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px; color: rgba(232,234,240,0.55);
-  font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+  font-family: 'Saira', sans-serif; font-size: 0.92rem;
   cursor: pointer; flex-shrink: 0;
   transition: border-color 0.2s, color 0.2s;
 }
@@ -212,7 +212,7 @@
   flex: 1; padding: 14px;
   background: #4f8ef7; color: #fff;
   border: none; border-radius: 10px;
-  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500;
+  font-family: 'Saira', sans-serif; font-size: 0.95rem; font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 }

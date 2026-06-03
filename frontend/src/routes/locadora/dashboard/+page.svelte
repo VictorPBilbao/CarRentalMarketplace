@@ -61,7 +61,7 @@
 <!-- ── CABEÇALHO DA PÁGINA ── -->
 <div class="mb-7">
   <p class="text-sm capitalize text-slate-500">{dataAtual}</p>
-  <h1 class="mt-1 font-['Instrument_Serif'] text-2xl font-semibold text-slate-100">
+  <h1 class="mt-1 text-2xl font-semibold text-slate-100">
     {saudacao()}, bem-vindo ao painel
   </h1>
   <p class="mt-1 text-sm text-slate-500">Visão geral da operação — dados em tempo real</p>
@@ -71,7 +71,7 @@
 <div class="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
 
   <!-- Frota Total -->
-  <div class="rounded-xl border border-white/[0.07] bg-slate-900 p-5">
+  <div class="min-w-0 rounded-xl border border-white/[0.07] bg-slate-900 p-5">
     <div class="mb-3 flex items-start justify-between">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Frota Total</p>
       <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
@@ -87,7 +87,7 @@
   </div>
 
   <!-- Em Aluguel -->
-  <div class="rounded-xl border border-white/[0.07] bg-slate-900 p-5">
+  <div class="min-w-0 rounded-xl border border-white/[0.07] bg-slate-900 p-5">
     <div class="mb-3 flex items-start justify-between">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Em Aluguel</p>
       <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
@@ -101,7 +101,7 @@
   </div>
 
   <!-- Reservas Ativas -->
-  <div class="rounded-xl border border-white/[0.07] bg-slate-900 p-5">
+  <div class="min-w-0 rounded-xl border border-white/[0.07] bg-slate-900 p-5">
     <div class="mb-3 flex items-start justify-between">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Reservas Ativas</p>
       <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
@@ -116,7 +116,7 @@
   </div>
 
   <!-- Filiais -->
-  <div class="rounded-xl border border-white/[0.07] bg-slate-900 p-5">
+  <div class="min-w-0 rounded-xl border border-white/[0.07] bg-slate-900 p-5">
     <div class="mb-3 flex items-start justify-between">
       <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Filiais</p>
       <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
@@ -133,10 +133,10 @@
 </div>
 
 <!-- ── LINHA DO MEIO: Status da Frota + Hoje ── -->
-<div class="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-5">
+<div class="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
 
-  <!-- Status da Frota (3 colunas) -->
-  <div class="rounded-xl border border-white/[0.07] bg-slate-900 p-5 lg:col-span-3">
+  <!-- Status da Frota (2/3) -->
+  <div class="min-w-0 rounded-xl border border-white/[0.07] bg-slate-900 p-5 lg:col-span-2">
     <h2 class="mb-5 text-sm font-semibold text-slate-200">Status da Frota</h2>
     <div class="space-y-4">
 
@@ -207,8 +207,8 @@
     </div>
   </div>
 
-  <!-- Hoje na Operação (2 colunas) -->
-  <div class="rounded-xl border border-white/[0.07] bg-slate-900 p-5 lg:col-span-2">
+  <!-- Hoje na Operação (1/3) -->
+  <div class="min-w-0 rounded-xl border border-white/[0.07] bg-slate-900 p-5 lg:col-span-1">
     <h2 class="mb-4 text-sm font-semibold text-slate-200">Hoje na Operação</h2>
     <div class="space-y-1">
 

@@ -20,6 +20,7 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
         """
         SELECT id, first_name, last_name, email, password_hash, is_admin,
                ->manages.out.id   AS locadora_ids,
+               ->manages.out.name AS locadora_names,
                ->manages.role     AS manage_roles,
                ->works_at.out.id   AS filial_ids,
                ->works_at.out.name AS filial_names,
@@ -38,6 +39,7 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
         raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
     locadora_ids:       list = user.get("locadora_ids")       or []
+    locadora_names:     list = user.get("locadora_names")     or []
     manage_roles:       list = user.get("manage_roles")       or []
     filial_ids:         list = user.get("filial_ids")         or []
     filial_names:       list = user.get("filial_names")       or []
@@ -49,12 +51,15 @@ async def login(payload: LoginRequest, db: AsyncSurreal) -> LoginResponse:
     if locadora_ids:
         locadora_id = str(locadora_ids[0])
 
+        locadora_nome = str(locadora_names[0]) if locadora_names else None
+
         token_payload = UsuarioPayload(
             id=str(user["id"]),
             nome=nome,
             email=user["email"],
             role="locadora",
             locadoraId=locadora_id,
+            locadoraNome=locadora_nome,
         )
 
     # ── funcionário de filial (works_at) ──────────────────────────────────────

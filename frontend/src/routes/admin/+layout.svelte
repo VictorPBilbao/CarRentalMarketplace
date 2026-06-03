@@ -26,12 +26,12 @@
 <svelte:head>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap"
     rel="stylesheet"
   />
 </svelte:head>
 
-<div style="display:flex; min-height:100vh; background:#080c14; font-family:'DM Sans',sans-serif; color:#f1f5f9;">
+<div style="display:flex; min-height:100vh; background:#080c14; font-family:'Saira',sans-serif; color:#f1f5f9;">
 
   <!-- SIDEBAR -->
   <aside style="

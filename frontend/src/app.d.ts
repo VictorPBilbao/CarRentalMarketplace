@@ -11,6 +11,7 @@ declare global {
         email:        string;
         role:         'admin' | 'locadora' | 'filial' | 'customer';
         locadoraId:   string;
+        locadoraNome?: string;
         matrizId?:    string;
         filialIds?:   string[];
         filialNames?: string[];

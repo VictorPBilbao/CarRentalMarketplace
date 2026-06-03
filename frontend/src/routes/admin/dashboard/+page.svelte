@@ -147,7 +147,7 @@
 <!-- CABEÇALHO -->
 <div class="mb-7">
   <p class="text-sm capitalize text-slate-500">{dataAtual}</p>
-  <h1 class="mt-1 font-['Instrument_Serif'] text-2xl font-semibold text-slate-100">
+  <h1 class="mt-1 text-2xl font-semibold text-slate-100">
     Painel Administrativo
   </h1>
   <p class="mt-1 text-sm text-slate-500">Visão geral do sistema CarRental — dados em tempo real</p>

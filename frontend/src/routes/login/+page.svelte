@@ -47,7 +47,7 @@
 <svelte:head>
   <title>Login — CarRental Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </svelte:head>
 
 <div class="page login-page">
@@ -194,16 +194,6 @@
         Ainda não tem conta?
         <a href="/cadastro">Cadastre sua locadora</a>
       </p>
-
-      <div class="divider"><span>ou acesse como</span></div>
-
-      <a href="/superadmin/login" class="btn-admin">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-          <rect x="1" y="1" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.3"/>
-          <path d="M5 7.5h5M7.5 5v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-        Acesso administrativo
-      </a>
 
     </div>
   </main>

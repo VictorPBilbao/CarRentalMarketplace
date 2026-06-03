@@ -183,7 +183,7 @@
 
   nav { position: relative; z-index: 10; padding: 24px 40px; }
   .logo {
-    font-family: 'Instrument Serif', serif;
+    font-family: 'Saira', sans-serif;
     font-size: 1.4rem; color: #e8eaf0; text-decoration: none;
     display: inline-flex; align-items: center; gap: 8px; letter-spacing: -0.02em;
   }
@@ -213,7 +213,7 @@
     color: #a78bfa; margin-bottom: 12px; font-weight: 500;
   }
   .header h1 {
-    font-family: 'Instrument Serif', serif;
+    font-family: 'Saira', sans-serif;
     font-size: 2.2rem; letter-spacing: -0.025em;
     color: #f0f2f8; margin-bottom: 10px; line-height: 1.1;
   }

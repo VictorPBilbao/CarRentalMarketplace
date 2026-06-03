@@ -37,7 +37,7 @@
   }
   .breadcrumb:hover { color: #94a3b8; }
   .page-header h1 {
-    font-family: 'Instrument Serif', serif;
+    font-family: 'Saira', sans-serif;
     font-size: 22px; font-weight: 600; color: #f1f5f9; margin: 0 0 4px;
   }
   .page-header p { font-size: 13px; color: #475569; margin: 0; }
