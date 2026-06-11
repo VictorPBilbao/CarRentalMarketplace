@@ -1,3 +1,5 @@
+import re
+
 from fastapi import HTTPException, status
 from surrealdb import AsyncSurreal
 
@@ -216,6 +218,8 @@ async def cadastrar_cliente(payload: CadastroClienteRequest, db: AsyncSurreal) -
             email:         $email,
             password_hash: $password_hash,
             phone:         $phone,
+            cpf:           $cpf,
+            birth_date:    $birth_date,
             active:        true
         }
         """,
@@ -225,6 +229,8 @@ async def cadastrar_cliente(payload: CadastroClienteRequest, db: AsyncSurreal) -
             "email":         payload.email,
             "password_hash": hash_senha(payload.senha),
             "phone":         payload.telefone,
+            "cpf":           re.sub(r"\D", "", payload.cpf),
+            "birth_date":    payload.dataNascimento,
         },
     )
 

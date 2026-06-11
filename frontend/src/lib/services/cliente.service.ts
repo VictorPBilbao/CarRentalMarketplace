@@ -5,6 +5,8 @@ export interface CadastrarClienteDTO {
   sobrenome: string;
   email: string;
   telefone?: string | null;
+  cpf: string;
+  dataNascimento: string;
   senha: string;
 }
 

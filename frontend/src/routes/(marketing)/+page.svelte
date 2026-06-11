@@ -44,7 +44,8 @@
       <a href="#contato">Contato</a>
     </div>
     <div class="nav-actions">
-      <a href="/login" class="btn-ghost">Entrar</a>
+      <a href="/cliente/login" class="btn-ghost">Entrar</a>
+      <a href="/cliente/cadastro" class="btn-client">Alugar um carro</a>
       <a href="/cadastro" class="btn-primary">Cadastrar locadora</a>
     </div>
   </div>
@@ -85,6 +86,17 @@
           </svg>
         </a>
         <a href="#como-funciona" class="cta-link">Ver como funciona</a>
+      </div>
+
+      <div class="hero-client-cta">
+        <span class="client-cta-label">Quer alugar um carro?</span>
+        <a href="/cliente/cadastro" class="cta-client">
+          Criar conta de cliente
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="/cliente/login" class="cta-client-ghost">Já tenho conta</a>
       </div>
 
       <div class="hero-stats">

@@ -5,13 +5,30 @@
   let { form }: { form: ActionData } = $props();
 
   const campos = $state({
-    primeiroNome: (form as any)?.campos?.primeiroNome ?? '',
-    sobrenome:    (form as any)?.campos?.sobrenome    ?? '',
-    email:        (form as any)?.campos?.email        ?? '',
-    telefone:     (form as any)?.campos?.telefone     ?? '',
-    senha:        '',
-    confirmarSenha: '',
+    primeiroNome:    (form as any)?.campos?.primeiroNome    ?? '',
+    sobrenome:       (form as any)?.campos?.sobrenome       ?? '',
+    email:           (form as any)?.campos?.email           ?? '',
+    telefone:        (form as any)?.campos?.telefone        ?? '',
+    cpf:             (form as any)?.campos?.cpf             ?? '',
+    dataNascimento:  (form as any)?.campos?.dataNascimento  ?? '',
+    senha:           '',
+    confirmarSenha:  '',
   });
+
+  function mascararCPF(valor: string): string {
+    return valor
+      .replace(/\D/g, '')
+      .slice(0, 11)
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+  }
+
+  function onCPFInput(e: Event) {
+    const t = e.currentTarget as HTMLInputElement;
+    t.value = mascararCPF(t.value);
+    campos.cpf = t.value;
+  }
 
   let carregando = $state(false);
   let tocado = $state<Record<string, boolean>>({});
@@ -120,6 +137,32 @@
             id="telefone" name="telefone" type="tel" placeholder="+55 11 99999-9999"
             bind:value={campos.telefone}
           />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" class:has-error={erroServidor('cpf')}>
+            <label for="cpf">CPF</label>
+            <input
+              id="cpf" name="cpf" type="text" inputmode="numeric" placeholder="000.000.000-00"
+              value={campos.cpf} oninput={onCPFInput} onblur={() => blur('cpf')}
+              autocomplete="off"
+            />
+            {#if erroServidor('cpf')}
+              <span class="campo-erro">{erroServidor('cpf')}</span>
+            {/if}
+          </div>
+
+          <div class="form-group" class:has-error={erroServidor('dataNascimento')}>
+            <label for="dataNascimento">Data de nascimento</label>
+            <input
+              id="dataNascimento" name="dataNascimento" type="date"
+              bind:value={campos.dataNascimento} onblur={() => blur('dataNascimento')}
+              max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+            />
+            {#if erroServidor('dataNascimento')}
+              <span class="campo-erro">{erroServidor('dataNascimento')}</span>
+            {/if}
+          </div>
         </div>
 
         <div class="form-group" class:has-error={erroServidor('senha')}>
@@ -253,6 +296,7 @@
     background: rgba(167,139,250,0.04);
   }
   .form-group input::placeholder { color: rgba(232,234,240,0.2); }
+  .form-group input[type="date"] { color-scheme: dark; }
   .form-group.has-error input {
     border-color: rgba(239,68,68,0.55);
     background: rgba(239,68,68,0.04);

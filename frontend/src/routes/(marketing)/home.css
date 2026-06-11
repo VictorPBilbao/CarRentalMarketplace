@@ -81,6 +81,18 @@ nav.scrolled {
   transition: background 0.2s, transform 0.15s;
 }
 .btn-primary:hover { background: #3a7de8; transform: translateY(-1px); }
+.btn-client {
+  padding: 9px 20px;
+  background: rgba(52, 211, 153, 0.12);
+  color: #34d399;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-client:hover { background: rgba(52, 211, 153, 0.2); transform: translateY(-1px); }
 
 /* ── HERO ── */
 .hero {
@@ -180,6 +192,46 @@ nav.scrolled {
   transition: color 0.2s;
 }
 .cta-link:hover { color: #e8eaf0; }
+
+.hero-client-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+  animation: fadeUp 0.5s ease 0.5s both;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: rgba(52, 211, 153, 0.04);
+  border: 1px solid rgba(52, 211, 153, 0.15);
+  border-radius: 12px;
+}
+.client-cta-label {
+  font-size: 0.8rem;
+  color: rgba(52, 211, 153, 0.7);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.cta-client {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #34d399;
+  color: #064e3b;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.15s;
+}
+.cta-client:hover { background: #10b981; transform: translateY(-1px); }
+.cta-client-ghost {
+  color: rgba(52, 211, 153, 0.6);
+  text-decoration: none;
+  font-size: 0.82rem;
+  transition: color 0.2s;
+}
+.cta-client-ghost:hover { color: #34d399; }
 
 .hero-stats {
   display: flex;

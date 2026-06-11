@@ -40,6 +40,8 @@ class CadastroClienteRequest(BaseModel):
     sobrenome: str
     email: EmailStr
     telefone: str | None = None
+    cpf: str
+    dataNascimento: str
     senha: str
 
 
