@@ -77,9 +77,13 @@
       <h2 class="section-title">Cliente</h2>
       <div class="campo-group">
         <div class="campo">
-          <label for="customerId">ID do Cliente <span class="req">*</span></label>
-          <input id="customerId" name="customerId" type="text" placeholder="user:abc123"
-            bind:value={campos.customerId} class:erro={!!err('customerId')} />
+          <label for="customerId">Cliente <span class="req">*</span></label>
+          <select id="customerId" name="customerId" bind:value={campos.customerId} class:erro={!!err('customerId')}>
+            <option value="">Selecione...</option>
+            {#each data.clientes as cli}
+              <option value={cli.id}>{cli.nome} ({cli.email})</option>
+            {/each}
+          </select>
           {#if err('customerId')}<span class="erro-msg">{err('customerId')}</span>{/if}
         </div>
       </div>

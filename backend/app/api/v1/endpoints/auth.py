@@ -3,13 +3,14 @@ from typing import Annotated, TypeAlias
 from fastapi import APIRouter, Depends
 from surrealdb import AsyncSurreal
 
-from app.api.deps import CurrentUser, FilialOnly
+from app.api.deps import CurrentUser, FilialOnly, LocadoraOrFilial
 from app.core.database import get_db
 from app.schemas.auth import (
     CadastroClienteRequest,
     CadastroClienteResponse,
     CadastroLocadoraRequest,
     CadastroResponse,
+    ClienteOption,
     LoginRequest,
     LoginResponse,
     TrocaFilialRequest,
@@ -40,6 +41,11 @@ async def me(usuario: CurrentUser, db: DB):
 @router.post("/cadastro/cliente", response_model=CadastroClienteResponse, status_code=201)
 async def cadastro_cliente(payload: CadastroClienteRequest, db: DB):
     return await auth_service.cadastrar_cliente(payload, db)
+
+
+@router.get("/clientes", response_model=list[ClienteOption])
+async def listar_clientes(_usuario: LocadoraOrFilial, db: DB):
+    return await auth_service.listar_clientes(db)
 
 
 @router.post("/logout")

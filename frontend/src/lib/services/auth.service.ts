@@ -33,6 +33,12 @@ export interface CadastroResponse {
   mensagem:   string;
 }
 
+export interface ClienteOption {
+  id:    string;
+  nome:  string;
+  email: string;
+}
+
 // ── service ──
 export const authService = {
 
@@ -46,5 +52,9 @@ export const authService = {
 
   async logout(token: string): Promise<void> {
     await api.post('/auth/logout', {}, token);
+  },
+
+  async listarClientes(token: string): Promise<ClienteOption[]> {
+    return api.get<ClienteOption[]>('/auth/clientes', token);
   },
 };

@@ -12,8 +12,9 @@
 
   let modal = $state(false);
   let editRule = $state<OneWayRule | null>(null);
+  let novaStoreId = $state<string | null>(null);
 
-  function abrirNova() { editRule = null; modal = true; }
+  function abrirNova(storeId: string | null = null) { editRule = null; novaStoreId = storeId; modal = true; }
   function abrirEdit(r: OneWayRule) { editRule = r; modal = true; }
 
   $effect(() => {
@@ -71,7 +72,7 @@
         Defina quais lojas podem devolver veículos na <strong style="color:#94a3b8;">{filial?.name ?? 'sua loja'}</strong> e qual taxa será cobrada.
       </p>
     </div>
-    <button onclick={abrirNova} style="
+    <button onclick={() => abrirNova()} style="
       display:flex; align-items:center; gap:6px;
       padding:8px 14px; border-radius:8px;
       background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.25);
@@ -149,7 +150,7 @@
             style="cursor:pointer"
             onmouseenter={() => hoveredStore = loja.id}
             onmouseleave={() => hoveredStore = null}
-            onclick={() => rule ? abrirEdit(rule) : abrirNova()}
+            onclick={() => rule ? abrirEdit(rule) : abrirNova(loja.id)}
             opacity={hoveredStore && hoveredStore !== loja.id ? 0.4 : 1}
           >
             <circle cx={pos.x} cy={pos.y} r={NODE_R}
@@ -228,7 +229,7 @@
           <select class="input" name="from_store_id" required disabled={!!editRule}>
             <option value="">Selecione...</option>
             {#each lojas.filter((l: any) => l.id !== filial?.id) as loja}
-              <option value={loja.id} selected={editRule?.from_store_id === loja.id}>{loja.name} ({loja.code})</option>
+              <option value={loja.id} selected={editRule ? editRule.from_store_id === loja.id : novaStoreId === loja.id}>{loja.name} ({loja.code})</option>
             {/each}
           </select>
           {#if editRule}<input type="hidden" name="from_store_id" value={editRule.from_store_id}/>{/if}

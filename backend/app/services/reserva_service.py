@@ -462,6 +462,44 @@ async def atualizar_status(
     return await buscar_por_id(reserva_id, company_id, db)
 
 
+async def cancelar_cliente(
+    reserva_id: str,
+    user_id: str,
+    db: AsyncSurreal,
+) -> ReservaResponse:
+    reserva = await buscar_por_id_cliente(reserva_id, user_id, db)
+
+    if reserva.status not in ('PENDING', 'CONFIRMED'):
+        raise HTTPException(
+            status_code=422,
+            detail='Só é possível cancelar reservas pendentes ou confirmadas.',
+        )
+
+    result = await db.query(
+        "UPDATE type::record($id) MERGE { status: 'CANCELLED' }",
+        {'id': reserva_id},
+    )
+
+    try:
+        pickup = datetime.fromisoformat(reserva.pickup_time)
+        dropoff = datetime.fromisoformat(reserva.dropoff_time)
+        await disponibilidade_service.liberar_disponibilidade(
+            reserva.pickup_store, reserva.category,
+            pickup, dropoff, db,
+        )
+    except Exception as exc:
+        logger.warning(f"Falha ao liberar disponibilidade na reserva {reserva_id}: {exc}")
+
+    records = extract_records(result)
+    if not records:
+        raise HTTPException(status_code=500, detail='Erro ao cancelar reserva.')
+
+    row = records[0]
+    if isinstance(row, dict):
+        return _row_to_response(row)
+    return await buscar_por_id_cliente(reserva_id, user_id, db)
+
+
 async def criar_cliente(
     payload: CriarReservaClienteRequest,
     user_id: str,

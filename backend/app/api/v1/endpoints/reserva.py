@@ -111,3 +111,8 @@ async def listar_reservas_cliente(
 @router.get("/cliente/reservas/{reserva_id}", response_model=ReservaResponse)
 async def buscar_reserva_cliente(reserva_id: str, usuario: CustomerOnly, db: DB):
     return await reserva_service.buscar_por_id_cliente(reserva_id, usuario.id, db)
+
+
+@router.patch("/cliente/reservas/{reserva_id}/cancelar", response_model=ReservaResponse)
+async def cancelar_reserva_cliente(reserva_id: str, usuario: CustomerOnly, db: DB):
+    return await reserva_service.cancelar_cliente(reserva_id, usuario.id, db)

@@ -11,6 +11,7 @@ from app.schemas.auth import (
     CadastroClienteResponse,
     CadastroLocadoraRequest,
     CadastroResponse,
+    ClienteOption,
     LoginRequest,
     LoginResponse,
     StoreOption,
@@ -239,6 +240,33 @@ async def cadastrar_cliente(payload: CadastroClienteRequest, db: AsyncSurreal) -
         raise HTTPException(status_code=500, detail="Erro ao criar o cliente.")
 
     return CadastroClienteResponse(userId=str(user["id"]), mensagem="Cadastro realizado com sucesso.")
+
+
+async def listar_clientes(db: AsyncSurreal) -> list[ClienteOption]:
+    # Cliente = usuário sem vínculo de gestão (manages) e sem vínculo de trabalho
+    # (works_at) com nenhuma locadora/filial, e que não é admin do sistema.
+    resultado = await db.query(
+        """
+        SELECT id, first_name, last_name, email, is_admin,
+               ->manages.out.id  AS locadora_ids,
+               ->works_at.out.id AS filial_ids
+        FROM user WHERE active = true
+        ORDER BY first_name, last_name
+        """
+    )
+    records = extract_records(resultado)
+    return [
+        ClienteOption(
+            id=str(row["id"]),
+            nome=f"{row['first_name']} {row['last_name']}",
+            email=row["email"],
+        )
+        for row in records
+        if isinstance(row, dict)
+        and not row.get("is_admin")
+        and not row.get("locadora_ids")
+        and not row.get("filial_ids")
+    ]
 
 
 async def trocar_filial(store_id: str, usuario: UsuarioPayload, db: AsyncSurreal) -> LoginResponse:

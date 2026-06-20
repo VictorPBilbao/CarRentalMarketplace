@@ -4,15 +4,17 @@ import { filialReservaService } from '$lib/services/reserva.service';
 import { tarifaService } from '$lib/services/tarifa.service';
 import { filialService } from '$lib/services/filial.service';
 import { categoriaService } from '$lib/services/categoria.service';
+import { authService } from '$lib/services/auth.service';
 import { setFlash } from '$lib/flash';
 
 export const load: PageServerLoad = async ({ locals }) => {
   const token = locals.token!;
-  const [lojas, categorias] = await Promise.all([
+  const [lojas, categorias, clientes] = await Promise.all([
     filialService.listarLojas(token).catch(() => []),
     categoriaService.listar(token).catch(() => []),
+    authService.listarClientes(token).catch(() => []),
   ]);
-  return { lojas, categorias };
+  return { lojas, categorias, clientes };
 };
 
 export const actions: Actions = {
@@ -32,7 +34,7 @@ export const actions: Actions = {
     const notes          = String(data.get('notes')          ?? '').trim() || null;
 
     const erros: Record<string, string> = {};
-    if (!customerId)     erros.customerId     = 'Informe o ID do cliente.';
+    if (!customerId)     erros.customerId     = 'Selecione o cliente.';
     if (!categoryId)     erros.categoryId     = 'Selecione uma categoria.';
     if (!dropoffStoreId) erros.dropoffStoreId = 'Selecione a loja de devolução.';
     if (!pickupTime)     erros.pickupTime     = 'Informe a data de retirada.';

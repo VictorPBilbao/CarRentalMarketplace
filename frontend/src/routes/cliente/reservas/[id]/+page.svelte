@@ -1,7 +1,11 @@
 <script lang="ts">
-  import type { PageData } from './$types';
+  import { enhance } from '$app/forms';
+  import type { ActionData, PageData } from './$types';
 
-  let { data }: { data: PageData } = $props();
+  let { data, form }: { data: PageData; form: ActionData } = $props();
+
+  const podeCancelar = $derived(data.reserva.status === 'PENDING' || data.reserva.status === 'CONFIRMED');
+  let confirmando = $state(false);
 
   const STATUS_CONFIG: Record<string, { label: string; cor: string; bg: string }> = {
     PENDING:   { label: 'Pendente',       cor: '#fbbf24', bg: 'rgba(251,191,36,0.1)'  },
@@ -43,7 +47,23 @@
     </div>
     <p>Criada em {formatDate(data.reserva.created_at)}</p>
   </div>
+
+  {#if podeCancelar}
+    {#if !confirmando}
+      <button class="btn-cancelar" onclick={() => confirmando = true}>Cancelar Reserva</button>
+    {:else}
+      <form method="POST" action="?/cancelar" use:enhance class="cancelar-confirm">
+        <span>Tem certeza? Essa ação não pode ser desfeita.</span>
+        <button type="button" class="btn-voltar" onclick={() => confirmando = false}>Voltar</button>
+        <button type="submit" class="btn-confirmar">Sim, cancelar</button>
+      </form>
+    {/if}
+  {/if}
 </div>
+
+{#if (form as any)?.erro}
+  <div class="erro-banner">{(form as any).erro}</div>
+{/if}
 
 <div class="detail-grid">
 
@@ -150,7 +170,7 @@
 </div>
 
 <style>
-  .page-header { margin-bottom: 28px; }
+  .page-header { margin-bottom: 28px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
   .page-header p { font-size: 12px; color: #334155; margin: 4px 0 0; }
   .breadcrumb      { font-size: 12px; color: #475569; text-decoration: none; }
   .breadcrumb:hover { color: #64748b; }
@@ -221,4 +241,32 @@
   }
   .total-row span { font-size: 14px; font-weight: 600; color: #94a3b8; }
   .total-val { font-size: 18px; font-weight: 700; color: #a78bfa !important; }
+
+  .btn-cancelar {
+    flex-shrink: 0; padding: 9px 16px; border-radius: 8px;
+    border: 1px solid rgba(248,113,113,0.25); background: rgba(248,113,113,0.06);
+    color: #f87171; font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-cancelar:hover { background: rgba(248,113,113,0.12); }
+
+  .cancelar-confirm {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    padding: 10px 14px; border-radius: 8px;
+    background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.2);
+  }
+  .cancelar-confirm span { font-size: 12px; color: #f87171; }
+  .btn-voltar {
+    padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);
+    background: transparent; color: #94a3b8; font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+  .btn-confirmar {
+    padding: 6px 12px; border-radius: 6px; border: none;
+    background: #f87171; color: #0f172a; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+
+  .erro-banner {
+    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; color: #f87171;
+  }
 </style>

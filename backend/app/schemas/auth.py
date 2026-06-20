@@ -8,6 +8,12 @@ class StoreOption(BaseModel):
     name: str
 
 
+class ClienteOption(BaseModel):
+    id:    str
+    nome:  str
+    email: str
+
+
 class LoginRequest(BaseModel):
     email:    EmailStr
     senha:    str

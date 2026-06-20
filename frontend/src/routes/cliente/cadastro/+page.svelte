@@ -152,7 +152,7 @@
             {/if}
           </div>
 
-          <div class="form-group" class:has-error={erroServidor('dataNascimento')}>
+          <div class="form-group" style="width: 100%;" class:has-error={erroServidor('dataNascimento')}>
             <label for="dataNascimento">Data de nascimento</label>
             <input
               id="dataNascimento" name="dataNascimento" type="date"

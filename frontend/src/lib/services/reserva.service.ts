@@ -122,4 +122,8 @@ export const clienteReservaService = {
   async criar(dados: CriarReservaClienteDTO, token: string): Promise<Reserva> {
     return api.post<Reserva>('/cliente/reservas', dados, token);
   },
+
+  async cancelar(id: string, token: string): Promise<Reserva> {
+    return api.patch<Reserva>(`/cliente/reservas/${encodeURIComponent(id)}/cancelar`, {}, token);
+  },
 };
