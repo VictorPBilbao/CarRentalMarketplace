@@ -1,0 +1,2891 @@
+{
+    "apidogProject": "1.0.0",
+    "$schema": {
+        "app": "apidog",
+        "type": "project",
+        "version": "1.2.0"
+    },
+    "info": {
+        "name": "CarRental OTA API",
+        "description": "",
+        "mockRule": {
+            "rules": [],
+            "enableSystemRule": true
+        }
+    },
+    "projectSetting": {
+        "id": "1318977",
+        "auth": {},
+        "securityScheme": {},
+        "gateway": [],
+        "language": "en-US",
+        "apiStatuses": ["developing", "testing", "released", "deprecated"],
+        "mockSettings": {},
+        "preProcessors": [],
+        "postProcessors": [],
+        "advancedSettings": {
+            "allowAutomationWriteAutomationCreatedSprintBranch": true,
+            "enableJsonc": false,
+            "enableBigint": false,
+            "responseValidate": true,
+            "enableTestScenarioSetting": false,
+            "enableYAPICompatScript": false,
+            "isDefaultUrlEncoding": 3,
+            "publishedDocUrlRules": {
+                "defaultRule": "SLUGIFY_WITH_RESOURCE_KEY",
+                "resourceKeyStandard": "NEW"
+            }
+        },
+        "initialDisabledMockIds": [],
+        "servers": [
+            {
+                "id": "default",
+                "name": "Default Server",
+                "moduleId": 1322624
+            }
+        ],
+        "cloudMock": {
+            "enable": false,
+            "security": "free",
+            "tokenKey": "apidogToken",
+            "isCreatedAutomaticallyByDefaultConfigFromAdmin": true
+        }
+    },
+    "apiCollection": [
+        {
+            "name": "Root",
+            "id": 9162721,
+            "auth": {},
+            "securityScheme": {},
+            "parentId": 0,
+            "serverId": "",
+            "description": "",
+            "identityPattern": {
+                "httpApi": {
+                    "type": "methodAndPath",
+                    "bodyType": "",
+                    "fields": []
+                }
+            },
+            "shareSettings": {},
+            "visibility": "SHARED",
+            "moduleId": 1322624,
+            "preProcessors": [
+                {
+                    "id": "inheritProcessors",
+                    "type": "inheritProcessors",
+                    "data": {}
+                }
+            ],
+            "postProcessors": [
+                {
+                    "id": "inheritProcessors",
+                    "type": "inheritProcessors",
+                    "data": {}
+                }
+            ],
+            "inheritPostProcessors": {},
+            "inheritPreProcessors": {},
+            "items": [
+                {
+                    "name": "OTA — Parceiros",
+                    "id": 9162722,
+                    "auth": {},
+                    "securityScheme": {},
+                    "parentId": 0,
+                    "serverId": "",
+                    "description": "",
+                    "identityPattern": {
+                        "httpApi": {
+                            "type": "inherit",
+                            "bodyType": "",
+                            "fields": []
+                        }
+                    },
+                    "shareSettings": {},
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624,
+                    "preProcessors": [
+                        {
+                            "id": "inheritProcessors",
+                            "type": "inheritProcessors",
+                            "data": {}
+                        }
+                    ],
+                    "postProcessors": [
+                        {
+                            "id": "inheritProcessors",
+                            "type": "inheritProcessors",
+                            "data": {}
+                        }
+                    ],
+                    "inheritPostProcessors": {},
+                    "inheritPreProcessors": {},
+                    "items": [
+                        {
+                            "name": "1. Listar Cidades e Lojas",
+                            "api": {
+                                "id": "38282239",
+                                "method": "get",
+                                "path": "/ota/cidades",
+                                "parameters": {
+                                    "query": [],
+                                    "path": [],
+                                    "cookie": [],
+                                    "header": []
+                                },
+                                "auth": {
+                                    "type": "securityscheme"
+                                },
+                                "securityScheme": {
+                                    "schemeGroups": [
+                                        {
+                                            "id": "-0lVZVPscsd7Xgdv_XMEU",
+                                            "schemeIds": [563955]
+                                        }
+                                    ],
+                                    "required": true,
+                                    "use": {
+                                        "id": "-0lVZVPscsd7Xgdv_XMEU",
+                                        "configs": {
+                                            "563955": {
+                                                "authConfigs": {
+                                                    "x-apidog": {
+                                                        "value": "{{apiKey}}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "scopes": {
+                                        "-0lVZVPscsd7Xgdv_XMEU": {
+                                            "563955": []
+                                        }
+                                    }
+                                },
+                                "commonParameters": {
+                                    "query": [],
+                                    "body": [],
+                                    "cookie": [],
+                                    "header": []
+                                },
+                                "responses": [
+                                    {
+                                        "id": "148315378",
+                                        "code": "200",
+                                        "name": "",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "items": {
+                                                "$ref": "#/definitions/15902497"
+                                            },
+                                            "type": "array",
+                                            "title": "Response Ota Cidades Ota Cidades Get"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Successful Response",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    }
+                                ],
+                                "responseExamples": [],
+                                "requestBody": {
+                                    "type": "none",
+                                    "parameters": [],
+                                    "required": false,
+                                    "mediaType": "",
+                                    "examples": [],
+                                    "oasExtensions": ""
+                                },
+                                "description": "Retorna uma lista agrupada de cidades e estados que possuem lojas de aluguel ativas.\n\n:::tip Resumo\nUtilize este endpoint para popular os *inputs* de busca do seu front-end corporativo (ex: dropdown de Cidades e Locais de Retirada/Devolução).\n:::\n\n**O que ele retorna?**\n- Nome da Cidade e Estado.\n- A lista de Lojas daquela cidade (ID, Nome, Código e Companhia/Locadora associada).",
+                                "tags": ["OTA — Parceiros"],
+                                "status": "released",
+                                "serverId": "",
+                                "operationId": "ota_cidades_ota_cidades_get",
+                                "sourceUrl": "",
+                                "ordering": 6,
+                                "cases": [
+                                    {
+                                        "id": 51579946,
+                                        "type": "DEBUG_CASE",
+                                        "path": null,
+                                        "name": "Success",
+                                        "responseId": "148315378",
+                                        "parameters": {
+                                            "path": [],
+                                            "query": [],
+                                            "cookie": [],
+                                            "header": []
+                                        },
+                                        "commonParameters": {},
+                                        "requestBody": {
+                                            "parameters": [],
+                                            "type": "none",
+                                            "generateMode": "normal"
+                                        },
+                                        "auth": {},
+                                        "securityScheme": {},
+                                        "advancedSettings": {
+                                            "disabledSystemHeaders": {}
+                                        },
+                                        "requestResult": null,
+                                        "visibility": "INHERITED",
+                                        "moduleId": 1322624,
+                                        "categoryId": 0,
+                                        "tagIds": [],
+                                        "apiTestDataList": [],
+                                        "preProcessors": [],
+                                        "postProcessors": [],
+                                        "inheritPostProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        },
+                                        "inheritPreProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        }
+                                    }
+                                ],
+                                "mocks": [],
+                                "customApiFields": "{}",
+                                "advancedSettings": {
+                                    "disabledSystemHeaders": {}
+                                },
+                                "mockScript": {},
+                                "codeSamples": [],
+                                "commonResponseStatus": {},
+                                "responseChildren": [],
+                                "maintainer": "Victor Bilbao",
+                                "visibility": "INHERITED",
+                                "moduleId": 1322624,
+                                "oasExtensions": "",
+                                "type": "http",
+                                "preProcessors": [],
+                                "postProcessors": [],
+                                "inheritPostProcessors": {},
+                                "inheritPreProcessors": {}
+                            }
+                        },
+                        {
+                            "name": "2. Consultar Disponibilidade",
+                            "api": {
+                                "id": "38282240",
+                                "method": "get",
+                                "path": "/ota/buscar",
+                                "parameters": {
+                                    "query": [
+                                        {
+                                            "id": "JajQdSPmlL",
+                                            "name": "pickup_store_id",
+                                            "required": true,
+                                            "enable": true,
+                                            "description": "",
+                                            "type": "string",
+                                            "schema": {
+                                                "type": "string",
+                                                "title": "Pickup Store Id"
+                                            }
+                                        },
+                                        {
+                                            "id": "rNTJhYaPEB",
+                                            "name": "dropoff_store_id",
+                                            "required": true,
+                                            "enable": true,
+                                            "description": "",
+                                            "type": "string",
+                                            "schema": {
+                                                "type": "string",
+                                                "title": "Dropoff Store Id"
+                                            }
+                                        },
+                                        {
+                                            "id": "nVvGTS3hli",
+                                            "name": "pickup_time",
+                                            "required": true,
+                                            "enable": true,
+                                            "description": "",
+                                            "type": "string",
+                                            "schema": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "title": "Pickup Time"
+                                            }
+                                        },
+                                        {
+                                            "id": "xVF1OV3Fuj",
+                                            "name": "dropoff_time",
+                                            "required": true,
+                                            "enable": true,
+                                            "description": "",
+                                            "type": "string",
+                                            "schema": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "title": "Dropoff Time"
+                                            }
+                                        },
+                                        {
+                                            "id": "neXVqGAaPy",
+                                            "name": "customer_age",
+                                            "required": true,
+                                            "enable": true,
+                                            "description": "",
+                                            "type": "integer",
+                                            "schema": {
+                                                "type": "integer",
+                                                "minimum": 18,
+                                                "title": "Customer Age"
+                                            }
+                                        },
+                                        {
+                                            "id": "BuJVo2wN56",
+                                            "name": "nationality",
+                                            "required": false,
+                                            "enable": true,
+                                            "description": "",
+                                            "type": "other",
+                                            "schema": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "title": "Nationality"
+                                            }
+                                        },
+                                        {
+                                            "id": "rx0CzlN1cB",
+                                            "name": "promo_code",
+                                            "required": false,
+                                            "enable": true,
+                                            "description": "",
+                                            "type": "other",
+                                            "schema": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ],
+                                                "title": "Promo Code"
+                                            }
+                                        }
+                                    ],
+                                    "path": [],
+                                    "cookie": [],
+                                    "header": []
+                                },
+                                "auth": {
+                                    "type": "securityscheme"
+                                },
+                                "securityScheme": {
+                                    "schemeGroups": [
+                                        {
+                                            "id": "LVxX5Ss43_mN17-T5dhdB",
+                                            "schemeIds": [563955]
+                                        }
+                                    ],
+                                    "required": true,
+                                    "use": {
+                                        "id": "LVxX5Ss43_mN17-T5dhdB",
+                                        "configs": {
+                                            "563955": {
+                                                "authConfigs": {
+                                                    "x-apidog": {
+                                                        "value": "{{apiKey}}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "scopes": {
+                                        "LVxX5Ss43_mN17-T5dhdB": {
+                                            "563955": []
+                                        }
+                                    }
+                                },
+                                "commonParameters": {
+                                    "query": [],
+                                    "body": [],
+                                    "cookie": [],
+                                    "header": []
+                                },
+                                "responses": [
+                                    {
+                                        "id": "132134225",
+                                        "code": "200",
+                                        "name": "",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902496"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Successful Response",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    },
+                                    {
+                                        "id": "136968272",
+                                        "code": "422",
+                                        "name": "",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902503"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Validation Error",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    }
+                                ],
+                                "responseExamples": [],
+                                "requestBody": {
+                                    "type": "none",
+                                    "parameters": [],
+                                    "required": false,
+                                    "mediaType": "",
+                                    "examples": [],
+                                    "oasExtensions": ""
+                                },
+                                "description": "Pesquisa categorias de veículos disponíveis para um trajeto (loja de retirada e devolução) e período específicos.\n\n:::danger Regra de Negócio Crítica\nA loja de retirada (`pickup_store_id`) e a loja de devolução (`dropoff_store_id`) **devem pertencer à mesma locadora**. Caso não sejam, a API retornará Http `400 Bad Request`.\n:::\n\n### Considerações de Parâmetros\n- **Idade do Cliente:** (`customer_age`) Deve ser maior ou igual a 18.\n- **Datas:** Use o formato ISO `YYYY-MM-DDTHH:mm:SS`.\n\nA resposta trará as categorias disponíveis, o custo da diária básico, planos de tarifa e uma flag indicando se haverá *Taxa de Retorno (One-Way Fee)*.",
+                                "tags": ["OTA — Parceiros"],
+                                "status": "released",
+                                "serverId": "",
+                                "operationId": "ota_buscar_ota_buscar_get",
+                                "sourceUrl": "",
+                                "ordering": 12,
+                                "cases": [
+                                    {
+                                        "id": 51579947,
+                                        "type": "DEBUG_CASE",
+                                        "path": null,
+                                        "name": "Success",
+                                        "responseId": "132134225",
+                                        "parameters": {
+                                            "path": [],
+                                            "query": [
+                                                {
+                                                    "id": "grMPwZhXAY",
+                                                    "relatedId": "JajQdSPmlL",
+                                                    "relatedName": "pickup_store_id",
+                                                    "name": "pickup_store_id",
+                                                    "type": "string",
+                                                    "value": "",
+                                                    "enable": true,
+                                                    "description": "",
+                                                    "isDelete": false
+                                                },
+                                                {
+                                                    "id": "rZbETVn6hR",
+                                                    "relatedId": "rNTJhYaPEB",
+                                                    "relatedName": "dropoff_store_id",
+                                                    "name": "dropoff_store_id",
+                                                    "type": "string",
+                                                    "value": "",
+                                                    "enable": true,
+                                                    "description": "",
+                                                    "isDelete": false
+                                                },
+                                                {
+                                                    "id": "MPDry7atf9",
+                                                    "relatedId": "nVvGTS3hli",
+                                                    "relatedName": "pickup_time",
+                                                    "name": "pickup_time",
+                                                    "type": "string",
+                                                    "value": "",
+                                                    "enable": true,
+                                                    "description": "",
+                                                    "isDelete": false
+                                                },
+                                                {
+                                                    "id": "r6L6gAKNCc",
+                                                    "relatedId": "xVF1OV3Fuj",
+                                                    "relatedName": "dropoff_time",
+                                                    "name": "dropoff_time",
+                                                    "type": "string",
+                                                    "value": "",
+                                                    "enable": true,
+                                                    "description": "",
+                                                    "isDelete": false
+                                                },
+                                                {
+                                                    "id": "RbIdSo83H0",
+                                                    "relatedId": "neXVqGAaPy",
+                                                    "relatedName": "customer_age",
+                                                    "name": "customer_age",
+                                                    "type": "integer",
+                                                    "value": "",
+                                                    "enable": true,
+                                                    "description": "",
+                                                    "isDelete": false
+                                                },
+                                                {
+                                                    "id": "TXncq8flWb",
+                                                    "relatedId": "BuJVo2wN56",
+                                                    "relatedName": "nationality",
+                                                    "name": "nationality",
+                                                    "type": "other",
+                                                    "value": "",
+                                                    "enable": true,
+                                                    "description": "",
+                                                    "isDelete": false
+                                                },
+                                                {
+                                                    "id": "K8ZCbJOezA",
+                                                    "relatedId": "rx0CzlN1cB",
+                                                    "relatedName": "promo_code",
+                                                    "name": "promo_code",
+                                                    "type": "other",
+                                                    "value": "",
+                                                    "enable": true,
+                                                    "description": "",
+                                                    "isDelete": false
+                                                }
+                                            ],
+                                            "cookie": [],
+                                            "header": []
+                                        },
+                                        "commonParameters": {},
+                                        "requestBody": {
+                                            "parameters": [],
+                                            "type": "none",
+                                            "generateMode": "normal"
+                                        },
+                                        "auth": {},
+                                        "securityScheme": {},
+                                        "advancedSettings": {
+                                            "disabledSystemHeaders": {}
+                                        },
+                                        "requestResult": null,
+                                        "visibility": "INHERITED",
+                                        "moduleId": 1322624,
+                                        "categoryId": 0,
+                                        "tagIds": [],
+                                        "apiTestDataList": [],
+                                        "preProcessors": [],
+                                        "postProcessors": [],
+                                        "inheritPostProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        },
+                                        "inheritPreProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        }
+                                    }
+                                ],
+                                "mocks": [],
+                                "customApiFields": "{}",
+                                "advancedSettings": {
+                                    "disabledSystemHeaders": {}
+                                },
+                                "mockScript": {},
+                                "codeSamples": [],
+                                "commonResponseStatus": {},
+                                "responseChildren": [],
+                                "maintainer": "Victor Bilbao",
+                                "visibility": "INHERITED",
+                                "moduleId": 1322624,
+                                "oasExtensions": "",
+                                "type": "http",
+                                "preProcessors": [],
+                                "postProcessors": [],
+                                "inheritPostProcessors": {},
+                                "inheritPreProcessors": {}
+                            }
+                        },
+                        {
+                            "name": "3. Obter Cotação Detalhada",
+                            "api": {
+                                "id": "38282241",
+                                "method": "post",
+                                "path": "/ota/cotacao",
+                                "parameters": {
+                                    "path": [],
+                                    "query": [],
+                                    "cookie": [],
+                                    "header": []
+                                },
+                                "auth": {
+                                    "type": "securityscheme"
+                                },
+                                "securityScheme": {
+                                    "schemeGroups": [
+                                        {
+                                            "id": "Z50Qb_DNDsf_nCDttfC07",
+                                            "schemeIds": [563955]
+                                        }
+                                    ],
+                                    "required": true,
+                                    "use": {
+                                        "id": "Z50Qb_DNDsf_nCDttfC07",
+                                        "configs": {
+                                            "563955": {
+                                                "authConfigs": {
+                                                    "x-apidog": {
+                                                        "value": "{{apiKey}}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "scopes": {
+                                        "Z50Qb_DNDsf_nCDttfC07": {
+                                            "563955": []
+                                        }
+                                    }
+                                },
+                                "commonParameters": {},
+                                "responses": [
+                                    {
+                                        "id": "165795286",
+                                        "code": "200",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902500"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Successful Response",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    },
+                                    {
+                                        "id": "122364530",
+                                        "code": "422",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902503"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Validation Error",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    }
+                                ],
+                                "responseExamples": [],
+                                "requestBody": {
+                                    "type": "application/json",
+                                    "parameters": [],
+                                    "jsonSchema": {
+                                        "$ref": "#/definitions/15902499"
+                                    },
+                                    "mediaType": "application/json",
+                                    "oasExtensions": "",
+                                    "required": true,
+                                    "additionalContentTypes": []
+                                },
+                                "description": "Simula os custos completos do aluguel de uma categoria específica entre as lojas escolhidas.\n\nEste é um endpoint poderoso que executa todo o motor de cálculo corporativo:\n1. **Cálculo de Diárias:** Considera horas extras e tarifas sazonais.\n2. **Opcionais (Add-ons):** Cadeirinhas de bebê, GPS (modelo flat-rate ou cobrança por dia).\n3. **Taxas Administrativas:** Adiciona Taxa One-Way (se devolver em outra loja), Taxa de Condutor Jovem.\n4. **Proteções e Seguros:** Retorna as franquias aplicáveis a depender do Rate Plan associado.\n\n<Accordion title=\"Ver Detalhes do Breakdown\" defaultOpen>\n  A propriedade `breakdown` detalha item a item o somatório. O parceiro OTA **deve** apresentar de forma transparente as taxas presentes nesta lista para total lisura frente ao cliente final.\n</Accordion>",
+                                "tags": ["OTA — Parceiros"],
+                                "status": "released",
+                                "serverId": "",
+                                "operationId": "ota_cotacao_ota_cotacao_post",
+                                "sourceUrl": "",
+                                "ordering": 18,
+                                "cases": [
+                                    {
+                                        "id": 51579948,
+                                        "type": "DEBUG_CASE",
+                                        "path": null,
+                                        "name": "Success",
+                                        "responseId": "165795286",
+                                        "parameters": {
+                                            "path": [],
+                                            "query": [],
+                                            "cookie": [],
+                                            "header": []
+                                        },
+                                        "commonParameters": {},
+                                        "requestBody": {
+                                            "parameters": [],
+                                            "data": "",
+                                            "type": "application/json",
+                                            "generateMode": "normal"
+                                        },
+                                        "auth": {},
+                                        "securityScheme": {},
+                                        "advancedSettings": {
+                                            "disabledSystemHeaders": {}
+                                        },
+                                        "requestResult": null,
+                                        "visibility": "INHERITED",
+                                        "moduleId": 1322624,
+                                        "categoryId": 0,
+                                        "tagIds": [],
+                                        "apiTestDataList": [],
+                                        "preProcessors": [],
+                                        "postProcessors": [],
+                                        "inheritPostProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        },
+                                        "inheritPreProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        }
+                                    }
+                                ],
+                                "mocks": [],
+                                "customApiFields": "{}",
+                                "advancedSettings": {
+                                    "disabledSystemHeaders": {}
+                                },
+                                "mockScript": {},
+                                "codeSamples": [],
+                                "commonResponseStatus": {},
+                                "responseChildren": [],
+                                "visibility": "INHERITED",
+                                "moduleId": 1322624,
+                                "oasExtensions": "",
+                                "type": "http",
+                                "preProcessors": [],
+                                "postProcessors": [],
+                                "inheritPostProcessors": {},
+                                "inheritPreProcessors": {}
+                            }
+                        },
+                        {
+                            "name": "4. Efetuar Reserva",
+                            "api": {
+                                "id": "38282242",
+                                "method": "post",
+                                "path": "/ota/reservas",
+                                "parameters": {
+                                    "path": [],
+                                    "query": [],
+                                    "cookie": [],
+                                    "header": []
+                                },
+                                "auth": {
+                                    "type": "securityscheme"
+                                },
+                                "securityScheme": {
+                                    "schemeGroups": [
+                                        {
+                                            "id": "36-3ZQnaYhxw3Z03XK18f",
+                                            "schemeIds": [563955]
+                                        }
+                                    ],
+                                    "required": true,
+                                    "use": {
+                                        "id": "36-3ZQnaYhxw3Z03XK18f",
+                                        "configs": {
+                                            "563955": {
+                                                "authConfigs": {
+                                                    "x-apidog": {
+                                                        "value": "{{apiKey}}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "scopes": {
+                                        "36-3ZQnaYhxw3Z03XK18f": {
+                                            "563955": []
+                                        }
+                                    }
+                                },
+                                "commonParameters": {},
+                                "responses": [
+                                    {
+                                        "id": "112708052",
+                                        "code": "201",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902512"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Successful Response",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    },
+                                    {
+                                        "id": "167596288",
+                                        "code": "422",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902503"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Validation Error",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    }
+                                ],
+                                "responseExamples": [],
+                                "requestBody": {
+                                    "type": "application/json",
+                                    "parameters": [],
+                                    "jsonSchema": {
+                                        "$ref": "#/definitions/15902501"
+                                    },
+                                    "mediaType": "application/json",
+                                    "oasExtensions": "",
+                                    "required": true,
+                                    "additionalContentTypes": []
+                                },
+                                "description": "Cria a reserva de forma efetiva no sistema em nome do cliente final.\n\n:::warning Atenção ao Client ID\nO cliente (`customer_id`) já deve existir na base da locadora. Num contexto normal, sincronize o cliente préviamente e obtenha seu ID.\n:::\n\nUm objeto `pricing` completo (geralmente aquele mesmo recebido no endpoint de Cotação) precisará ser passado para atestar as contrapartidas e custos concordados por ambas as partes. O retorno trará o status de sucesso `CONFIRMED` e o código do localizador (*Reservation Code*).",
+                                "tags": ["OTA — Parceiros"],
+                                "status": "released",
+                                "serverId": "",
+                                "operationId": "ota_criar_reserva_ota_reservas_post",
+                                "sourceUrl": "",
+                                "ordering": 24,
+                                "cases": [
+                                    {
+                                        "id": 51579949,
+                                        "type": "DEBUG_CASE",
+                                        "path": null,
+                                        "name": "Success",
+                                        "responseId": "112708052",
+                                        "parameters": {
+                                            "path": [],
+                                            "query": [],
+                                            "cookie": [],
+                                            "header": []
+                                        },
+                                        "commonParameters": {},
+                                        "requestBody": {
+                                            "parameters": [],
+                                            "data": "",
+                                            "type": "application/json",
+                                            "generateMode": "normal"
+                                        },
+                                        "auth": {},
+                                        "securityScheme": {},
+                                        "advancedSettings": {
+                                            "disabledSystemHeaders": {}
+                                        },
+                                        "requestResult": null,
+                                        "visibility": "INHERITED",
+                                        "moduleId": 1322624,
+                                        "categoryId": 0,
+                                        "tagIds": [],
+                                        "apiTestDataList": [],
+                                        "preProcessors": [],
+                                        "postProcessors": [],
+                                        "inheritPostProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        },
+                                        "inheritPreProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        }
+                                    }
+                                ],
+                                "mocks": [],
+                                "customApiFields": "{}",
+                                "advancedSettings": {
+                                    "disabledSystemHeaders": {}
+                                },
+                                "mockScript": {},
+                                "codeSamples": [],
+                                "commonResponseStatus": {},
+                                "responseChildren": [],
+                                "visibility": "INHERITED",
+                                "moduleId": 1322624,
+                                "oasExtensions": "",
+                                "type": "http",
+                                "preProcessors": [],
+                                "postProcessors": [],
+                                "inheritPostProcessors": {},
+                                "inheritPreProcessors": {}
+                            }
+                        },
+                        {
+                            "name": "5. Consultar Reserva",
+                            "api": {
+                                "id": "38282243",
+                                "method": "get",
+                                "path": "/ota/reservas/{reserva_id}",
+                                "parameters": {
+                                    "path": [
+                                        {
+                                            "id": "reserva_id#0",
+                                            "name": "reserva_id",
+                                            "required": true,
+                                            "enable": true,
+                                            "description": "",
+                                            "example": "",
+                                            "type": "string",
+                                            "schema": {
+                                                "type": "string",
+                                                "title": "Reserva Id"
+                                            }
+                                        }
+                                    ],
+                                    "query": [],
+                                    "cookie": [],
+                                    "header": []
+                                },
+                                "auth": {
+                                    "type": "securityscheme"
+                                },
+                                "securityScheme": {
+                                    "schemeGroups": [
+                                        {
+                                            "id": "36pJWGdwaCuDGZqV0XAwS",
+                                            "schemeIds": [563955]
+                                        }
+                                    ],
+                                    "required": true,
+                                    "use": {
+                                        "id": "36pJWGdwaCuDGZqV0XAwS",
+                                        "configs": {
+                                            "563955": {
+                                                "authConfigs": {
+                                                    "x-apidog": {
+                                                        "value": "{{apiKey}}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "scopes": {
+                                        "36pJWGdwaCuDGZqV0XAwS": {
+                                            "563955": []
+                                        }
+                                    }
+                                },
+                                "commonParameters": {},
+                                "responses": [
+                                    {
+                                        "id": "168523062",
+                                        "code": "200",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902512"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Successful Response",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    },
+                                    {
+                                        "id": "140805583",
+                                        "code": "422",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902503"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Validation Error",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    }
+                                ],
+                                "responseExamples": [],
+                                "requestBody": {
+                                    "type": "none",
+                                    "parameters": [],
+                                    "required": false,
+                                    "additionalContentTypes": [],
+                                    "oasExtensions": ""
+                                },
+                                "description": "Busca o detalhe de uma reserva ativa, acessando seu status via UUID ou Localizador específico.\n\nEste método é essencial para que o terminal de parceiros verifique o status (ex: Checar se o cliente já realizou o `PICK_UP`  ou se ele já encerrou e realizou o `DROP_OFF`).\n\nMuitas OTAs fazem web-polling/cache regular deste endpoint durante o ciclo de vida do trajeto.",
+                                "tags": ["OTA — Parceiros"],
+                                "status": "released",
+                                "serverId": "",
+                                "operationId": "ota_buscar_reserva_ota_reservas__reserva_id__get",
+                                "sourceUrl": "",
+                                "ordering": 30,
+                                "cases": [
+                                    {
+                                        "id": 51579950,
+                                        "type": "DEBUG_CASE",
+                                        "path": null,
+                                        "name": "Success",
+                                        "responseId": "168523062",
+                                        "parameters": {
+                                            "path": [
+                                                {
+                                                    "id": "reserva_id#0",
+                                                    "relatedId": "reserva_id#0",
+                                                    "relatedName": "reserva_id",
+                                                    "name": "reserva_id",
+                                                    "value": "",
+                                                    "enable": true
+                                                }
+                                            ],
+                                            "query": [],
+                                            "cookie": [],
+                                            "header": []
+                                        },
+                                        "commonParameters": {},
+                                        "requestBody": {
+                                            "parameters": [],
+                                            "type": "none",
+                                            "generateMode": "normal"
+                                        },
+                                        "auth": {},
+                                        "securityScheme": {},
+                                        "advancedSettings": {
+                                            "disabledSystemHeaders": {}
+                                        },
+                                        "requestResult": null,
+                                        "visibility": "INHERITED",
+                                        "moduleId": 1322624,
+                                        "categoryId": 0,
+                                        "tagIds": [],
+                                        "apiTestDataList": [],
+                                        "preProcessors": [],
+                                        "postProcessors": [],
+                                        "inheritPostProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        },
+                                        "inheritPreProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        }
+                                    }
+                                ],
+                                "mocks": [],
+                                "customApiFields": "{}",
+                                "advancedSettings": {
+                                    "disabledSystemHeaders": {}
+                                },
+                                "mockScript": {},
+                                "codeSamples": [],
+                                "commonResponseStatus": {},
+                                "responseChildren": [],
+                                "visibility": "INHERITED",
+                                "moduleId": 1322624,
+                                "oasExtensions": "",
+                                "type": "http",
+                                "preProcessors": [],
+                                "postProcessors": [],
+                                "inheritPostProcessors": {},
+                                "inheritPreProcessors": {}
+                            }
+                        },
+                        {
+                            "name": "6. Cancelar Reserva",
+                            "api": {
+                                "id": "38282244",
+                                "method": "delete",
+                                "path": "/ota/reservas/{reserva_id}",
+                                "parameters": {
+                                    "path": [
+                                        {
+                                            "id": "reserva_id#0",
+                                            "name": "reserva_id",
+                                            "required": true,
+                                            "enable": true,
+                                            "description": "",
+                                            "example": "",
+                                            "type": "string",
+                                            "schema": {
+                                                "type": "string",
+                                                "title": "Reserva Id"
+                                            }
+                                        }
+                                    ],
+                                    "query": [],
+                                    "cookie": [],
+                                    "header": []
+                                },
+                                "auth": {
+                                    "type": "securityscheme"
+                                },
+                                "securityScheme": {
+                                    "schemeGroups": [
+                                        {
+                                            "id": "nXWFHN4dRd5EudyZVcFJl",
+                                            "schemeIds": [563955]
+                                        }
+                                    ],
+                                    "required": true,
+                                    "use": {
+                                        "id": "nXWFHN4dRd5EudyZVcFJl",
+                                        "configs": {
+                                            "563955": {
+                                                "authConfigs": {
+                                                    "x-apidog": {
+                                                        "value": "{{apiKey}}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "scopes": {
+                                        "nXWFHN4dRd5EudyZVcFJl": {
+                                            "563955": []
+                                        }
+                                    }
+                                },
+                                "commonParameters": {},
+                                "responses": [
+                                    {
+                                        "id": "125062471",
+                                        "code": "204",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "type": "object",
+                                            "properties": {}
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Successful Response",
+                                        "contentType": "noContent",
+                                        "oasExtensions": ""
+                                    },
+                                    {
+                                        "id": "110974016",
+                                        "code": "422",
+                                        "headers": [],
+                                        "jsonSchema": {
+                                            "$ref": "#/definitions/15902503"
+                                        },
+                                        "itemSchema": {},
+                                        "description": "Validation Error",
+                                        "contentType": "json",
+                                        "mediaType": "application/json",
+                                        "oasExtensions": ""
+                                    }
+                                ],
+                                "responseExamples": [],
+                                "requestBody": {
+                                    "type": "none",
+                                    "parameters": [],
+                                    "required": false,
+                                    "additionalContentTypes": [],
+                                    "oasExtensions": ""
+                                },
+                                "description": "Cancela e extingue reservas previamente acordadas. Este método só tem efetividade caso a reserva não tenha sido iniciada (Status `CONFIRMED` apenas).\n\n:::danger Política de Estorno\nCancelamentos feitos utilizando esta API irão operar sob a régua jurídica estipulada em seu contrato como um parceiro OTA e a respectiva franquia de locadoras. Se houver multas por late-cancel, podem ser enviadas num faturamento mensal independente.\n:::\n\nO servidor retornará um sucesso com corpo vazio (Http `204 No Content`).",
+                                "tags": ["OTA — Parceiros"],
+                                "status": "released",
+                                "serverId": "",
+                                "operationId": "ota_cancelar_reserva_ota_reservas__reserva_id__delete",
+                                "sourceUrl": "",
+                                "ordering": 36,
+                                "cases": [
+                                    {
+                                        "id": 51579951,
+                                        "type": "DEBUG_CASE",
+                                        "path": null,
+                                        "name": "Success",
+                                        "responseId": "125062471",
+                                        "parameters": {
+                                            "path": [
+                                                {
+                                                    "id": "reserva_id#0",
+                                                    "relatedId": "reserva_id#0",
+                                                    "relatedName": "reserva_id",
+                                                    "name": "reserva_id",
+                                                    "value": "",
+                                                    "enable": true
+                                                }
+                                            ],
+                                            "query": [],
+                                            "cookie": [],
+                                            "header": []
+                                        },
+                                        "commonParameters": {},
+                                        "requestBody": {
+                                            "parameters": [],
+                                            "type": "none",
+                                            "generateMode": "normal"
+                                        },
+                                        "auth": {},
+                                        "securityScheme": {},
+                                        "advancedSettings": {
+                                            "disabledSystemHeaders": {}
+                                        },
+                                        "requestResult": null,
+                                        "visibility": "INHERITED",
+                                        "moduleId": 1322624,
+                                        "categoryId": 0,
+                                        "tagIds": [],
+                                        "apiTestDataList": [],
+                                        "preProcessors": [],
+                                        "postProcessors": [],
+                                        "inheritPostProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        },
+                                        "inheritPreProcessors": {
+                                            "enable": {},
+                                            "defaultEnable": {}
+                                        }
+                                    }
+                                ],
+                                "mocks": [],
+                                "customApiFields": "{}",
+                                "advancedSettings": {
+                                    "disabledSystemHeaders": {}
+                                },
+                                "mockScript": {},
+                                "codeSamples": [],
+                                "commonResponseStatus": {},
+                                "responseChildren": [],
+                                "visibility": "INHERITED",
+                                "moduleId": 1322624,
+                                "oasExtensions": "",
+                                "type": "http",
+                                "preProcessors": [],
+                                "postProcessors": [],
+                                "inheritPostProcessors": {},
+                                "inheritPreProcessors": {}
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "socketCollection": [],
+    "docCollection": [
+        {
+            "name": "Root",
+            "moduleId": 1322624,
+            "children": [
+                {
+                    "name": "OTA — Parceiros",
+                    "moduleId": 1322624,
+                    "children": [],
+                    "items": [
+                        {
+                            "id": 2218601,
+                            "name": "Introdução à Integração",
+                            "sidebarTitle": "",
+                            "content": "# Bem-vindo à API OTA (Online Travel Agency)\n\nEsta documentação fornece todas as informações necessárias para que agências de viagens e parceiros integrem-se diretamente ao **CarRental Marketplace**. \nNosso sistema permite a consulta de disponibilidade em tempo real, cotação completa (incluindo addons e taxas) e gerenciamento do ciclo de vida das reservas.\n\n:::highlight yellow 💡 Dica de Integração\nTodos os endpoints exigem autenticação via cabeçalho `X-API-Key`. Entre em contato com o suporte corporativo para obter sua chave de acesso. A chave de acesso identifica de forma exclusiva sua agência em nosso sistema e também determina a qual locadora a chave está vinculada.\n:::\n\n<Steps>\n  <Step title=\"Passo 1: Consultar Cidades e Lojas\">\n    Utilize o endpoint de Listar Cidades e Lojas para mapear todas as localidades onde oferecemos retirada e devolução de veículos.\n  </Step>\n  <Step title=\"Passo 2: Buscar Categorias Disponíveis\">\n    Utilize os IDs de loja obtidos no passo anterior e as datas desejadas para usar o endpoint de Consultar Disponibilidade. Ele retorna os grupos de veículos e preços básicos.\n  </Step>\n  <Step title=\"Passo 3: Obter Cotação Detalhada\">\n    Após escolher a categoria do veículo, chame as Cotações Detalhadas para ver opcionais, taxas extras (como \"Fee One-Way\", se for devolver em outra loja) e o preço completo.\n  </Step>\n  <Step title=\"Passo 4: Criar Reserva\">\n    Confirme e crie o aluguel chamando Efetuar Reserva. Guarde o `id` da reserva retornado.\n  </Step>\n</Steps>\n\n## Fluxograma de Operações\n\n```mermaid\nsequenceDiagram\n    participant OTA as Parceiro (OTA)\n    participant API as CarRental API\n    \n    OTA->>API: GET /cidades\n    API-->>OTA: Retorna Lojas e Cidades\n    \n    OTA->>API: GET /buscar (Datas e Lojas)\n    API-->>OTA: Retorna Categorias de Carros Disponíveis\n    \n    OTA->>API: POST /cotacao (Categoria, Addons)\n    API-->>OTA: Preço Final + Breakdown\n    \n    OTA->>API: POST /reservas (Dados do Cliente, Preço Final)\n    API-->>OTA: Confirmação e ID da Reserva\n```\n\n---\n\n<Card title=\"Precisa de Ajuda?\" href=\"mailto:suporte-ota@carrental.com\">\n  Nossa equipe de engenharia corporativa está sempre à disposição para resolver dúvidas de integração ou fornecer um ambiente de sandbox para testes.\n</Card>\n",
+                            "folderId": 9162722,
+                            "type": "folder",
+                            "tags": [],
+                            "visibility": "INHERITED",
+                            "moduleId": 1322624
+                        }
+                    ]
+                }
+            ],
+            "items": []
+        }
+    ],
+    "webSocketCollection": [],
+    "socketIOCollection": [],
+    "mcpClientCollection": [],
+    "responseCollection": [
+        {
+            "_databaseId": 1601503,
+            "updatedAt": "2026-06-21T19:47:02.000Z",
+            "id": 1601503,
+            "name": "Root",
+            "type": "root",
+            "children": [],
+            "moduleId": 1322624,
+            "parentId": 0,
+            "ordering": [],
+            "items": []
+        }
+    ],
+    "schemaCollection": [
+        {
+            "id": 3522442,
+            "name": "Root",
+            "visibility": "SHARED",
+            "moduleId": 1322624,
+            "items": [
+                {
+                    "name": "AddonDisponivel",
+                    "displayName": "AddonDisponivel",
+                    "id": "#/definitions/15902493",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "title": "Id"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "title": "Name"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "title": "Description"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "title": "Type"
+                                },
+                                "pricing_amount": {
+                                    "type": "number",
+                                    "title": "Pricing Amount"
+                                },
+                                "pricing_type": {
+                                    "type": "string",
+                                    "enum": ["PER_DAY", "PER_TRIP", "PERCENTAGE"],
+                                    "title": "Pricing Type"
+                                },
+                                "max_amount_per_trip": {
+                                    "anyOf": [
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Max Amount Per Trip"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "name",
+                                "description",
+                                "type",
+                                "pricing_amount",
+                                "pricing_type",
+                                "max_amount_per_trip"
+                            ],
+                            "title": "AddonDisponivel",
+                            "x-apidog-orders": [
+                                "id",
+                                "name",
+                                "description",
+                                "type",
+                                "pricing_amount",
+                                "pricing_type",
+                                "max_amount_per_trip"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "AddonSelecionado",
+                    "displayName": "AddonSelecionado",
+                    "id": "#/definitions/15902494",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "addon_id": {
+                                    "type": "string",
+                                    "title": "Addon Id"
+                                },
+                                "quantity": {
+                                    "type": "integer",
+                                    "title": "Quantity",
+                                    "default": 1
+                                }
+                            },
+                            "type": "object",
+                            "required": ["addon_id"],
+                            "title": "AddonSelecionado",
+                            "x-apidog-orders": ["addon_id", "quantity"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "AddonSelecionadoRequest",
+                    "displayName": "AddonSelecionadoRequest",
+                    "id": "#/definitions/15902495",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "addon_id": {
+                                    "type": "string",
+                                    "title": "Addon Id"
+                                },
+                                "quantity": {
+                                    "type": "integer",
+                                    "title": "Quantity",
+                                    "default": 1
+                                }
+                            },
+                            "type": "object",
+                            "required": ["addon_id"],
+                            "title": "AddonSelecionadoRequest",
+                            "x-apidog-orders": ["addon_id", "quantity"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "BuscarTodasCategoriasResponse",
+                    "displayName": "BuscarTodasCategoriasResponse",
+                    "id": "#/definitions/15902496",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "total_days": {
+                                    "type": "integer",
+                                    "title": "Total Days"
+                                },
+                                "is_one_way": {
+                                    "type": "boolean",
+                                    "title": "Is One Way"
+                                },
+                                "categorias": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902513"
+                                    },
+                                    "type": "array",
+                                    "title": "Categorias"
+                                }
+                            },
+                            "type": "object",
+                            "required": ["total_days", "is_one_way", "categorias"],
+                            "title": "BuscarTodasCategoriasResponse",
+                            "x-apidog-orders": ["total_days", "is_one_way", "categorias"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "CidadeResponse",
+                    "displayName": "CidadeResponse",
+                    "id": "#/definitions/15902497",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "city": {
+                                    "type": "string",
+                                    "title": "City"
+                                },
+                                "state": {
+                                    "type": "string",
+                                    "title": "State"
+                                },
+                                "stores": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902498"
+                                    },
+                                    "type": "array",
+                                    "title": "Stores"
+                                }
+                            },
+                            "type": "object",
+                            "required": ["city", "state", "stores"],
+                            "title": "CidadeResponse",
+                            "x-apidog-orders": ["city", "state", "stores"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "CidadeStore",
+                    "displayName": "CidadeStore",
+                    "id": "#/definitions/15902498",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "title": "Id"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "title": "Name"
+                                },
+                                "code": {
+                                    "type": "string",
+                                    "title": "Code"
+                                },
+                                "location_type": {
+                                    "type": "string",
+                                    "title": "Location Type"
+                                },
+                                "company_id": {
+                                    "type": "string",
+                                    "title": "Company Id"
+                                },
+                                "company_name": {
+                                    "type": "string",
+                                    "title": "Company Name",
+                                    "default": ""
+                                }
+                            },
+                            "type": "object",
+                            "required": ["id", "name", "code", "location_type", "company_id"],
+                            "title": "CidadeStore",
+                            "x-apidog-orders": [
+                                "id",
+                                "name",
+                                "code",
+                                "location_type",
+                                "company_id",
+                                "company_name"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "CotacaoRequest",
+                    "displayName": "CotacaoRequest",
+                    "id": "#/definitions/15902499",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "pickup_store_id": {
+                                    "type": "string",
+                                    "title": "Pickup Store Id"
+                                },
+                                "dropoff_store_id": {
+                                    "type": "string",
+                                    "title": "Dropoff Store Id"
+                                },
+                                "category_id": {
+                                    "type": "string",
+                                    "title": "Category Id"
+                                },
+                                "pickup_time": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "title": "Pickup Time"
+                                },
+                                "dropoff_time": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "title": "Dropoff Time"
+                                },
+                                "customer_age": {
+                                    "type": "integer",
+                                    "title": "Customer Age"
+                                },
+                                "nationality": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Nationality"
+                                },
+                                "promo_code": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Promo Code"
+                                },
+                                "rate_plan_id": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Rate Plan Id"
+                                },
+                                "selected_addons": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902494"
+                                    },
+                                    "type": "array",
+                                    "title": "Selected Addons",
+                                    "default": []
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "pickup_store_id",
+                                "dropoff_store_id",
+                                "category_id",
+                                "pickup_time",
+                                "dropoff_time",
+                                "customer_age"
+                            ],
+                            "title": "CotacaoRequest",
+                            "x-apidog-orders": [
+                                "pickup_store_id",
+                                "dropoff_store_id",
+                                "category_id",
+                                "pickup_time",
+                                "dropoff_time",
+                                "customer_age",
+                                "nationality",
+                                "promo_code",
+                                "rate_plan_id",
+                                "selected_addons"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "CotacaoResponse",
+                    "displayName": "CotacaoResponse",
+                    "id": "#/definitions/15902500",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "rate_plan_id": {
+                                    "type": "string",
+                                    "title": "Rate Plan Id"
+                                },
+                                "rate_plan_name": {
+                                    "type": "string",
+                                    "title": "Rate Plan Name"
+                                },
+                                "daily_rate": {
+                                    "type": "number",
+                                    "title": "Daily Rate"
+                                },
+                                "total_days": {
+                                    "type": "integer",
+                                    "title": "Total Days"
+                                },
+                                "subtotal_base": {
+                                    "type": "number",
+                                    "title": "Subtotal Base"
+                                },
+                                "addons_total": {
+                                    "type": "number",
+                                    "title": "Addons Total"
+                                },
+                                "fees_total": {
+                                    "type": "number",
+                                    "title": "Fees Total"
+                                },
+                                "one_way_fee": {
+                                    "type": "number",
+                                    "title": "One Way Fee"
+                                },
+                                "final_total": {
+                                    "type": "number",
+                                    "title": "Final Total"
+                                },
+                                "breakdown": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902504"
+                                    },
+                                    "type": "array",
+                                    "title": "Breakdown"
+                                },
+                                "included_protections": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902510"
+                                    },
+                                    "type": "array",
+                                    "title": "Included Protections"
+                                },
+                                "available_addons": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902493"
+                                    },
+                                    "type": "array",
+                                    "title": "Available Addons"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "rate_plan_id",
+                                "rate_plan_name",
+                                "daily_rate",
+                                "total_days",
+                                "subtotal_base",
+                                "addons_total",
+                                "fees_total",
+                                "one_way_fee",
+                                "final_total",
+                                "breakdown",
+                                "included_protections",
+                                "available_addons"
+                            ],
+                            "title": "CotacaoResponse",
+                            "x-apidog-orders": [
+                                "rate_plan_id",
+                                "rate_plan_name",
+                                "daily_rate",
+                                "total_days",
+                                "subtotal_base",
+                                "addons_total",
+                                "fees_total",
+                                "one_way_fee",
+                                "final_total",
+                                "breakdown",
+                                "included_protections",
+                                "available_addons"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "CriarReservaRequest",
+                    "displayName": "CriarReservaRequest",
+                    "id": "#/definitions/15902501",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "customer_id": {
+                                    "type": "string",
+                                    "title": "Customer Id"
+                                },
+                                "category_id": {
+                                    "type": "string",
+                                    "title": "Category Id"
+                                },
+                                "pickup_store_id": {
+                                    "type": "string",
+                                    "title": "Pickup Store Id"
+                                },
+                                "dropoff_store_id": {
+                                    "type": "string",
+                                    "title": "Dropoff Store Id"
+                                },
+                                "pickup_time": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "title": "Pickup Time"
+                                },
+                                "dropoff_time": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "title": "Dropoff Time"
+                                },
+                                "flight_number": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Flight Number"
+                                },
+                                "notes": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Notes"
+                                },
+                                "pricing": {
+                                    "$ref": "#/definitions/15902508"
+                                },
+                                "selected_addons": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902495"
+                                    },
+                                    "type": "array",
+                                    "title": "Selected Addons",
+                                    "default": []
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "customer_id",
+                                "category_id",
+                                "pickup_store_id",
+                                "dropoff_store_id",
+                                "pickup_time",
+                                "dropoff_time",
+                                "pricing"
+                            ],
+                            "title": "CriarReservaRequest",
+                            "x-apidog-orders": [
+                                "customer_id",
+                                "category_id",
+                                "pickup_store_id",
+                                "dropoff_store_id",
+                                "pickup_time",
+                                "dropoff_time",
+                                "flight_number",
+                                "notes",
+                                "pricing",
+                                "selected_addons"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "FeeCalculado",
+                    "displayName": "FeeCalculado",
+                    "id": "#/definitions/15902502",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "title": "Id"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "title": "Name"
+                                },
+                                "amount": {
+                                    "type": "number",
+                                    "title": "Amount"
+                                },
+                                "calculation_type": {
+                                    "type": "string",
+                                    "enum": ["PERCENTAGE", "FLAT_FEE"],
+                                    "title": "Calculation Type"
+                                },
+                                "applies_after_time": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Applies After Time"
+                                },
+                                "applies_before_time": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Applies Before Time"
+                                },
+                                "is_tax": {
+                                    "type": "boolean",
+                                    "title": "Is Tax",
+                                    "default": false
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "name",
+                                "amount",
+                                "calculation_type",
+                                "applies_after_time",
+                                "applies_before_time"
+                            ],
+                            "title": "FeeCalculado",
+                            "x-apidog-orders": [
+                                "id",
+                                "name",
+                                "amount",
+                                "calculation_type",
+                                "applies_after_time",
+                                "applies_before_time",
+                                "is_tax"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "HTTPValidationError",
+                    "displayName": "HTTPValidationError",
+                    "id": "#/definitions/15902503",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "detail": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902515"
+                                    },
+                                    "type": "array",
+                                    "title": "Detail"
+                                }
+                            },
+                            "type": "object",
+                            "title": "HTTPValidationError",
+                            "x-apidog-orders": ["detail"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "ItemCotacao",
+                    "displayName": "ItemCotacao",
+                    "id": "#/definitions/15902504",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "title": "Type"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "title": "Description"
+                                },
+                                "amount": {
+                                    "type": "number",
+                                    "title": "Amount"
+                                }
+                            },
+                            "type": "object",
+                            "required": ["type", "description", "amount"],
+                            "title": "ItemCotacao",
+                            "x-apidog-orders": ["type", "description", "amount"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "ItemPricingRequest",
+                    "displayName": "ItemPricingRequest",
+                    "id": "#/definitions/15902505",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "BASE_RATE",
+                                        "ADDON",
+                                        "INSURANCE",
+                                        "LOGISTICS_FEE",
+                                        "DRIVER_FEE",
+                                        "TAX",
+                                        "DISCOUNT",
+                                        "FEE"
+                                    ],
+                                    "title": "Type"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "title": "Description"
+                                },
+                                "amount": {
+                                    "type": "number",
+                                    "title": "Amount"
+                                }
+                            },
+                            "type": "object",
+                            "required": ["type", "description", "amount"],
+                            "title": "ItemPricingRequest",
+                            "x-apidog-orders": ["type", "description", "amount"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "ItemPricingResponse",
+                    "displayName": "ItemPricingResponse",
+                    "id": "#/definitions/15902506",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "title": "Type"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "title": "Description"
+                                },
+                                "amount": {
+                                    "type": "number",
+                                    "title": "Amount"
+                                }
+                            },
+                            "type": "object",
+                            "required": ["type", "description", "amount"],
+                            "title": "ItemPricingResponse",
+                            "x-apidog-orders": ["type", "description", "amount"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "LojaAlternativa",
+                    "displayName": "LojaAlternativa",
+                    "id": "#/definitions/15902507",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "store_id": {
+                                    "type": "string",
+                                    "title": "Store Id"
+                                },
+                                "store_name": {
+                                    "type": "string",
+                                    "title": "Store Name"
+                                },
+                                "transit_time_hours": {
+                                    "type": "integer",
+                                    "title": "Transit Time Hours"
+                                },
+                                "transfer_fee": {
+                                    "type": "number",
+                                    "title": "Transfer Fee"
+                                },
+                                "available_units": {
+                                    "type": "integer",
+                                    "title": "Available Units"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "store_id",
+                                "store_name",
+                                "transit_time_hours",
+                                "transfer_fee",
+                                "available_units"
+                            ],
+                            "title": "LojaAlternativa",
+                            "x-apidog-orders": [
+                                "store_id",
+                                "store_name",
+                                "transit_time_hours",
+                                "transfer_fee",
+                                "available_units"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "PricingRequest",
+                    "displayName": "PricingRequest",
+                    "id": "#/definitions/15902508",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "daily_rate": {
+                                    "type": "number",
+                                    "title": "Daily Rate"
+                                },
+                                "total_days": {
+                                    "type": "integer",
+                                    "title": "Total Days"
+                                },
+                                "fees": {
+                                    "type": "number",
+                                    "title": "Fees",
+                                    "default": 0
+                                },
+                                "breakdown": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902505"
+                                    },
+                                    "type": "array",
+                                    "title": "Breakdown",
+                                    "default": []
+                                }
+                            },
+                            "type": "object",
+                            "required": ["daily_rate", "total_days"],
+                            "title": "PricingRequest",
+                            "x-apidog-orders": ["daily_rate", "total_days", "fees", "breakdown"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "PricingResponse",
+                    "displayName": "PricingResponse",
+                    "id": "#/definitions/15902509",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "daily_rate": {
+                                    "type": "number",
+                                    "title": "Daily Rate"
+                                },
+                                "total_days": {
+                                    "type": "integer",
+                                    "title": "Total Days"
+                                },
+                                "fees": {
+                                    "type": "number",
+                                    "title": "Fees"
+                                },
+                                "total_amount": {
+                                    "type": "number",
+                                    "title": "Total Amount"
+                                },
+                                "breakdown": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902506"
+                                    },
+                                    "type": "array",
+                                    "title": "Breakdown"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "daily_rate",
+                                "total_days",
+                                "fees",
+                                "total_amount",
+                                "breakdown"
+                            ],
+                            "title": "PricingResponse",
+                            "x-apidog-orders": [
+                                "daily_rate",
+                                "total_days",
+                                "fees",
+                                "total_amount",
+                                "breakdown"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "ProtecaoIncluida",
+                    "displayName": "ProtecaoIncluida",
+                    "id": "#/definitions/15902510",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "title": "Id"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "title": "Name"
+                                },
+                                "code": {
+                                    "type": "string",
+                                    "title": "Code"
+                                },
+                                "daily_rate": {
+                                    "type": "number",
+                                    "title": "Daily Rate"
+                                },
+                                "deductible_amount": {
+                                    "type": "number",
+                                    "title": "Deductible Amount"
+                                }
+                            },
+                            "type": "object",
+                            "required": ["id", "name", "code", "daily_rate", "deductible_amount"],
+                            "title": "ProtecaoIncluida",
+                            "x-apidog-orders": [
+                                "id",
+                                "name",
+                                "code",
+                                "daily_rate",
+                                "deductible_amount"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "RatePlanDisponivel",
+                    "displayName": "RatePlanDisponivel",
+                    "id": "#/definitions/15902511",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "title": "Id"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "title": "Name"
+                                },
+                                "daily_rate": {
+                                    "type": "number",
+                                    "title": "Daily Rate"
+                                },
+                                "total_days": {
+                                    "type": "integer",
+                                    "title": "Total Days"
+                                },
+                                "subtotal": {
+                                    "type": "number",
+                                    "title": "Subtotal"
+                                },
+                                "mileage_policy": {
+                                    "type": "string",
+                                    "title": "Mileage Policy"
+                                },
+                                "included_km_per_day": {
+                                    "type": "integer",
+                                    "title": "Included Km Per Day"
+                                },
+                                "extra_km_price": {
+                                    "type": "number",
+                                    "title": "Extra Km Price"
+                                },
+                                "currency": {
+                                    "type": "string",
+                                    "title": "Currency"
+                                },
+                                "included_protections": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array",
+                                    "title": "Included Protections"
+                                },
+                                "allow_one_way": {
+                                    "type": "boolean",
+                                    "title": "Allow One Way"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "name",
+                                "daily_rate",
+                                "total_days",
+                                "subtotal",
+                                "mileage_policy",
+                                "included_km_per_day",
+                                "extra_km_price",
+                                "currency",
+                                "included_protections",
+                                "allow_one_way"
+                            ],
+                            "title": "RatePlanDisponivel",
+                            "x-apidog-orders": [
+                                "id",
+                                "name",
+                                "daily_rate",
+                                "total_days",
+                                "subtotal",
+                                "mileage_policy",
+                                "included_km_per_day",
+                                "extra_km_price",
+                                "currency",
+                                "included_protections",
+                                "allow_one_way"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "ReservaResponse",
+                    "displayName": "ReservaResponse",
+                    "id": "#/definitions/15902512",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "title": "Id"
+                                },
+                                "customer": {
+                                    "type": "string",
+                                    "title": "Customer"
+                                },
+                                "customer_name": {
+                                    "type": "string",
+                                    "title": "Customer Name"
+                                },
+                                "category": {
+                                    "type": "string",
+                                    "title": "Category"
+                                },
+                                "category_name": {
+                                    "type": "string",
+                                    "title": "Category Name"
+                                },
+                                "category_code": {
+                                    "type": "string",
+                                    "title": "Category Code"
+                                },
+                                "pickup_store": {
+                                    "type": "string",
+                                    "title": "Pickup Store"
+                                },
+                                "pickup_store_name": {
+                                    "type": "string",
+                                    "title": "Pickup Store Name",
+                                    "default": ""
+                                },
+                                "dropoff_store": {
+                                    "type": "string",
+                                    "title": "Dropoff Store"
+                                },
+                                "dropoff_store_name": {
+                                    "type": "string",
+                                    "title": "Dropoff Store Name",
+                                    "default": ""
+                                },
+                                "pickup_time": {
+                                    "type": "string",
+                                    "title": "Pickup Time"
+                                },
+                                "dropoff_time": {
+                                    "type": "string",
+                                    "title": "Dropoff Time"
+                                },
+                                "flight_number": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Flight Number"
+                                },
+                                "notes": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Notes"
+                                },
+                                "pricing": {
+                                    "$ref": "#/definitions/15902509"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "title": "Status"
+                                },
+                                "created_at": {
+                                    "type": "string",
+                                    "title": "Created At"
+                                },
+                                "updated_at": {
+                                    "type": "string",
+                                    "title": "Updated At"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "customer",
+                                "customer_name",
+                                "category",
+                                "category_name",
+                                "category_code",
+                                "pickup_store",
+                                "dropoff_store",
+                                "pickup_time",
+                                "dropoff_time",
+                                "flight_number",
+                                "notes",
+                                "pricing",
+                                "status",
+                                "created_at",
+                                "updated_at"
+                            ],
+                            "title": "ReservaResponse",
+                            "x-apidog-orders": [
+                                "id",
+                                "customer",
+                                "customer_name",
+                                "category",
+                                "category_name",
+                                "category_code",
+                                "pickup_store",
+                                "pickup_store_name",
+                                "dropoff_store",
+                                "dropoff_store_name",
+                                "pickup_time",
+                                "dropoff_time",
+                                "flight_number",
+                                "notes",
+                                "pricing",
+                                "status",
+                                "created_at",
+                                "updated_at"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "ResultadoCategoriaDisponivel",
+                    "displayName": "ResultadoCategoriaDisponivel",
+                    "id": "#/definitions/15902513",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "category_id": {
+                                    "type": "string",
+                                    "title": "Category Id"
+                                },
+                                "category_name": {
+                                    "type": "string",
+                                    "title": "Category Name"
+                                },
+                                "category_code": {
+                                    "type": "string",
+                                    "title": "Category Code"
+                                },
+                                "image_url": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ],
+                                    "title": "Image Url"
+                                },
+                                "disponibilidade": {
+                                    "type": "integer",
+                                    "title": "Disponibilidade"
+                                },
+                                "rate_plans": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902511"
+                                    },
+                                    "type": "array",
+                                    "title": "Rate Plans"
+                                },
+                                "store_fees": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902502"
+                                    },
+                                    "type": "array",
+                                    "title": "Store Fees"
+                                },
+                                "one_way_fee": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/definitions/15902514"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "lojas_alternativas": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902507"
+                                    },
+                                    "type": "array",
+                                    "title": "Lojas Alternativas",
+                                    "default": []
+                                },
+                                "available_addons": {
+                                    "items": {
+                                        "$ref": "#/definitions/15902493"
+                                    },
+                                    "type": "array",
+                                    "title": "Available Addons",
+                                    "default": []
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "category_id",
+                                "category_name",
+                                "category_code",
+                                "disponibilidade",
+                                "rate_plans",
+                                "store_fees",
+                                "one_way_fee"
+                            ],
+                            "title": "ResultadoCategoriaDisponivel",
+                            "x-apidog-orders": [
+                                "category_id",
+                                "category_name",
+                                "category_code",
+                                "image_url",
+                                "disponibilidade",
+                                "rate_plans",
+                                "store_fees",
+                                "one_way_fee",
+                                "lojas_alternativas",
+                                "available_addons"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "TaxaOneWay",
+                    "displayName": "TaxaOneWay",
+                    "id": "#/definitions/15902514",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "pickup_store": {
+                                    "type": "string",
+                                    "title": "Pickup Store"
+                                },
+                                "dropoff_store": {
+                                    "type": "string",
+                                    "title": "Dropoff Store"
+                                },
+                                "fee_type": {
+                                    "type": "string",
+                                    "enum": ["FREE", "FIXED", "PER_KM"],
+                                    "title": "Fee Type"
+                                },
+                                "amount": {
+                                    "type": "number",
+                                    "title": "Amount"
+                                }
+                            },
+                            "type": "object",
+                            "required": ["pickup_store", "dropoff_store", "fee_type", "amount"],
+                            "title": "TaxaOneWay",
+                            "x-apidog-orders": [
+                                "pickup_store",
+                                "dropoff_store",
+                                "fee_type",
+                                "amount"
+                            ]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                },
+                {
+                    "name": "ValidationError",
+                    "displayName": "ValidationError",
+                    "id": "#/definitions/15902515",
+                    "description": "",
+                    "schema": {
+                        "jsonSchema": {
+                            "properties": {
+                                "loc": {
+                                    "items": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "integer"
+                                            }
+                                        ]
+                                    },
+                                    "type": "array",
+                                    "title": "Location"
+                                },
+                                "msg": {
+                                    "type": "string",
+                                    "title": "Message"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "title": "Error Type"
+                                },
+                                "input": {
+                                    "title": "Input"
+                                },
+                                "ctx": {
+                                    "type": "object",
+                                    "title": "Context",
+                                    "x-apidog-orders": []
+                                }
+                            },
+                            "type": "object",
+                            "required": ["loc", "msg", "type"],
+                            "title": "ValidationError",
+                            "x-apidog-orders": ["loc", "msg", "type", "input", "ctx"]
+                        }
+                    },
+                    "visibility": "INHERITED",
+                    "moduleId": 1322624
+                }
+            ]
+        }
+    ],
+    "securitySchemeCollection": [
+        {
+            "id": 1548223,
+            "moduleId": 1322624,
+            "name": "Root",
+            "items": [
+                {
+                    "id": 563955,
+                    "name": "APIKeyHeader",
+                    "moduleId": 1322624,
+                    "authType": "apikey",
+                    "oasAuthType": "apiKey",
+                    "authConfigs": {
+                        "type": "apiKey",
+                        "in": "header",
+                        "name": "X-API-Key"
+                    },
+                    "guidanceConfigs": {}
+                }
+            ]
+        }
+    ],
+    "oasComponentCollection": [],
+    "requestCollection": [
+        {
+            "name": "Root",
+            "children": [],
+            "ordering": ["requestFolder.10759570"],
+            "items": []
+        }
+    ],
+    "apiTestCaseCollection": [
+        {
+            "id": 0,
+            "name": "Root",
+            "children": [],
+            "items": []
+        }
+    ],
+    "testCaseReferences": [],
+    "environments": [],
+    "commonScripts": [],
+    "databaseConnections": [],
+    "globalVariables": [],
+    "commonParameters": null,
+    "customFunctions": [],
+    "projectTestCaseCategories": [
+        {
+            "id": 1530453,
+            "name": "Positive",
+            "description": "Valid inputs and correct expected results, representing typical usage."
+        },
+        {
+            "id": 1530454,
+            "name": "Negative",
+            "description": "Negative, invalid inputs such as missing fields, wrong types, unsupported methods, etc."
+        },
+        {
+            "id": 1530455,
+            "name": "Boundary",
+            "description": "Extreme or edge conditions, such as maximum string length, empty values, zero, null, etc."
+        },
+        {
+            "id": 1530456,
+            "name": "Security",
+            "description": "Test cases that may expose API security risks."
+        },
+        {
+            "id": 1530457,
+            "name": "Other",
+            "description": "Test cases not classified under existing categories."
+        }
+    ],
+    "projectTestCaseTags": [
+        {
+            "id": 7137553,
+            "name": "Required Fields Only",
+            "description": "Send only the required fields with valid values, omitting all optional fields, to test minimal valid requests."
+        },
+        {
+            "id": 7137554,
+            "name": "Valid Semantic",
+            "description": "Use values that are syntactically correct and also make sense in the business logic or domain context."
+        },
+        {
+            "id": 7137555,
+            "name": "Enum Combination Coverage",
+            "description": "For all enum-type parameters, apply orthogonal design to systematically construct test case combinations of parameters and their enum values, dedicated to testing enum coverage."
+        },
+        {
+            "id": 7137556,
+            "name": "Other Positive Case",
+            "description": "Provide realistic and valid inputs that match the API specification, producing the correct and expected result."
+        },
+        {
+            "id": 7137557,
+            "name": "Missing Required Fields",
+            "description": "Omit one or more required fields in the request body or parameters."
+        },
+        {
+            "id": 7137558,
+            "name": "Invalid Values",
+            "description": "Provide values that are within the correct type and format, but logically invalid for the field."
+        },
+        {
+            "id": 7137559,
+            "name": "Type Errors",
+            "description": "Use values with incorrect data types, such as sending a string instead of an integer."
+        },
+        {
+            "id": 7137560,
+            "name": "Format Errors",
+            "description": "Provide values in an incorrect format, e.g., wrong date pattern, malformed email address."
+        },
+        {
+            "id": 7137561,
+            "name": "Semantic Errors",
+            "description": "Use syntactically correct and properly formatted values that are logically impossible or violate domain rules."
+        },
+        {
+            "id": 7137562,
+            "name": "Other Negative Case",
+            "description": "Provide invalid or unexpected inputs that should trigger error handling or rejection by the API."
+        },
+        {
+            "id": 7137563,
+            "name": "Null",
+            "description": "Must be the JSON literal `null` (not empty, not \"null\")."
+        },
+        {
+            "id": 7137564,
+            "name": "Zero",
+            "description": "Must be the numeric literal 0."
+        },
+        {
+            "id": 7137565,
+            "name": "Empty Values",
+            "description": "Must be \"\"."
+        },
+        {
+            "id": 7137566,
+            "name": "Max Values",
+            "description": "Provide the exact minimum and maximum allowed values for numeric or date fields."
+        },
+        {
+            "id": 7137567,
+            "name": "Min Values",
+            "description": "Provide the exact minimum and maximum allowed values for numeric or date fields."
+        },
+        {
+            "id": 7137568,
+            "name": "Overflow",
+            "description": "Provide values just beyond the allowed minimum or maximum boundaries."
+        },
+        {
+            "id": 7137569,
+            "name": "Underflow",
+            "description": "Provide values just beyond the allowed minimum or maximum boundaries."
+        },
+        {
+            "id": 7137570,
+            "name": "Overly Long Strings",
+            "description": "Provide strings longer than the maximum allowed length, or shorter than the minimum required length."
+        },
+        {
+            "id": 7137571,
+            "name": "Overly Short Strings",
+            "description": "Provide strings longer than the maximum allowed length, or shorter than the minimum required length."
+        },
+        {
+            "id": 7137572,
+            "name": "Broken Object Level Authorization",
+            "description": "Users access or manipulate data objects without proper authorization."
+        },
+        {
+            "id": 7137573,
+            "name": "Access Control",
+            "description": "Restricting resources and actions users can access based on roles, permissions, or attributes."
+        },
+        {
+            "id": 7137574,
+            "name": "Auth Failures",
+            "description": "Authentication is weak, misconfigured, or bypassed, allowing unauthorized access."
+        },
+        {
+            "id": 7137575,
+            "name": "SQL Injection",
+            "description": "Insert malicious SQL code into input fields to test for SQL injection vulnerabilities."
+        },
+        {
+            "id": 7137576,
+            "name": "XSS Injection",
+            "description": "Inject JavaScript or HTML tags to test for cross-site scripting vulnerabilities."
+        },
+        {
+            "id": 7137577,
+            "name": "Fuzzy Input",
+            "description": "Send large or randomly generated payloads to test input validation and stability."
+        },
+        {
+            "id": 7137578,
+            "name": "Command Injection",
+            "description": "Insert shell commands into inputs to test for command execution vulnerabilities."
+        },
+        {
+            "id": 7137579,
+            "name": "JSON Injection",
+            "description": "Insert malicious or unexpected JSON structures to test parsing and validation."
+        },
+        {
+            "id": 7137580,
+            "name": "NoSQL Injection",
+            "description": "Provide NoSQL-specific malicious queries or operators to test for injection vulnerabilities."
+        },
+        {
+            "id": 7137581,
+            "name": "Other",
+            "description": "Test cases not classified under existing categories."
+        }
+    ],
+    "projectAssociations": [],
+    "moduleSettings": [
+        {
+            "id": "1322624",
+            "name": "CarRental OTA API",
+            "description": "\nAPI pública para integração com **OTAs (Online Travel Agencies)**.\n\n## Autenticação\nTodos os endpoints requerem uma **API Key** no header `X-API-Key`.\nSolicite sua chave ao administrador do sistema.\n\n## Fluxo típico de integração\n1. `GET /ota/cidades` — listar cidades e lojas disponíveis\n2. `GET /ota/buscar` — pesquisar categorias disponíveis para o percurso e período\n3. `POST /ota/cotacao` — obter cotação detalhada de uma categoria\n4. `POST /ota/reservas` — criar reserva em nome do cliente\n5. `GET /ota/reservas/{id}` — consultar status da reserva\n6. `DELETE /ota/reservas/{id}` — cancelar reserva\n",
+            "moduleVariables": [],
+            "openApiInfo": {
+                "title": "CarRental OTA API",
+                "contact": {
+                    "name": "CarRental Marketplace",
+                    "email": "api@carrental.com"
+                },
+                "version": "1.0.0"
+            }
+        }
+    ]
+}
