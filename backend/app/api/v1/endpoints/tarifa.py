@@ -73,7 +73,7 @@ async def calcular_cotacao_filial(payload: CotacaoRequest, usuario: FilialOnly, 
 
 @router.get("/filial/rate_plans")
 async def listar_rate_plans_filial(usuario: FilialOnly, db: DB):
-    return await rate_plan_service.listar_rate_plans_empresa(usuario.locadoraId, db)
+    return await rate_plan_service.listar_rate_plans_filial(usuario.locadoraId, usuario.matrizId, db)
 
 
 @router.post("/filial/rate_plans", response_model=RatePlanResponse, status_code=201)

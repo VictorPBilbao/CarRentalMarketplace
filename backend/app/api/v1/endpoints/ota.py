@@ -63,7 +63,8 @@ async def ota_cotacao(payload: CotacaoRequest, cliente: OtaClient, db: DB):
 @router.post("/reservas", response_model=ReservaResponse, status_code=201)
 async def ota_criar_reserva(payload: CriarReservaRequest, cliente: OtaClient, db: DB):
     """Cria uma reserva em nome de um cliente cadastrado no sistema."""
-    return await reserva_service.criar(payload, db)
+    company_id = await _get_company_from_store(payload.pickup_store_id, db)
+    return await reserva_service.criar(payload, company_id, db)
 
 
 @router.get("/reservas/{reserva_id}", response_model=ReservaResponse)

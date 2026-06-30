@@ -64,6 +64,20 @@ async def listar_rate_plans_empresa(company_id: str, db: AsyncSurreal) -> list[R
     return [_rate_plan_row_to_response(r) for r in rows if isinstance(r, dict)]
 
 
+async def listar_rate_plans_filial(company_id: str, store_id: str, db: AsyncSurreal) -> list[RatePlanResponse]:
+    result = await db.query(
+        """
+        SELECT * FROM rate_plan
+        WHERE company = type::record($cid)
+          AND type::record($sid) INSIDE conditions.stores
+        ORDER BY priority DESC, price.daily_rate ASC
+        """,
+        {'cid': company_id, 'sid': store_id},
+    )
+    rows = extract_records(result)
+    return [_rate_plan_row_to_response(r) for r in rows if isinstance(r, dict)]
+
+
 async def criar_rate_plan(payload: RatePlanRequest, company_id: str, db: AsyncSurreal) -> RatePlanResponse:
     categories = [f'vehicle_category:{c.split(":")[-1]}' if ':' not in c else c for c in payload.conditions.categories]
     stores = [f'store:{s.split(":")[-1]}' if ':' not in s else s for s in payload.conditions.stores]
