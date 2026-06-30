@@ -6,6 +6,8 @@ export const handle: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get('token');
 
   if (token) {
+    event.locals.token = token;
+
     try {
       const response = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -13,7 +15,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 
       if (response.ok) {
         const usuario = await response.json();
-        event.locals.token = token;
         event.locals.usuario = {
           id:         usuario.id,
           nome:       usuario.nome,
@@ -27,6 +28,7 @@ export const handle: Handle = async ({ event, resolve }) => {
         };
       } else {
         event.cookies.delete('token', { path: '/' });
+        event.locals.token = undefined;
       }
     } catch {
       // API offline — mantém o cookie para tentar na próxima requisição

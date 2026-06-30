@@ -4,7 +4,9 @@ import { setFlash } from '$lib/flash';
 
 export const load: LayoutServerLoad = async ({ locals, cookies }) => {
   if (!locals.usuario) {
-    setFlash(cookies, { tipo: 'erro', mensagem: 'Usuário não autenticado.' });
+    if (!locals.token) {
+      setFlash(cookies, { tipo: 'erro', mensagem: 'Usuário não autenticado.' });
+    }
     redirect(303, '/login');
   }
 
