@@ -54,7 +54,11 @@ async def criar_protecao(payload: ProtecaoRequest, company_id: str, db: AsyncSur
             company:        type::record($cid),
             name:           $name,
             code:           $code,
-            pricing_matrix: $matrix
+            pricing_matrix: array::map($matrix, |$item| {
+                category:          type::record($item.category),
+                daily_rate:        $item.daily_rate,
+                deductible_amount: $item.deductible_amount
+            })
         }
         """,
         {'cid': company_id, 'name': payload.name, 'code': payload.code, 'matrix': matrix},
@@ -87,7 +91,17 @@ async def atualizar_protecao(prot_id: str, payload: ProtecaoRequest, company_id:
         for item in payload.pricing_matrix
     ]
     await db.query(
-        "UPDATE type::record($id) MERGE { name: $name, code: $code, pricing_matrix: $matrix }",
+        """
+        UPDATE type::record($id) MERGE {
+            name:           $name,
+            code:           $code,
+            pricing_matrix: array::map($matrix, |$item| {
+                category:          type::record($item.category),
+                daily_rate:        $item.daily_rate,
+                deductible_amount: $item.deductible_amount
+            })
+        }
+        """,
         {'id': prot_id, 'name': payload.name, 'code': payload.code, 'matrix': matrix},
     )
     result = await db.query("SELECT * FROM type::record($id)", {'id': prot_id})
