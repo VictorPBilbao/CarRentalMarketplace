@@ -1,0 +1,331 @@
+\documentclass[conference,a4paper]{IEEEtran}
+
+% ========== PACOTES ==========
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[portuguese]{babel}
+\usepackage{cite}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{textcomp}
+\usepackage{balance}
+\usepackage{eso-pic}
+\usepackage{tikz}
+\usepackage{geometry}
+\usepackage{xcolor}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue
+}
+
+% Definição para código inline
+\newcommand{\code}[1]{\texttt{#1}}
+
+\begin{document}
+
+% ================================================================
+% CAPA (Página 1)
+% ================================================================
+\thispagestyle{empty}
+
+% Imagem de fundo
+\AddToShipoutPictureBG*{%
+  \AtPageLowerLeft{%
+    \includegraphics[width=\paperwidth,height=\paperheight]{bg_capa.jpg}%
+  }%
+}
+
+\begin{tikzpicture}[remember picture, overlay]
+
+  % UNIVERSIDADE FEDERAL DO PARANÁ - topo
+  \node[anchor=north] at ([yshift=-3cm]current page.north)
+    {\fontsize{14}{18}\selectfont\bfseries UNIVERSIDADE FEDERAL DO PARANÁ};
+
+  % Nomes - abaixo do título da universidade
+  \node[anchor=north] at ([yshift=-5.5cm]current page.north)
+    {\begin{tabular}{c}
+      \fontsize{12}{16}\selectfont\bfseries ADRIANO ZANDROSKI SOARES\\[0.3cm]
+      \fontsize{12}{16}\selectfont\bfseries VICTOR PASINI BILBAO\\[0.3cm]
+      \fontsize{12}{16}\selectfont\bfseries PATRICK CORREIA CAMILO
+    \end{tabular}};
+
+  % Título do trabalho - centro exato da página
+  \node at (current page.center)
+    {\begin{tabular}{c}
+      \fontsize{14}{18}\selectfont\scshape SISTEMA DE GERENCIAMENTO DE LOCAÇÃO DE VEÍCULOS\\[0.2cm]
+      \fontsize{14}{18}\selectfont\scshape COM INTEGRAÇÃO A AGÊNCIAS DE VIAGEM ON-LINE 
+    \end{tabular}};
+
+  % Cidade e ano - rodapé
+  \node[anchor=south] at ([yshift=3cm]current page.south)
+    {\begin{tabular}{c}
+      \fontsize{12}{16}\selectfont\scshape CURITIBA, PR\\[0.2cm]
+      \fontsize{12}{16}\selectfont 2026
+    \end{tabular}};
+
+\end{tikzpicture}
+
+\clearpage
+
+% ================================================================
+% FOLHA DE ROSTO (Página 2)
+% ================================================================
+\thispagestyle{empty}
+
+\begin{tikzpicture}[remember picture, overlay]
+
+  % Nomes - topo
+  \node[anchor=north] at ([yshift=-4cm]current page.north)
+    {\begin{tabular}{c}
+      \fontsize{12}{16}\selectfont\bfseries ADRIANO ZANDROSKI SOARES\\[0.3cm]
+      \fontsize{12}{16}\selectfont\bfseries VICTOR PASINI BILBAO\\[0.3cm]
+      \fontsize{12}{16}\selectfont\bfseries PATRICK CORREIA CAMILO
+    \end{tabular}};
+
+  % Título - centro
+  \node at ([yshift=2cm]current page.center)
+    {\begin{tabular}{c}
+      \fontsize{14}{18}\selectfont\scshape SISTEMA DE GERENCIAMENTO DE LOCAÇÃO DE VEÍCULOS\\[0.2cm]
+      \fontsize{14}{18}\selectfont\scshape COM INTEGRAÇÃO A AGÊNCIAS DE VIAGEM ON-LINE
+    \end{tabular}};
+
+  % Natureza do trabalho - direita, abaixo do centro
+  \node[anchor=north east] at ([yshift=-2cm, xshift=-2.5cm]current page.east)
+    {\begin{minipage}{0.55\textwidth}
+      \fontsize{10}{13}\selectfont
+      Trabalho de conclusão de curso apresentado ao curso de
+      graduação em Análise e Desenvolvimento de Sistemas, Setor
+      de Educação Profissional e Tecnológica, Universidade Federal
+      do Paraná, como requisito parcial à obtenção do título de
+      tecnólogo.
+
+      \vspace{0.5cm}
+      Orientador: Prof. Alexander Robert Kutzke.
+    \end{minipage}};
+
+  % Cidade e ano - rodapé
+  \node[anchor=south] at ([yshift=3cm]current page.south)
+    {\begin{tabular}{c}
+      \fontsize{12}{16}\selectfont\scshape CURITIBA, PR\\[0.2cm]
+      \fontsize{12}{16}\selectfont 2026
+    \end{tabular}};
+
+\end{tikzpicture}
+
+\clearpage
+
+% ================================================================
+% FOLHA DE APROVAÇÃO (Página 3)
+% ================================================================
+\thispagestyle{empty}
+\vspace*{2cm}
+\begin{center}
+{\color{red}\fontsize{11}{14}\selectfont
+Insira aqui o termo de aprovação do TCC, fornecido após a aprovação em banca.}
+\end{center}
+\vfill
+\clearpage
+
+% ================================================================
+% ARTIGO (a partir da página 4)
+% ================================================================
+\restoregeometry
+\setcounter{page}{4}
+
+% ========== TÍTULO ==========
+\title{CarRental Marketplace: uma Plataforma B2B2C para Locação de Veículos com Arquitetura Multi-Filial e Integração com Parceiros OTA}
+
+\author{
+\IEEEauthorblockN{Adriano Zandroski Soares\textsuperscript{1}, Victor Pasini Bilbao\textsuperscript{1}, Patrick Correia Camilo\textsuperscript{1}}
+\IEEEauthorblockA{
+\textsuperscript{1}Setor de Educação Profissional e Tecnológica\\
+Universidade Federal do Paraná\\
+Curitiba, Paraná, Brasil}
+}
+
+\maketitle
+
+% ========== RESUMO ==========
+\begin{abstract}
+O mercado brasileiro de locação de veículos é majoritariamente atendido por sistemas de gestão fechados, voltados a uma única locadora, sem suporte nativo à operação multi-filial, à composição de um \textit{marketplace} que reúna diferentes locadoras sob um único ponto de busca, ou à integração com agências de viagem \textit{on-line} (OTAs). Este artigo apresenta o desenvolvimento do CarRental Marketplace, uma plataforma B2B2C (\textit{business-to-business-to-consumer}) de locação de veículos que conecta locadoras, suas filiais e clientes finais em um único sistema web, com pagamento no destino (\textit{pay at desk}). A plataforma foi construída sobre uma arquitetura cliente-servidor desacoplada --- \textit{backend} em Python com FastAPI, persistência em SurrealDB (banco multimodelo de documentos e grafos) e \textit{frontend} em SvelteKit --- e contempla autenticação por papéis via JSON Web Tokens, um motor de precificação, um controle de disponibilidade para evitar \textit{overbooking}, uma máquina de estados para o ciclo de vida das reservas e uma API dedicada para parceiros OTA. O desenvolvimento foi guiado pelo levantamento de 49 histórias de usuário e documentado por diagramas de classes de domínio e de sistema, pelo modelo lógico do banco de dados e por diagramas de sequência para cada tela. Como resultado, obteve-se uma plataforma funcional que materializa, em código, os conceitos de domínio levantados na análise.
+\end{abstract}
+
+\begin{IEEEkeywords}
+locação de veículos; \textit{marketplace} B2B2C; SaaS multi-filial; FastAPI; SurrealDB; SvelteKit; integração OTA.
+\end{IEEEkeywords}
+
+% ========== ABSTRACT EM INGLÊS ==========
+\begin{otherlanguage}{english}
+\renewcommand{\abstractname}{Abstract}
+\begin{abstract}
+The Brazilian vehicle rental market is largely served by closed, single-tenant management systems designed for a single rental company, with no native support for multi-branch operations, for assembling a marketplace that brings together different rental companies under a single search point, or for integration with online travel agencies (OTAs). This article presents the development of the CarRental Marketplace, a B2B2C (\textit{business-to-business-to-consumer}) vehicle rental platform that connects rental companies, their branches, and end customers within a single web system, following a pay-at-desk model. The platform was built on a decoupled client-server architecture --- a Python/FastAPI backend, persistence in SurrealDB (a multi-model document-and-graph database), and a SvelteKit frontend --- and implements role-based authentication via JSON Web Tokens, a pricing engine, an availability ledger to prevent overbooking, a state machine governing the reservation lifecycle, and a dedicated API for OTA partners. Development was guided by the elicitation of 49 user stories and documented through domain and system class diagrams, the logical data model, and sequence diagrams for each screen. As a result, a functional platform was produced that materializes, in code, the domain concepts identified during analysis.
+\end{abstract}
+
+\noindent\textbf{Index Terms:} vehicle rental; B2B2C marketplace; multi-branch SaaS; FastAPI; SurrealDB; SvelteKit; OTA integration.
+\end{otherlanguage}
+
+% ========== I. INTRODUÇÃO ==========
+\section{Introdução}
+
+O setor de locação de veículos é um elo central da cadeia de mobilidade e turismo. No Brasil, esse mercado é numericamente dominado por empresas de pequeno e médio porte: em 2025, o país chegou a 37.047 locadoras em atividade, um crescimento de 17,7\% em relação ao ano anterior, faturando R\$ 61,7 bilhões e administrando uma frota recorde de 1.717.848 veículos~\cite{abla2025, calmon2026}. Boa parte dessas empresas opera uma ou poucas filiais e não possui capacidade técnica ou orçamentária para desenvolver --- ou mesmo contratar --- uma plataforma própria de reservas com o mesmo nível de integração das grandes redes internacionais, que mantêm sistemas próprios conectados a agências de viagem \textit{on-line} (OTAs).
+
+Essa lacuna é normalmente preenchida por dois extremos pouco satisfatórios: de um lado, controles manuais que não escalam para múltiplas filiais nem evitam o \textit{overbooking} --- a venda do mesmo veículo, ou da mesma categoria, para mais de um cliente no mesmo período; de outro, sistemas de gestão fechados, voltados a uma única empresa, sem suporte nativo à operação de um \textit{marketplace} que reúna várias locadoras concorrentes sob um único ponto de busca para o cliente final, nem à exposição de uma API para que parceiros OTA comercializem as diárias dessas locadoras.
+
+Esse cenário se conecta a uma tendência mais ampla de intermediação digital entre empresas e consumidores finais, estudada na literatura de economia de plataformas como mercados de dois ou múltiplos lados (\textit{two-sided markets}), em que uma plataforma central coordena a oferta de diferentes empresas e a demanda dos consumidores, capturando valor da rede gerada por essa intermediação~\cite{rochet2003}. No mercado, esse tipo de arranjo é popularmente referido pelo termo B2B2C (\textit{business-to-business-to-consumer}).
+
+O objetivo deste trabalho é apresentar o desenvolvimento do \textbf{CarRental Marketplace}, uma plataforma B2B2C de locação de veículos que conecta locadoras, filiais e clientes finais em um único sistema web, com pagamento no destino. O restante deste artigo está organizado da seguinte forma: a Seção~II discute os trabalhos e fundamentos teóricos e tecnológicos que sustentam as decisões de projeto; a Seção~III descreve a arquitetura do sistema; a Seção~IV apresenta a modelagem de domínio, de sistema e de dados; a Seção~V detalha as principais funcionalidades implementadas; a Seção~VI resume a especificação das interfaces de programação (APIs); a Seção~VII discute os resultados e limitações identificadas; e a Seção~VIII apresenta a conclusão.
+
+% ========== II. FUNDAMENTAÇÃO ==========
+\section{Fundamentação Teórica e Tecnológica}
+
+\textbf{Arquitetura REST.} O \textit{backend} do sistema expõe seus recursos por meio de uma API HTTP aderente aos princípios de \textit{Representational State Transfer} (REST), definidos por Fielding~\cite{fielding2000} em sua tese de doutorado, que caracteriza um estilo arquitetural baseado em recursos endereçáveis por URI, comunicação sem estado entre cliente e servidor e uso uniforme dos métodos HTTP para representar operações sobre esses recursos.
+
+\textbf{Bancos de dados multimodelo e NoSQL.} A persistência do sistema é feita em um banco de dados multimodelo, que combina nativamente os modelos de documentos e de grafos em um único motor. Gessert \textit{et al.}~\cite{gessert2017} caracterizam essa classe de sistemas NoSQL como uma resposta à necessidade de armazenar dados semiestruturados e fortemente relacionados (como grafos de relacionamento entre entidades) sem o \textit{overhead} de junções relacionais tradicionais, mantendo flexibilidade de esquema.
+
+\textbf{Modelagem entidade-relacionamento.} O modelo lógico do banco de dados do sistema segue os princípios do modelo entidade-relacionamento (ER), proposto originalmente por Chen~\cite{chen1976} como uma notação unificada para representar entidades, seus atributos e os relacionamentos entre elas, independentemente do modelo de implementação física adotado posteriormente.
+
+\textbf{UML.} A modelagem de domínio e de sistema foi expressa por meio de diagramas de classes e de sequência da \textit{Unified Modeling Language} (UML), cuja notação e semântica seguem a descrição consolidada por Fowler~\cite{fowler2004}, que trata a UML como uma linguagem visual para representar estrutura estática (classes, atributos, relacionamentos) e comportamento dinâmico (interação entre objetos ao longo do tempo) de sistemas orientados a objetos.
+
+\textbf{Histórias de usuário.} O levantamento de requisitos foi conduzido por meio de histórias de usuário, técnica descrita por Cohn~\cite{cohn2004} como uma forma concisa de expressar uma necessidade funcional a partir da perspectiva de um perfil de usuário, complementada por critérios de aceitação que tornam a história testável.
+
+\textbf{Autenticação baseada em \textit{token}.} O controle de acesso do sistema é implementado por meio de \textit{JSON Web Tokens} (JWT), formato padronizado pela \textit{Internet Engineering Task Force} (IETF) na RFC~7519~\cite{jones2015}, que define uma estrutura compacta e autoverificável para representar afirmações (\textit{claims}) entre duas partes, dispensando a manutenção de estado de sessão no servidor.
+
+% ========== III. ARQUITETURA ==========
+\section{Arquitetura do Sistema}
+
+O sistema adota uma arquitetura cliente-servidor desacoplada, dividida em três camadas principais: \textit{frontend}, \textit{backend} e banco de dados.
+
+O \textbf{\textit{frontend}} foi desenvolvido com SvelteKit~\cite{svelte}, um \textit{framework full-stack} para a biblioteca Svelte que permite renderização tanto no servidor quanto no cliente, com tipagem estática garantida pelo TypeScript~\cite{typescript} e estilização utilitária pelo Tailwind CSS~\cite{tailwind}. A camada de apresentação se comunica com o \textit{backend} exclusivamente via chamadas HTTP a uma API REST, sem acesso direto ao banco de dados.
+
+O \textbf{\textit{backend}} foi desenvolvido em Python com o \textit{framework} FastAPI~\cite{fastapi, python}, escolhido por seu suporte nativo a \textit{type hints}, geração automática de documentação OpenAPI e validação de dados de entrada e saída por meio de modelos Pydantic~\cite{pydantic}. O \textit{backend} é organizado em três camadas internas: \textit{controllers} (rotas HTTP, agrupadas por domínio: autenticação, organização, frota, tarifação, reservas, administração e integração externa), \textit{services} (regras de negócio) e o acesso a dados, sem uma camada intermediária de repositório ou ORM --- os serviços montam e executam consultas SurrealQL diretamente sobre a conexão com o banco.
+
+A \textbf{persistência} é feita no SurrealDB~\cite{surrealdb}, um banco de dados multimodelo que combina, em um único motor, tabelas de documentos e arestas de grafo nativas. Essa característica é explorada para modelar relações como o vínculo de propriedade entre usuário e empresa, o vínculo de trabalho entre usuário e filial, e as regras de devolução de veículos entre filiais, como relacionamentos de grafo de primeira classe (tabelas do tipo \code{RELATION}), em vez de tabelas associativas tradicionais.
+
+A \textbf{segurança} é implementada em duas camadas de autenticação independentes: \textit{tokens} JWT~\cite{jones2015} para os usuários do sistema (clientes, funcionários de filial, gerentes de locadora e administradores), com controle de acesso baseado em papéis verificado por dependências de segurança no FastAPI; e chaves de API estáticas (cabeçalho \code{X-API-Key}) para parceiros OTA externos, validadas contra uma tabela dedicada de chaves ativas, sem necessidade de \textit{login} de usuário.
+
+% ========== IV. MODELAGEM ==========
+\section{Modelagem do Sistema}
+
+\textbf{Modelo de domínio.} O domínio da aplicação foi modelado por meio de um diagrama de classes que captura as entidades centrais do negócio --- usuário, empresa, filial, veículo, categoria de veículo, plano tarifário, taxa, adicional, proteção, cotação, reserva, contrato de locação, controle de disponibilidade e chave OTA --- e o comportamento esperado de cada uma (por exemplo, a verificação se uma reserva pode transicionar para um novo status, ou o cálculo do valor de um adicional conforme seu tipo de cobrança).
+
+\textbf{Modelo de sistema.} A arquitetura de implementação foi documentada por meio de um diagrama de classes que representa os \textit{controllers} e \textit{services} reais do \textit{backend} e suas dependências, incluindo casos em que um único \textit{controller} delega a múltiplos serviços (o \textit{controller} de tarifação utiliza seis serviços distintos) e casos de reaproveitamento de função entre módulos (a função que resolve a empresa proprietária de uma filial, definida no serviço de reservas, é reutilizada pelos \textit{controllers} público e de integração OTA).
+
+\textbf{Modelo lógico de dados.} O banco de dados foi documentado por meio de um diagrama entidade-relacionamento lógico, derivado diretamente do esquema real do SurrealDB, contemplando 14 entidades de documento e 4 entidades associativas correspondentes às arestas de grafo nativas (vínculo de gestão, vínculo de trabalho, regra de devolução \textit{one-way} e regra de transferência de frota entre filiais), com chaves primárias, chaves estrangeiras e cardinalidades de relacionamento --- incluindo relacionamentos N:N implementados como \textit{arrays} de identificadores de registro, em vez de tabelas de junção tradicionais.
+
+\textbf{Histórias de usuário e diagramas de sequência.} O levantamento de requisitos resultou em 49 histórias de usuário~\cite{cohn2004}, organizadas por perfil (cliente, gerente de locadora, operador de filial e administrador), cada uma correspondendo a uma tela real do sistema. Para cada história, foi elaborado um diagrama de sequência detalhando a interação entre o ator, a tela, o \textit{backend} (camada ``Sistema''), o \textit{controller}, o serviço e o modelo de dados envolvidos, incluindo os principais fluxos alternativos de validação de regras de negócio.
+
+% ========== V. FUNCIONALIDADES ==========
+\section{Funcionalidades Implementadas}
+
+O sistema é organizado em cinco áreas funcionais principais:
+
+\begin{enumerate}
+  \item \textbf{Organização.} Cadastro de locadoras (empresas), suas filiais e funcionários, com vínculos de papel (proprietário/administrador para usuário-empresa; gerente, atendente ou mecânico para usuário-filial).
+
+  \item \textbf{Frota.} Cadastro de categorias de veículo (com código ACRISS) e de veículos individuais, vinculados a uma categoria e a uma filial corrente.
+
+  \item \textbf{Tarifação.} Um motor de precificação que combina planos tarifários (com condições de elegibilidade por categoria, filial, idade do condutor, antecedência e código promocional), taxas por filial, adicionais opcionais e proteções/seguros com matriz de preço por categoria.
+
+  \item \textbf{Reservas e disponibilidade.} Um fluxo de cotação seguido de confirmação de reserva, com verificação de disponibilidade por meio de um \textit{ledger} de disponibilidade que contabiliza, por filial, categoria e data, o total da frota, o total reservado e o total em manutenção --- evitando \textit{overbooking} antes de cada confirmação. O ciclo de vida da reserva é controlado por uma máquina de estados (pendente, confirmada, ativa, concluída, cancelada ou não comparecimento) que valida as transições permitidas a cada status. Regras de devolução em filial diferente da retirada (\textit{one-way}) também são suportadas, com taxa configurável por par de filiais.
+
+  \item \textbf{Administração e integração externa.} Um painel administrativo com estatísticas agregadas da plataforma e gestão de chaves de acesso para parceiros OTA, que consomem uma API dedicada (Seção~VI) autenticada por chave de API.
+\end{enumerate}
+
+O painel administrativo utiliza a biblioteca Chart.js~\cite{chartjs} para a visualização gráfica de indicadores, e o cadastro de filiais utiliza a biblioteca Leaflet~\cite{leaflet} para a seleção da localização geográfica em mapa.
+
+% ========== VI. APIs ==========
+\section{Especificação de Interfaces de Programação (APIs)}
+
+O sistema expõe uma API REST interna, organizada por domínio (autenticação, organização, frota, tarifação, reservas, \textit{dashboards}, administração e rotas públicas sem autenticação), consumida exclusivamente pelo próprio \textit{frontend}. Separadamente, expõe uma API dedicada a parceiros OTA externos (\code{/ota/*}), autenticada por chave de API em vez de \textit{token} de usuário, que reaproveita internamente os mesmos serviços de domínio utilizados pelas rotas públicas e do cliente final --- ou seja, é uma fachada de autenticação alternativa sobre a mesma lógica de negócio, e não uma implementação paralela.
+
+O \textit{frontend}, por sua vez, consome três serviços públicos externos para funcionalidades de endereço e geolocalização, sem autenticação: o ViaCEP~\cite{viacep} para autocompletar o endereço de uma filial a partir do CEP; o serviço de geocodificação Nominatim, da OpenStreetMap Foundation~\cite{osm}, para converter um endereço em coordenadas; e o servidor de \textit{tiles} da própria OpenStreetMap~\cite{osm}, para a renderização do mapa via Leaflet~\cite{leaflet}.
+
+% ========== VII. RESULTADOS ==========
+\section{Resultados e Discussão}
+
+O desenvolvimento resultou em uma plataforma funcional que cobre o fluxo completo de locação de veículos sob a perspectiva dos quatro perfis de usuário identificados, validada por meio dos 49 diagramas de sequência elaborados a partir do código real do \textit{backend} e do \textit{frontend} --- e não de uma especificação idealizada, o que permitiu identificar divergências entre o comportamento esperado pelas histórias de usuário e o comportamento efetivamente implementado.
+
+Entre as divergências identificadas, destacam-se: (i)~a ausência de implementação para o \textit{checkout}/\textit{check-in} de contratos de locação (\code{rental\_agreement}) e para a persistência avulsa de cotações (\code{quote}), ambos presentes no esquema do banco de dados mas sem rota ou serviço correspondente; (ii)~uma inconsistência de ciclo de vida entre as entidades de tarifação, em que planos tarifários, taxas e adicionais são desativados de forma lógica (\code{active = false}), enquanto proteções são removidas de forma definitiva; e (iii)~o recálculo independente do valor de adicionais em dois pontos distintos do \textit{backend} (na pré-visualização da cotação e na persistência da reserva), o que representa um risco de divergência caso as regras de cálculo evoluam de forma assíncrona entre os dois pontos.
+
+Essas divergências não comprometem o funcionamento do fluxo principal do sistema, mas indicam pontos de atenção para as próximas etapas de evolução do produto, registrados como trabalhos futuros.
+
+% ========== VIII. CONCLUSÃO ==========
+\section{Conclusão}
+
+Este artigo apresentou o desenvolvimento do CarRental Marketplace, uma plataforma B2B2C de locação de veículos que conecta locadoras, filiais e clientes finais, com suporte a operação multi-filial e a integração com parceiros OTA --- lacunas identificadas no mercado brasileiro de locação, caracterizado por um grande número de empresas de pequeno e médio porte sem acesso a esse tipo de solução. A plataforma foi construída sobre uma arquitetura cliente-servidor desacoplada (SvelteKit, FastAPI e SurrealDB) e documentada por meio de diagramas de domínio, de sistema, de modelo lógico de dados, de sequência e de especificação de APIs, derivados diretamente do código-fonte real do sistema.
+
+Como trabalhos futuros, propõe-se a implementação dos fluxos de \textit{checkout}/\textit{check-in} de contrato de locação, a padronização do ciclo de vida das entidades de tarifação e a centralização do cálculo de precificação de adicionais em um único ponto do \textit{backend}, além da condução de testes de validação com usuários reais do perfil de locadora e de filial.
+
+% ========== REFERÊNCIAS ==========
+\begin{thebibliography}{20}
+
+\bibitem{abla2025}
+ABLA -- Associação Brasileira das Locadoras de Automóveis, ``Setor de locação de veículos seguiu em crescimento durante o último ano,'' abla.com.br, 26~mar. 2025. [Online]. Disponível: \url{https://www.abla.com.br/noticia/setor-de-locacao-de-veiculos-seguiu-em-crescimento-durante-o-ultimo-ano--}. Acesso em: 21~jun. 2026.
+
+\bibitem{calmon2026}
+E.~Calmon e J.~Pestana, ``Faturamento em locação de veículos cresce 16,6\% e atinge R\$ 61,7 bi em 2025,'' CNN Brasil, 18~mar. 2026. [Online]. Disponível: \url{https://www.cnnbrasil.com.br/economia/mercado/locacao-de-veiculos-faturamento-2025-abla/}. Acesso em: 21~jun. 2026.
+
+\bibitem{rochet2003}
+J.-C.~Rochet e J.~Tirole, ``Platform competition in two-sided markets,'' \textit{Journal of the European Economic Association}, vol.~1, no.~4, pp.~990--1029, 2003, doi: 10.1162/154247603322493212.
+
+\bibitem{fielding2000}
+R.~T.~Fielding, ``Architectural styles and the design of network-based software architectures,'' Tese de Doutorado, Dept. Inf. Comput. Sci., Univ. of California, Irvine, Irvine, CA, EUA, 2000.
+
+\bibitem{gessert2017}
+F.~Gessert, W.~Wingerath, S.~Friedrich e N.~Ritter, ``NoSQL database systems: a survey and decision guidance,'' \textit{Computer Science -- Research and Development}, vol.~32, no.~3-4, pp.~353--365, 2017, doi: 10.1007/s00450-016-0334-3.
+
+\bibitem{chen1976}
+P.~P.-S.~Chen, ``The entity-relationship model: toward a unified view of data,'' \textit{ACM Transactions on Database Systems}, vol.~1, no.~1, pp.~9--36, mar. 1976, doi: 10.1145/320434.320440.
+
+\bibitem{fowler2004}
+M.~Fowler, \textit{UML Distilled: A Brief Guide to the Standard Object Modeling Language}, 3ª~ed. Boston, MA, EUA: Addison-Wesley, 2004.
+
+\bibitem{cohn2004}
+M.~Cohn, \textit{User Stories Applied: For Agile Software Development}. Boston, MA, EUA: Addison-Wesley, 2004.
+
+\bibitem{jones2015}
+M.~Jones, J.~Bradley e N.~Sakimura, ``JSON Web Token (JWT),'' IETF, RFC~7519, mai. 2015. [Online]. Disponível: \url{https://www.rfc-editor.org/rfc/rfc7519.html}. Acesso em: 21~jun. 2026.
+
+\bibitem{fastapi}
+FastAPI, ``FastAPI,'' fastapi.tiangolo.com. [Online]. Disponível: \url{https://fastapi.tiangolo.com/}. Acesso em: 21~jun. 2026.
+
+\bibitem{python}
+Python Software Foundation, ``Python,'' python.org. [Online]. Disponível: \url{https://www.python.org/}. Acesso em: 21~jun. 2026.
+
+\bibitem{pydantic}
+Pydantic, ``Pydantic,'' docs.pydantic.dev. [Online]. Disponível: \url{https://docs.pydantic.dev/}. Acesso em: 21~jun. 2026.
+
+\bibitem{surrealdb}
+SurrealDB, ``SurrealDB,'' surrealdb.com. [Online]. Disponível: \url{https://surrealdb.com/docs/surrealdb}. Acesso em: 21~jun. 2026.
+
+\bibitem{svelte}
+Svelte, ``SvelteKit,'' svelte.dev. [Online]. Disponível: \url{https://svelte.dev/docs/kit/introduction}. Acesso em: 21~jun. 2026.
+
+\bibitem{typescript}
+Microsoft, ``TypeScript,'' typescriptlang.org. [Online]. Disponível: \url{https://www.typescriptlang.org/}. Acesso em: 21~jun. 2026.
+
+\bibitem{tailwind}
+Tailwind Labs, ``Tailwind CSS,'' tailwindcss.com. [Online]. Disponível: \url{https://tailwindcss.com/}. Acesso em: 21~jun. 2026.
+
+\bibitem{leaflet}
+Leaflet, ``Leaflet,'' leafletjs.com. [Online]. Disponível: \url{https://leafletjs.com/}. Acesso em: 21~jun. 2026.
+
+\bibitem{chartjs}
+Chart.js, ``Chart.js,'' chartjs.org. [Online]. Disponível: \url{https://www.chartjs.org/}. Acesso em: 21~jun. 2026.
+
+\bibitem{osm}
+OpenStreetMap Foundation, ``OpenStreetMap,'' openstreetmap.org. [Online]. Disponível: \url{https://www.openstreetmap.org/}. Acesso em: 21~jun. 2026.
+
+\bibitem{viacep}
+ViaCEP, ``ViaCEP,'' viacep.com.br. [Online]. Disponível: \url{https://viacep.com.br/}. Acesso em: 21~jun. 2026.
+
+\end{thebibliography}
+
+\end{document}

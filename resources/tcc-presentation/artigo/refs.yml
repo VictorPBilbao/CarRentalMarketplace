@@ -1,0 +1,193 @@
+abla2025:
+  type: Web
+  title: Setor de locação de veículos seguiu em crescimento durante o último ano
+  author: ABLA -- Associação Brasileira das Locadoras de Automóveis
+  organization: abla.com.br
+  date: 2025-03-26
+  url:
+    value: https://www.abla.com.br/noticia/setor-de-locacao-de-veiculos-seguiu-em-crescimento-durante-o-ultimo-ano--
+    date: 2026-06-21
+
+altexsoft2023:
+  type: Web
+  title: "Car Rental and Sharing APIs: Integrations with GDSs, OTAs, and Tech Providers"
+  author: AltexSoft
+  url:
+    value: https://www.altexsoft.com/blog/car-rental-apis-integrations-with-gdss-otas-and-tech-providers/
+    date: 2026-06-22
+
+calmon2026:
+  type: Web
+  title: "Faturamento em locação de veículos cresce 16,6% e atinge R$ 61,7 bi em 2025"
+  author: ["Calmon, E.", "Pestana, J."]
+  organization: CNN Brasil
+  date: 2026-03-18
+  url:
+    value: https://www.cnnbrasil.com.br/economia/mercado/locacao-de-veiculos-faturamento-2025-abla/
+    date: 2026-06-21
+
+rochet2003:
+  type: Article
+  title: Platform competition in two-sided markets
+  author: ["Rochet, Jean-Charles", "Tirole, Jean"]
+  date: 2003
+  page-range: 990-1029
+  serial-number:
+    doi: "10.1162/154247603322493212"
+  parent:
+    type: Periodical
+    title: Journal of the European Economic Association
+    volume: 1
+    issue: 4
+
+fielding2000:
+  type: Thesis
+  title: Architectural styles and the design of network-based software architectures
+  author: Fielding, Roy T.
+  date: 2000
+  organization: University of California, Irvine
+  location: Irvine, CA, USA
+
+gessert2017:
+  type: Article
+  title: "NoSQL database systems: a survey and decision guidance"
+  author: ["Gessert, Felix", "Wingerath, Wolfram", "Friedrich, Steffen", "Ritter, Norbert"]
+  date: 2017
+  page-range: 353-365
+  serial-number:
+    doi: "10.1007/s00450-016-0334-3"
+  parent:
+    type: Periodical
+    title: Computer Science -- Research and Development
+    volume: 32
+    issue: "3-4"
+
+chen1976:
+  type: Article
+  title: "The entity-relationship model: toward a unified view of data"
+  author: Chen, Peter Pin-Shan
+  date: 1976-03
+  page-range: 9-36
+  serial-number:
+    doi: "10.1145/320434.320440"
+  parent:
+    type: Periodical
+    title: ACM Transactions on Database Systems
+    volume: 1
+    issue: 1
+
+fowler2004:
+  type: Book
+  title: "UML Distilled: A Brief Guide to the Standard Object Modeling Language"
+  author: Fowler, Martin
+  date: 2004
+  edition: "3"
+  location: Boston, MA, USA
+  publisher: Addison-Wesley
+
+cohn2004:
+  type: Book
+  title: "User Stories Applied: For Agile Software Development"
+  author: Cohn, Mike
+  date: 2004
+  location: Boston, MA, USA
+  publisher: Addison-Wesley
+
+jones2015:
+  type: Report
+  title: JSON Web Token (JWT)
+  author: ["Jones, Michael", "Bradley, John", "Sakimura, Nat"]
+  date: 2015-05
+  serial-number: "RFC 7519"
+  organization: IETF
+  url:
+    value: https://www.rfc-editor.org/rfc/rfc7519.html
+    date: 2026-06-21
+
+fastapi:
+  type: Web
+  title: FastAPI
+  author: FastAPI
+  url:
+    value: https://fastapi.tiangolo.com/
+    date: 2026-06-21
+
+python:
+  type: Web
+  title: Python
+  author: Python Software Foundation
+  url:
+    value: https://www.python.org/
+    date: 2026-06-21
+
+pydantic:
+  type: Web
+  title: Pydantic
+  author: Pydantic
+  url:
+    value: https://docs.pydantic.dev/
+    date: 2026-06-21
+
+surrealdb:
+  type: Web
+  title: SurrealDB
+  author: SurrealDB
+  url:
+    value: https://surrealdb.com/docs/surrealdb
+    date: 2026-06-21
+
+svelte:
+  type: Web
+  title: SvelteKit
+  author: Svelte
+  url:
+    value: https://svelte.dev/docs/kit/introduction
+    date: 2026-06-21
+
+typescript:
+  type: Web
+  title: TypeScript
+  author: Microsoft
+  url:
+    value: https://www.typescriptlang.org/
+    date: 2026-06-21
+
+tailwind:
+  type: Web
+  title: Tailwind CSS
+  author: Tailwind Labs
+  url:
+    value: https://tailwindcss.com/
+    date: 2026-06-21
+
+leaflet:
+  type: Web
+  title: Leaflet
+  author: Leaflet
+  url:
+    value: https://leafletjs.com/
+    date: 2026-06-21
+
+chartjs:
+  type: Web
+  title: Chart.js
+  author: Chart.js
+  url:
+    value: https://www.chartjs.org/
+    date: 2026-06-21
+
+osm:
+  type: Web
+  title: OpenStreetMap
+  author: OpenStreetMap Foundation
+  url:
+    value: https://www.openstreetmap.org/
+    date: 2026-06-21
+
+viacep:
+  type: Web
+  title: ViaCEP
+  author: ViaCEP
+  url:
+    value: https://viacep.com.br/
+    date: 2026-06-21
