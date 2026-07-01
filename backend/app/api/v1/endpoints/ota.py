@@ -57,7 +57,7 @@ async def ota_buscar(
 async def ota_cotacao(payload: CotacaoRequest, cliente: OtaClient, db: DB):
     """Cotação detalhada para uma categoria e período específicos."""
     company_id = await _get_company_from_store(payload.pickup_store_id, db)
-    return await tarifa_service.cotar(company_id=company_id, payload=payload, db=db)
+    return await tarifa_service.calcular_cotacao(company_id=company_id, payload=payload, db=db)
 
 
 @router.post("/reservas", response_model=ReservaResponse, status_code=201)
